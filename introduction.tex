@@ -1,0 +1,47 @@
+Certain areas of science perform experiments that achieve extremely high data rates; well known examples in high-energy physics are the CMS and ATLAS experiments at the LHC, which observe new collision events every 25ns and must report detection \commnt{\url{https://indico.cern.ch/event/395374/contributions/939905/attachments/1185975/1719379/20151113_RealTimeAnalysisLHC-4.pdf}}{of interesting events at upto 1MHz} (LHCb).
+\commnt{more examples}{Similarly, }X-ray crystallography employs high-energy diffraction microscopy techniques, which can sample \commnt{\url{https://aip.scitation.org/doi/10.1063/5.0006531}}{at up to 1MHz}.
+Such high data rate experiments face the challenge of either processing the data in-situ (colocal with the scientific apparatus) or buffering/caching for later retrieval and post-processing.
+Case in point, if CMS and ATLAS were to capture all collision events, they would produce approximately 40 terabytes of data \commnt{\url{https://www.sciencedirect.com/science/article/pii/S2352711020303320}}{each second}.
+Thus, any improvement in the real-time, near-sensor, processing capabilities, for operations such as filtering and triggering, of such experiment infrastructure can dramatically reduce the burden on downstream infrastructure and compute, in addition to accelerating the pace of experiment design and scientific discovery.
+
+Deep Neural Networks, effective in many other academic and commercial domains, have recently been considered for \commnt{cite the physical review letters paper from hls4ml}{these real-time scientific use cases}.
+For example, BraggNN, a DNN aimed at identifying Bragg diffraction peaks with high precision, has been shown to make peak position determinations with high accuracy.
+Still, as of yet DNN models have not seen wide adoption in this area.
+This is due to the limitations imposed by the hardware platforms on which they can typically be deployed - GPUs and other such DNN accelerators.
+Primarily, such accelerators do not meet the hard real-time latency constraints, and secondarily they cannot be easily colocated with complex sensing apparatuses.
+BraggNN, despite having been shown to have high speedup over the classical pseudo-Voigt peak fitting methods, making determinations in approximately 700µs, still falls short of the 1µs target for handling 1MHz sampling rates.
+In addition, the current implementation of BraggNN, deployed to either a datacenter class GPU such as a NVIDIA V100, or even a workstation class GPU such as a NVIDIA RTX 2080Ti, has no practicable means to being deployed at the edge, i.e., adjacent or proximal to the high energy microscopy equipment.
+
+Application Specific Integrated Circuits (ASIC) and Field Programmable Gate Arrays (FPGA) are alternative potential deployment targets for the kinds of processing techniques necessary for low latency scientific use cases.
+To wit: the LHC currently uses a combination of ASICs and FPGAs for their Level-1 filtering system, which must process each sample within 25ns and make its decision (regarding filtering) within approximately 10 µs, the time represented by the amount of available buffering.
+But ASICs and FPGAs are not a \commnt{haha.}{free lunch}.
+ASICs, while offering the absolute lowest possible latency, in the smallest possible package, incur extremely high development costs, due to the complexity of the digital design process and the overall costs of fabrication.
+FPGAs, present an intermediate along dimensions of cost, latency, and development complexity; at the cost of 20x larger area consumption, \commnt{how to cite that epfl page? find this stat in one of their papers?}{4x longer latency, and 12x higher power consumption} (relative to ASICs), they come with the added benefit, in the context of DNNs, of reconfigurability.
+That is to say, a DNN deployed to an FPGA can be redeployed, reconfigured, and reparameterized an arbitrary number of times, whereas an ASIC is for all intents and purposes \commnt{overused already here but yea frozen isn\'t a good word}{frozen}.
+
+One of the principle challenges in deploying DNNs to FPGAs and ASICs is translating the high-level (with respect to abstraction) representations that DNNs are typically represented as, to the Register Transfer Level (RTL) representations which can be used for FPGA and ASIC design.
+The fundamental reason for the difficulty in performing this translation is most (if not all) DNN implementations presume some underlying compute architecture, while FPGAs and ASICs are, in effect, blank canvases (with respect to architecture).
+Thus, deploying to FPGA and ASICs entails reimagining a DNN model as compute architecture unto itself, including sophisticated considerations such as operation scheduling, register pipelining, and wire delay.
+For conventional use-cases of FPGAs and ASIC, the development methodology involves an enormous \commnt{cite for clarify}{amount of hand-written or "hand-generated"} design of the primitive components (adders, multipliers, buses, etc.), a methodology dramatically distinct from conventional software design in general, and DNN design in particular.
+Recently, though, with the advent of advanced compiler technologies, such as MLIR, and supported by advanced High-Level Synthesis (HLS) tools, it has become possible to practice an iterative design methodology that can in fact produce high-fidelity performant RTL representations of DNN models.
+
+Thus, this work investigates the techniques and tools currently available for deploying DNNs to FPGAs.
+Specifically, we deploy BraggNN to FPGA by performing a series of progressive \emph{lowerings} starting from a high-level representation (a PyTorch model) and culminating in synthesizable RTL (i.e., a representation that can be directly mapped to FPGA hardware).
+Our work includes a survey of existing general purpose tools aimed at performing such lowerings, as well as our own \commnt{not really novel}{novel} approach.
+We show that under certain assumptions, our approach produces inference latencies lower than that of any of the existing tools, achieving a peak end-to-end latency of 3µs/333KHz.
+This latency represents a 200x improvement over the GPU implementation of BraggNN and only a 3x gap from the ultimate 1µs/1MHz latency target.
+
+\commnt{A list of contributions is a nice clear way to say what youve done; shot fired - what have i contributed when you really think about it? i\'ll have to conjure some up}{The primary contributions of this paper are:}
+
+\begin{enumerate}
+	\item
+\end{enumerate}
+The remainder of this article is structured as such:
+\begin{enumerate}
+	\item Background on TS/MLIR, HLS, and logic synthesis;
+	\item The challenges faced in using existing flows and how our approach addresses those challenges;
+	\item An evaluation of our approach, as compared to existing tools, in terms of latency, resource usage, and development time;
+	\item High priority goals, as we see them, for making this flow more ergonomic.
+\end{enumerate}
+
+

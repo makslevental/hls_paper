@@ -1,0 +1,76 @@
+\usepackage[utf8]{inputenc}
+\usepackage{hyperref}
+
+\usepackage{color,fancyvrb}
+% \usepackage[frozencache,cachedir=_minted,outputdir=latex_output]{minted}
+% \usepackage[finalizecache,cachedir=_minted,outputdir=latex_output]{minted}
+\usepackage[cachedir=_minted,outputdir=latex_output]{minted}
+\renewcommand{\MintedPygmentize}{./scripts/pygmentize.py}
+
+\newenvironment{longlisting}{\captionsetup{type=listing}}{}
+%\usepackage[skip=2pt]{caption} % example skip set to 2pt
+\setlength{\belowcaptionskip}{10pt plus 3pt minus 2pt} % Chosen fairly arbitrarily
+\setlength{\abovecaptionskip}{10pt plus 3pt minus 2pt} % Chosen fairly arbitrarily
+
+\setminted{
+    % linenos=true,
+    autogobble,
+    breaklines,
+    tabsize=2,
+    fontsize=\footnotesize,
+    encoding=utf8,
+    frame=lines,
+    fontfamily=zi4
+}
+\usepackage{etoolbox,xpatch}
+
+\makeatletter
+\AtBeginEnvironment{minted}{\dontdofcolorbox}
+\def\dontdofcolorbox{\renewcommand\fcolorbox[4][]{##4}}
+\xpatchcmd{\inputminted}{\minted@fvset}{\minted@fvset\dontdofcolorbox}{}{}
+\xpatchcmd{\mintinline}{\minted@fvset}{\minted@fvset\dontdofcolorbox}{}{} % see https://tex.stackexchange.com/a/401250/
+\makeatother
+
+\setcopyright{acmlicensed}
+\acmDOI{00.000/000_0}
+\acmISBN{000-0000-00-000/00/00}
+\acmConference[ABC '00]{A Boilerplate Conference}{January 0000}{Norfolk, Virginia, USA}
+\acmYear{0000}
+\copyrightyear{0000}
+\acmPrice{0.00}
+
+% When "techreport" class parameter is supplied:
+%   * hide reference block from the front page
+%   * hide copyright note from the front page
+%   * change conference info in the header of alternate pages to title
+%   * add page number in the center of the footer of non-title pages
+\makeatletter
+\@ifclasswith{acmart}{techreport}{
+  \settopmatter{printacmref=false}
+  \renewcommand\footnotetextcopyrightpermission[1]{}
+  \fancyhead{}
+  \fancyfoot{}
+  \fancyhead[L]{\shorttitle}
+  \fancyhead[R]{\shortauthors}
+  \fancyfoot[C]{\thepage}
+  % \AtBeginDocument{The pagesize is \texttt{a5paper}.\par}
+}{}
+\makeatother
+
+
+
+\newif\iffinal
+\finaltrue
+
+
+\iffinal
+  \newcommand{\maxx}[1]{}
+  \newcommand{\ryan}[1]{}
+  \newcommand{\todo}[1]{}
+  \newcommand{\commnt}[2]{#2}
+\else
+  \newcommand{\maxx}[1]{{\textcolor{red}{ Max: #1 }}}
+  \newcommand{\ryan}[1]{{\textcolor{magenta}{ Ryan: #1 }}}
+  \newcommand{\todo}[1]{{\textcolor{red}{ TODO: #1 }}}
+  \newcommand{\commnt}[2]{{{\color{green} #1} {\color{blue} #2}}}
+\fi
