@@ -22,12 +22,12 @@ That is to say, a DNN deployed to an FPGA can be redeployed, reconfigured, and r
 One of the principle challenges in deploying DNNs to FPGAs and ASICs is translating the high-level (with respect to abstraction) representations that DNNs are typically represented as, to the Register Transfer Level (RTL) representations which can be used for FPGA and ASIC design.
 The fundamental reason for the difficulty in performing this translation is most (if not all) DNN implementations presume some underlying compute architecture, while FPGAs and ASICs are, in effect, blank canvases (with respect to architecture).
 Thus, deploying to FPGA and ASICs entails reimagining a DNN model as compute architecture unto itself, including sophisticated considerations such as operation scheduling, register pipelining, and wire delay.
-For conventional use-cases of FPGAs and ASIC, the development methodology involves an enormous \commnt{cite for clarify}{amount of hand-written or "hand-generated"} design of the primitive components (adders, multipliers, buses, etc.), a methodology dramatically distinct from conventional software design in general, and DNN design in particular.
+For conventional use-cases of FPGAs and ASIC, the development methodology involves an enormous amount of hand-written or "hand-generated"\cite{nikhil2004bluespec} design of the primitive components (adders, multipliers, buses, etc.), a methodology dramatically distinct from conventional software design in general, and DNN design in particular.
 Recently, though, with the advent of advanced compiler technologies, such as MLIR, and supported by advanced High-Level Synthesis (HLS) tools, it has become possible to practice an iterative design methodology that can in fact produce high-fidelity performant RTL representations of DNN models.
 
 Thus, this work investigates the techniques and tools currently available for deploying DNNs to FPGAs.
 Specifically, we deploy BraggNN to FPGA by performing a series of progressive \emph{lowerings} starting from a high-level representation (a PyTorch model) and culminating in synthesizable RTL (i.e., a representation that can be directly mapped to FPGA hardware).
-Our work includes a survey of existing general purpose tools aimed at performing such lowerings, as well as our own \commnt{not really novel}{novel} approach.
+Our work includes a survey of existing general purpose tools aimed at performing such lowerings, as well as our own novel approach.
 We show that under certain assumptions, our approach produces inference latencies lower than that of any of the existing tools, achieving a peak end-to-end latency of 3µs/333KHz.
 This latency represents a 200x improvement over the GPU implementation of BraggNN and only a 3x gap from the ultimate 1µs/1MHz latency target.
 

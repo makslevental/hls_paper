@@ -25,16 +25,17 @@ With respect to the kind of program analysis necessitated by our attempted trans
 The PyTorch organization, having recognized these issues (in the course and context of their own deployment projects), in recent years has implemented a Single Static Assignment (SSA) intermediate representation (IR), called TorchScript (TS) and concomitant tracing mechanism (colloquially referred to as the TS JIT compiler) to produce TS from conventionally defined PyTorch models.
 The exact operation of this tracing mechanism is beyond the scope of our work\footnote{\url{https://github.com/pytorch/pytorch/wiki/PyTorch-dispatcher-walkthrough}}, but two of its limitations, as they pertain to our work, merit discussion.
 Firstly, much like other JIT compilers, the TS JIT does not\footnote{In fact it does (\mintinline{mlir}{prim::If}, \mintinline{mlir}{prim::While}) but you have to write those yourself.} effectively support control flow in the DNN model specification.
-In reality, even if it did, we would still be incapable of supporting such dynamism since FPGAs do not (currently) \commnt{cite some FPGA reconfiguration paper}{support runtime reconfiguration}.
+In reality, even if it did, we would still be incapable of supporting such dynamism since FPGAs do not (currently) effectively support runtime reconfiguration\cite{reconfigfpga}.
 Secondly, TS IR does not always produce fully refined (i.e., shaped) tensor types.
-That is to say, tensor shapes, as they appear in the TS IR, are either absent or \commnt{cite or explain}{possess symbolic dimensions}; for much the same reason as in the case of control flow, our approach necessitates fully known tensor shapes, and for this we rely on explicit annotation.
+That is to say, tensor shapes, as they appear in the TS IR, are either absent or possess symbolic dimensions\cite{10.1145/3211346.3211348}; for much the same reason as in the case of control flow, our approach necessitates fully known tensor shapes, and for this we rely on explicit annotation.
 
 In general neither of these limitations is a serious impediment to deployment; \commnt{run the test}{only x/y models in the standard benchmark torchbench} exhibit either or both types of dynamism, and our target model, BraggNN, exhibits neither.
 \begin{figure*}
 	\includegraphics[width=\textwidth]{figures/BraggNN}
 	\caption{This is a placeholder.}
 \end{figure*}
-Lowering from PyTorch to TS IR allows us to perform many useful analyses and transformations on BraggNN that would be extremely difficult or impossible on the original representation; basic optimizations like dead code elimination and constant propagation are supported by TS's graph rewriting functions.
+Lowering from PyTorch to TS IR allows us to perform many useful analyses and transformations on BraggNN that would be extremely difficult or impossible on the original representation;
+basic optimizations like dead code elimination and constant propagation are supported by TS's graph rewriting functions.
 In addition, PyTorch also supports at least two kernel fusion\cite{10.1145/2688500.2688521} tools, proprietary (NNC fuser) and third party (nvfuser).
 Such transformations are critical for achieving peak performance on CPUs and hardware accelerators alike but for our purposes, deployment to application specific hardware, we require a broader collection of transformations.
 To this end, we turn to a recent addition to the compiler toolchain ecosystem.
@@ -53,40 +54,36 @@ We make extensive use of the linalg dialect as an intermediary between lower-lev
 The structured control flow dialect is a straightforward formalization of control flow primitives, such as conditionals and loops, so we do not discuss it in great detail.
 The affine dialect, on the other hand, provides a formalization of semantics that lend themselves to polyhedral compilation techniques\cite{polyhedral-mlir}, i.e., techniques that make dependence analysis and loop transformations efficient and reliable.
 
-\commnt{possibly this should go into a broken diagram/figure, each of the lowerings}{It's worth working through a small example at this point that intersects all of the levels of translation discussed so far.
-	Consider the familiar 2D convolution operation, ubiquitous in so called convolutional neural networks (CNNs), and comprising several of the layers in BraggNN.
-	A PyTorch representation of this operation is as straightforward} as
+It's worth working through the lowering of one of the convolutional layers comprising BraggNN.
+A PyTorch representation of this operation can be seen in Listing~\ref{lst:conv2dpy}, where \mintinline{python}{*_channel} parameters specify the multiplicity of the input and output feature maps, \mintinline{python}{kernel_size} refers to the characteristic dimension of the convolution filter/kernel, and \mintinline{python}{padding} refers to the amount of zero padding that should be added to the input.
 \begin{longlisting}
 	\inputminted{python}{sources/conv2d.py}
-	\caption[Long Code Example]{A long code example which will break across pages.}
-	\label{lst:long}
+	\caption{PyTorch representation of 2D convolution.}
+	\label{lst:conv2dpy}
 \end{longlisting}
-\noindent where \mintinline{python}{*_channel} parameters specify the multiplicity of the input and output feature maps, \mintinline{python}{kernel_size} refers to the characteristic dimension of the convolution filter/kernel, and \mintinline{python}{padding} refers to the amount of zero padding that should be added to the input.
 In terms of abstraction, it's important to note here that this is a completely declarative and abstract description of the operation, with neither specification nor constraint on how the data should be initialized or ordered in memory, nor the hardware that the computation should run on, nor whether some constituent computations could be (or should be) performed in parallel.
 
-The first rung down the ladder of abstraction is TorchScript IR:
+The first rung down the ladder of abstraction is TorchScript IR, as seen in Listing~\ref{lst:conv2dtorchscript}, where it's worth pointing out that the tensor corresponding to the weights of the convolution, namely~\mintinline{mlir}{%conv1.weight}, has a fully refined type (including data type, shape and striding) but neither the input tensor (\mintinline{mlir}{%x.1}) nor the output tensor (\mintinline{mlir}{%out.1}) do.
 \begin{longlisting}
 	\inputminted{mlir}{sources/conv2d.ts}
-	\caption[Long Code Example]{A long code example which will break across pages.}
-	\label{lst:long}
+	\caption{TorchScript representation of 2D convolution.}
+	\label{lst:conv2dtorchscript}
 \end{longlisting}
-where it's worth pointing out that the tensor corresponding to the weights of the convolution, namely \mintinline{mlir}{%conv1.weight}, has a fully refined type (including data type, shape and striding) but neither the input tensor (\mintinline{mlir}{%x.1}) nor the output tensor (\mintinline{mlir}{%out.1}) do.
 This implies that the types of those tensors are determined at runtime, while, as already mentioned, these dimensions are necessary for further lowering.
 Thus the input shape needs to be supplied by the user, while the output shape is in principle determined by the implementation of \mintinline{mlir}{aten::conv2d}.
-This is reflected in the next rung, the first representation of 2D convolution as MLIR:
+This is reflected in the next rung, the first representation of 2D convolution as MLIR, as visible in Listing~\ref{lst:conv2dtorchmlir}.
 \begin{longlisting}
 	\inputminted{mlir}{sources/conv2d.torch.mlir}
-	\caption[Long Code Example]{A long code example which will break across pages.}
-	\label{lst:long}
+	\caption{Torch dialect representation of 2D convolution.}
+	\label{lst:conv2dtorchmlir}
 \end{longlisting}
-Note that here we have all types for all values fully refined, as well as having their \commnt{footnote defining}{value semantics} emphasized by the \mintinline{mlir}{vtensor} type.
-Aside from type refinement, the Torch dialect performs complex operator decomposition and translation to basic operations, as evident in the lowering to the linalg dialect:
+Note that here we have all types for all values fully refined, as well as having their value semantics\footnote{Value-type semantics means for an object that only its value is significant, not its identity. This necessarily implies that copies are performed by value and mutation isn't permitted.} emphasized by the \mintinline{mlir}{vtensor} type.
+Aside from type refinement, the Torch dialect performs complex operator decomposition and translation to basic operations, as evident in the lowering to the linalg dialect (see Listing~\ref{lst:conv2dlinalg}), where we observe that \mintinline{mlir}{torch.aten.conv2d} is decomposed into output tensor declaration (\mintinline{mlir}{linalg.init_tensor}), output tensor initialization (\mintinline{mlir}{linalg.fill}) and finally actual convolution (\mintinline{mlir}{linalg.conv_2d_nchw_fchw}).
 \begin{longlisting}
 	\inputminted{mlir}{sources/conv2d.linalg.mlir}
-	\caption[Long Code Example]{A long code example which will break across pages.}
-	\label{lst:long}
+	\caption{linalg dialect representation of 2D convolution.}
+	\label{lst:conv2dlinalg}
 \end{longlisting}
-where we observe that \mintinline{mlir}{torch.aten.conv2d} is decomposed into output tensor declaration (\mintinline{mlir}{linalg.init_tensor}), output tensor initialization (\mintinline{mlir}{linalg.fill}) and finally actual convolution (\mintinline{mlir}{linalg.conv_2d_nchw_fchw}).
 For a more involved example of this decomposition see the \commnt{appendix softmax}{appendix}.
 One important thing to note at this level of abstraction is that the decomposition is as such in the service of preserving value semantics.
 While value semantics are important for various analyses, they are in themselves an artifact of abstraction: if we can guarantee no aliasing of \mintinline{mlir}{%arg0} occurs downstream of this convolution, then the \mintinline{mlir}{linalg.init_tensor} and \mintinline{mlir}{linalg.fill} are wasteful (of memory and clock cycles).
@@ -98,23 +95,23 @@ From the linalg representation there are two choices for the next level of abstr
 	\item Affine Loops (affine dialect);
 	\item Structured Control Flow Loops (scf dialect).
 \end{enumerate}
-Ultimately we will opt for only one of these (scf) but it's edifying to inspect both:
+Ultimately we will opt for only one of these (scf) but it's edifying to inspect both.
 \begin{longlisting}
 	\inputminted{mlir}{sources/conv2d.affine.mlir}
-	\caption[Long Code Example]{A long code example which will break across pages.}
-	\label{lst:long}
+	\caption{affine dialect representation of a 2D convolution.}
+	\label{lst:conv2daffine}
 \end{longlisting}
-Affine maps characterize the affine dialect.
-As already mentioned, this dialect is a precise formalization of polyhedral semantics; it's worth emphasizing that syntax such as \mintinline{mlir}{affine_map<(d0, d1) -> (d0 + d1)>} (which represents the projection $y = d0 + d1$) is structured and computable.
+As already mentioned, that the affine dialect is a precise formalization of polyhedral semantics.
+It's worth emphasizing that syntax such as \mintinline{mlir}{affine_map<(d0, d1) -> (d0 + d1)>} (an \emph{affine map}, which represents the projection $y = d0 + d1$) is structured and computable.
 That is to say, it has an object representation in memory during compilation that can be manipulated and queried.
-For example, this representation is employed in proving the existence or absence of data dependencies between iterations of adjacent loop nests (such as those above) as a prerequisite for loop fusion; this is implemented by constructing the set of constraints on loop indices and memory accesses (i.e., \mintinline{mlir}{%1[%arg1, %arg2, %arg3, %arg4]} and \mintinline{mlir}{%arg0[%arg1, %arg5, %3, %4]}) and computing the feasible region (using either Presburger Arithmetic\cite{10.1145/3485539} or Fourier--Motzkin elimination\cite{10.2307/2322281}).
+For example, this representation is employed in proving the existence or absence of data dependencies between iterations of adjacent loop nests (such as those in Listing~\ref{lst:conv2daffine}) as a prerequisite for loop fusion; this is implemented by constructing the set of constraints on loop indices and memory accesses (i.e., \mintinline{mlir}{%1[%arg1, %arg2, %arg3, %arg4]} and \mintinline{mlir}{%arg0[%arg1, %arg5, %3, %4]}) and computing the feasible region (using either Presburger Arithmetic\cite{10.1145/3485539} or Fourier--Motzkin elimination\cite{10.2307/2322281}).
 Note that this analysis abides a straightforward implementation exactly due to the explicit inclusion of the affine mapping between the loop iteration space and the memory accesses.
 \begin{longlisting}
 	\inputminted{mlir}{sources/conv2d.scf.mlir}
-	\caption[Long Code Example]{A long code example which will break across pages.}
-	\label{lst:long}
+	\caption{scf dialect representation of a 2D convolution.}
+	\label{lst:conv2dscf}
 \end{longlisting}
-The lowering to structured loops illustrates the kinds of insights available from lowering the level of abstraction of an arbitrary DNN operation; while it's certainly straightforward to infer from the mathematical \commnt{maybe write down the equation?}{definition of convolution} that it is "embarrassingly parallel" across dimensions \commnt{double check}{(\mintinline{mlir}{batch_size, output_channels, output_height, output_width}),} this property is manifestly obvious when considering the resulting loop nest; note that in the inner body of the second loop nest, the load and stores from/to the ultimate result of the convolution (\mintinline{mlir}{%2}) only depend on (\mintinline{mlir}{%arg1, %arg2, %arg3, %arg4}) and that the store follows the load.
+The lowering to structured loops in Listing~\ref{lst:conv2dscf} illustrates the kinds of insights available from lowering the level of abstraction of an arbitrary DNN operation; while it's certainly straightforward to infer from the mathematical \commnt{maybe write down the equation?}{definition of convolution} that it is "embarrassingly parallel" across dimensions \commnt{double check}{(\mintinline{mlir}{batch_size, output_channels, output_height, output_width}),} this property is manifestly obvious when considering the resulting loop nest; note that in the inner body of the second loop nest, the load and stores from/to the ultimate result of the convolution (\mintinline{mlir}{%2}) only depend on (\mintinline{mlir}{%arg1, %arg2, %arg3, %arg4}) and that the store follows the load.
 Thus, it becomes clear from just inspection that the inner loops (on \mintinline{mlir}{%arg5}, \mintinline{mlir}{%arg6}, \mintinline{mlir}{%arg7}) can be fully unrolled and that the resulting single loop can be parallelized across (\mintinline{mlir}{%c1} $\times$ \mintinline{mlir}{%c64} $\times$ \mintinline{mlir}{%c9} $\times$ \mintinline{mlir}{%c9}) workers.
 
 The next step in the lowering is LLVM IR, an IR that is, technically speaking, not an MLIR dialect, even though there does exist an LLVM dialect and we do lower to LLVM dialect as an intermediary between MLIR and LLVM.
@@ -133,34 +130,37 @@ Given a high-level representation, HLS fundamentally does three things in order 
 		      \item The completion time for each operation;
 		      \item The user's desired clock rate/frequency/cycle length.
 	      \end{itemize}
-	\item HLS associates high-level operations to particular RTL instantiations (called \emph{bindings}) for those operations; for example whether to associate an addition operation followed by a multiplication operation to two separate DSP instances, or whether to associate them both with a single DSP instance configured to compute fused-multiply-add;
+	\item HLS associates high-level operations to particular RTL instantiations (called \emph{bindings}) for those operations;
+	for example whether to associate an addition operation followed by a multiplication operation to two separate DSP instances, or whether to associate them both with a single DSP instance configured to compute fused-multiply-add;
 	\item HLS builds an FSM that cycles (transitions from state to state) through the sequence of operations in the schedule (and extracts its RTL representation).
 \end{enumerate}
-In general, the scheduling problem can be expressed as an integer programming problem\cite{tuprints9272}
+The scheduling problem can be expressed as an integer programming problem\cite{tuprints9272} (see Figure~\ref{fig:schedule}) whose solution in general, as all for all integer programming problems, is NP-Hard (NP-complete even).
 \begin{figure}[H]
 	\includegraphics[width=\columnwidth]{figures/schedule}
-	\caption{This is a placeholder.}
+	\caption{Scheduling problem for HLS.}
+	\label{fig:schedule}
 \end{figure}
-whose solution in general, as all for all integer programming problems, is NP-Hard (NP-complete even).
-For certain instances, the scheduling problem can be formulated as a system of difference constraints:
+For certain instances, the scheduling problem can be formulated as a system of difference constraints (see Figure~\ref{fig:sdc_constraints}).
 \begin{figure}[H]
 	\includegraphics[height=\columnwidth]{figures/sdc_constraints}
-	\caption{This is a placeholder.}
+	\caption{System of difference constraints formulation for the scheduling problem.}
+	\label{fig:sdc_constraints}
 \end{figure}
 \begin{figure}
 	\includegraphics[width=\columnwidth]{figures/sdc_graph}
 	\caption{This is a placeholder.}
+	\label{fig:sdc_graph}
 \end{figure}
 
-Such a formulation induces a unimodular matrix representation of the constraint system
+Such a formulation induces a unimodular matrix representation of the constraint system (see Figure~\ref{fig:unimodular}) which is amenable to Bellman-Ford $O(n^2 + mn)$\commnt{this is phrased poorly - unimodular guarantees you integral solutions to the LP but also gives you the shortest path analogy property}{ for checking consistency of a solution (essentially the shortest path problem) }and an LP approach for optimizing the critical path\cite{1688836}.
 \begin{figure}
 	\includegraphics[width=\columnwidth]{figures/unimodular}
 	\caption{This is a placeholder.}
+	\label{fig:unimodular}
 \end{figure}
-which is amenable to Bellman-Ford $O(n^2 + mn)$\commnt{this is phrased poorly - unimodular guarantees you integral solutions to the LP but also gives you the shortest path analogy property}{ for checking consistency of a solution (essentially the shortest path problem) }and an LP approach for optimizing the critical path\cite{1688836}.
 
 In addition to fulfilling these three fundamental tasks, High-level synthesis tools such as Vitis, Bambu\cite{ferrandi2021bambu}, LegUp\cite{10.1145/2514740} perform standard compiler optimization passes on the IR (that they either receive or produce internally).
-Optimization passes such as \commnt{maybe define these? maybe not since i\'ll discuss them in the methodology section}{store-load forwarding, common subexpression elimination, and constant propagation}.
+Optimization passes such as store-load forwarding, common subexpression elimination, and constant propagation.
 Loop-unrolling and tiling are also performed at the behest of the user.
 Ostensibly, after running the LLVM IR corresponding to BraggNN through e.g. Vitis, we should have a RTL description of a digital design that implements the functionality of BraggNN, including control flow, floating point operations (potentially, by way of DSPs), and memory I/O.
 At this level of abstraction, there remain two more steps prior to being able to actually deploy to an FPGA; one of them being a final lowering, so called logic synthesis, and the other being Place and Route (PnR).
