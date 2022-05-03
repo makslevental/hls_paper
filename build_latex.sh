@@ -1,2 +1,7 @@
-pdflatex -shell-escape --output-dir=latex_output -aux-directory=latex_output main.tex
-pdflatex -shell-escape --output-dir=latex_output -aux-directory=latex_output main.tex
+set -e
+
+pdflatex -shell-escape main.tex
+pdflatex -shell-escape main.tex
+bibtex main
+pdflatex -shell-escape main.tex
+

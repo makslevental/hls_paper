@@ -1,10 +1,10 @@
-Certain areas of science perform experiments that achieve extremely high data rates; well known examples in high-energy physics are the CMS and ATLAS experiments at the LHC, which observe new collision events every 25ns and must report detection \commnt{\url{https://indico.cern.ch/event/395374/contributions/939905/attachments/1185975/1719379/20151113_RealTimeAnalysisLHC-4.pdf}}{of interesting events at upto 1MHz} (LHCb).
-\commnt{more examples}{Similarly, }X-ray crystallography employs high-energy diffraction microscopy techniques, which can sample \commnt{\url{https://aip.scitation.org/doi/10.1063/5.0006531}}{at up to 1MHz}.
+Certain areas of science perform experiments that achieve extremely high data rates; well known examples in high-energy physics are the CMS and ATLAS experiments at the LHC, which observe new collision events every 25ns and must report detection of interesting events at upto 1MHz\cite{pmlr-v42-glig14} (LHCb).
+\commnt{more examples}{Similarly, }X-ray crystallography employs high-energy diffraction microscopy techniques, which can sample at up to 1MHz\cite{doi:10.1063/5.0006531}.
 Such high data rate experiments face the challenge of either processing the data in-situ (colocal with the scientific apparatus) or buffering/caching for later retrieval and post-processing.
-Case in point, if CMS and ATLAS were to capture all collision events, they would produce approximately 40 terabytes of data \commnt{\url{https://www.sciencedirect.com/science/article/pii/S2352711020303320}}{each second}.
+Case in point, if CMS and ATLAS were to capture all collision events, they would produce approximately 40 terabytes of data each second\cite{BORK2021100619}.
 Thus, any improvement in the real-time, near-sensor, processing capabilities, for operations such as filtering and triggering, of such experiment infrastructure can dramatically reduce the burden on downstream infrastructure and compute, in addition to accelerating the pace of experiment design and scientific discovery.
 
-Deep Neural Networks, effective in many other academic and commercial domains, have recently been considered for \commnt{cite the physical review letters paper from hls4ml}{these real-time scientific use cases}.
+Deep Neural Networks, effective in many other academic and commercial domains, have recently been considered for these real-time scientific use cases\cite{Guest:2018yhq}.
 For example, BraggNN, a DNN aimed at identifying Bragg diffraction peaks with high precision, has been shown to make peak position determinations with high accuracy.
 Still, as of yet DNN models have not seen wide adoption in this area.
 This is due to the limitations imposed by the hardware platforms on which they can typically be deployed - GPUs and other such DNN accelerators.
@@ -14,7 +14,7 @@ In addition, the current implementation of BraggNN, deployed to either a datacen
 
 Application Specific Integrated Circuits (ASIC) and Field Programmable Gate Arrays (FPGA) are alternative potential deployment targets for the kinds of processing techniques necessary for low latency scientific use cases.
 To wit: the LHC currently uses a combination of ASICs and FPGAs for their Level-1 filtering system, which must process each sample within 25ns and make its decision (regarding filtering) within approximately 10 µs, the time represented by the amount of available buffering.
-But ASICs and FPGAs are not a \commnt{haha.}{free lunch}.
+But ASICs and FPGAs are not a free lunch.
 ASICs, while offering the absolute lowest possible latency, in the smallest possible package, incur extremely high development costs, due to the complexity of the digital design process and the overall costs of fabrication.
 FPGAs, present an intermediate along dimensions of cost, latency, and development complexity; at the cost of 20x larger area consumption, \commnt{how to cite that epfl page? find this stat in one of their papers?}{4x longer latency, and 12x higher power consumption} (relative to ASICs), they come with the added benefit, in the context of DNNs, of reconfigurability.
 That is to say, a DNN deployed to an FPGA can be redeployed, reconfigured, and reparameterized an arbitrary number of times, whereas an ASIC is for all intents and purposes \commnt{overused already here but yea frozen isn\'t a good word}{frozen}.
