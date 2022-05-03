@@ -59,18 +59,3 @@
 
 
 
-\newif\iffinal
-\finalfalse
-
-
-\iffinal
-	\newcommand{\maxx}[1]{}
-	\newcommand{\ryan}[1]{}
-	\newcommand{\todo}[1]{}
-	\newcommand{\commnt}[2]{#2}
-\else
-	\newcommand{\maxx}[1]{{\textcolor{red}{ Max: #1 }}}
-	\newcommand{\ryan}[1]{{\textcolor{magenta}{ Ryan: #1 }}}
-	\newcommand{\todo}[1]{{\textcolor{red}{ TODO: #1 }}}
-	\newcommand{\commnt}[2]{{{\color{green} \{#1\}} {\color{blue} #2}}}
-\fi

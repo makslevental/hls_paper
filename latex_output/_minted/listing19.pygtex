@@ -1,3 +1,0 @@
-\begin{Verbatim}[commandchars=\\\{\}]
-\PYG{k}{linalg}\PYG{p}{.}\PYG{k}{conv\PYGZus{}2d\PYGZus{}nchw\PYGZus{}fchw}
-\end{Verbatim}
