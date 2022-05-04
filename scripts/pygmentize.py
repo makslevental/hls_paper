@@ -63,7 +63,7 @@ class MLIRLexer(RegexLexer):
                 'device', 'cpu', 'conv2d', 'torch', 'vtensor', 'ListConstruct',
                 'affine', 'copy', 'literal', 'linalg', 'cmpi', 'fill', 'ins', 'outs', 'init_tensor',
                 'dilations', 'conv_2d_nchw_fchw', 'affine_map', 'map', 'apply', 'constant', 'none',
-                'eq', 'load', 'store', 'list', 'return', 'to', 'alloca', 'global', 'true', 'int'
+                'eq', 'load', 'store', 'list', 'return', 'to', 'alloca', 'global', 'true', 'int', 'llvm', 'fmuladd'
             ),
                 suffix=r'\b'), Keyword),
 

@@ -1,4 +1,8 @@
 \subsection{BraggNN}\label{subsec:braggnn}
+
+TODO: stuff about BraggNN
+
+\subsection{Translating DNNs}\label{subsec:translatingdnns}
 Our design methodology for BraggNN winds its way through several levels of abstraction and tooling:
 
 \begin{enumerate}
@@ -11,7 +15,7 @@ Our design methodology for BraggNN winds its way through several levels of abstr
 
 We quickly review the relevant concepts of each level of abstraction.
 
-\subsection{PyTorch/TorchScript}\label{subsec:pytorch}
+\subsubsection{PyTorch/TorchScript}\label{subsec:pytorch}
 
 Typically DNN models are represented in terms of high-level frameworks implemented within general purpose programming languages.
 Such frameworks are widely used because of their ease of use and large library of example implementations of various DNN model architectures.
@@ -40,7 +44,7 @@ In addition, PyTorch also supports at least two kernel fusion\cite{10.1145/26885
 Such transformations are critical for achieving peak performance on CPUs and hardware accelerators alike but for our purposes, deployment to application specific hardware, we require a broader collection of transformations.
 To this end, we turn to a recent addition to the compiler toolchain ecosystem.
 
-\subsection{MLIR}\label{subsec:mlir}
+\subsubsection{MLIR}\label{subsec:mlir}
 
 Multi-level Intermediate Representation\cite{https://doi.org/10.48550/arxiv.2002.11054} (MLIR) is a new approach to building reusable and extensible compiler infrastructure.
 MLIR is composed of a set of \emph{dialect} IRs, subsets of which are fully mutually compatible outright or by way of translation/legalization.
@@ -119,7 +123,7 @@ The purpose of further lowering to LLVM IR is to produce a representation of Bra
 In particular, Xilinx's Vitis HLS, based on the Autopilot project\cite{Zhang2008}, recently enabled passing LLVM IR to the tool, rather than C/C++.
 We Briefly discuss the role of HLS in the translation process.
 
-\subsection{High-Level Synthesis and Down}\label{subsec:hlsdown}
+\subsubsection{High-Level Synthesis and Down}\label{subsec:hlsdown}
 
 High-level synthesis tools produce RTL descriptions of digital designs from high-level representations, such as C or C++\cite{10.1145/2514740, ferrandi2021bambu}, or in the case of Vitis HLS, LLVM IR.
 Given a high-level representation, HLS fundamentally does three things in order to produce a corresponding RTL design:
@@ -134,30 +138,30 @@ Given a high-level representation, HLS fundamentally does three things in order 
 	for example whether to associate an addition operation followed by a multiplication operation to two separate DSP instances, or whether to associate them both with a single DSP instance configured to compute fused-multiply-add;
 	\item HLS builds an FSM that cycles (transitions from state to state) through the sequence of operations in the schedule (and extracts its RTL representation).
 \end{enumerate}
-The scheduling problem can be expressed as an integer programming problem\cite{tuprints9272} (see Figure~\ref{fig:schedule}) whose solution in general, as all for all integer programming problems, is NP-Hard (NP-complete even).
-\begin{figure}[H]
-	\includegraphics[width=\columnwidth]{figures/schedule}
-	\caption{Scheduling problem for HLS.}
-	\label{fig:schedule}
-\end{figure}
-For certain instances, the scheduling problem can be formulated as a system of difference constraints (see Figure~\ref{fig:sdc_constraints}).
-\begin{figure}[H]
-	\includegraphics[height=\columnwidth]{figures/sdc_constraints}
-	\caption{System of difference constraints formulation for the scheduling problem.}
-	\label{fig:sdc_constraints}
-\end{figure}
-\begin{figure}
-	\includegraphics[width=\columnwidth]{figures/sdc_graph}
-	\caption{This is a placeholder.}
-	\label{fig:sdc_graph}
-\end{figure}
+The scheduling problem can be expressed as an integer programming problem\cite{tuprints9272} whose solution in general, as all for all integer programming problems, is NP-Hard (NP-complete even).
+%\begin{figure}[H]
+%	\includegraphics[width=\columnwidth]{figures/schedule}
+%	\caption{Scheduling problem for HLS.}
+%	\label{fig:schedule}
+%\end{figure}
+For certain instances, the scheduling problem can be formulated as a system of difference constraints.
+%\begin{figure}[H]
+%	\includegraphics[height=\columnwidth]{figures/sdc_constraints}
+%	\caption{System of difference constraints formulation for the scheduling problem.}
+%	\label{fig:sdc_constraints}
+%\end{figure}
+%\begin{figure}
+%	\includegraphics[width=\columnwidth]{figures/sdc_graph}
+%	\caption{This is a placeholder.}
+%	\label{fig:sdc_graph}
+%\end{figure}
 
-Such a formulation induces a unimodular matrix representation of the constraint system (see Figure~\ref{fig:unimodular}) which is amenable to Bellman-Ford $O(n^2 + mn)$\commnt{this is phrased poorly - unimodular guarantees you integral solutions to the LP but also gives you the shortest path analogy property}{ for checking consistency of a solution (essentially the shortest path problem) }and an LP approach for optimizing the critical path\cite{1688836}.
-\begin{figure}
-	\includegraphics[width=\columnwidth]{figures/unimodular}
-	\caption{This is a placeholder.}
-	\label{fig:unimodular}
-\end{figure}
+Such a formulation induces a unimodular matrix representation of the constraint system which is amenable to Bellman-Ford $O(n^2 + mn)$\commnt{this is phrased poorly - unimodular guarantees you integral solutions to the LP but also gives you the shortest path analogy property}{ for checking consistency of a solution (essentially the shortest path problem) }and an LP approach for optimizing the critical path\cite{1688836}.
+%\begin{figure}
+%	\includegraphics[width=\columnwidth]{figures/unimodular}
+%	\caption{This is a placeholder.}
+%	\label{fig:unimodular}
+%\end{figure}
 
 In addition to fulfilling these three fundamental tasks, High-level synthesis tools such as Vitis, Bambu\cite{ferrandi2021bambu}, LegUp\cite{10.1145/2514740} perform standard compiler optimization passes on the IR (that they either receive or produce internally).
 Optimization passes such as store-load forwarding, common subexpression elimination, and constant propagation.
@@ -173,9 +177,9 @@ For example,
 	\caption[Long Code Example]{A long code example which will break across pages.}
 	\label{lst:long}
 \end{longlisting}
-\noindent corresponds to a state of an FSM during which the registers \mintinline{verilog}{notlhs17_reg_1608}, \mintinline{verilog}{notrhs18_reg_1613}, \mintinline{verilog}{tmp_8_reg_1618} are updated with new values from wires (\mintinline{verilog}{notlhs17_fu_1076_p2}, \mintinline{verilog}{notrhs18_fu_1082_p2}, \mintinline{verilog}{grp_fu_646_p2}).
+\noindent corresponds to a state of an FSM during which the registers \mintinline{verilog}{reg_1608}, \mintinline{verilog}{reg_1613}, \mintinline{verilog}{reg_1618} are updated with new values from wires (\mintinline{verilog}{fu_1076_p2}, \mintinline{verilog}{notrhs18_fu_1082_p2}, \mintinline{verilog}{fu_646_p2}).
 Assuming these registers are updated in other states from differing wires, this logic will synthesize to muxs and possibly mux trees (depending on how many different input wires feed these same registers).
-Such muxs (and mux trees) are actually implemented using LUTs (more on this in the methodology section).
+Such muxs (and mux trees) are actually implemented using LUTs (more on this in Section~\ref{subsec:parallel-toposort-scheduling}).
 Another example is the implementation of floating point units in terms of DSPs; depending on user parameters and/or design analysis, DSP resource consumption for floating point multiplication and addition can different greatly (more on this in the methodology section).
 
 Finally, after the netlist has been produced, the entire design undergoes PnR.

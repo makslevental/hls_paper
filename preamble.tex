@@ -1,11 +1,21 @@
 \usepackage[utf8]{inputenc}
 \usepackage{url}
 \usepackage{color,fancyvrb}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{mathtools}
+
  \usepackage[frozencache,cachedir=minted]{minted}
 % \usepackage[finalizecache,cachedir=minted]{minted}
 %\usepackage[cachedir=_minted,outputdir=latex_output]{minted}
 %\usepackage[cachedir=minted]{minted}
 \renewcommand{\MintedPygmentize}{./scripts/pygmentize.py}
+\newlength{\mintednumbersep}
+\AtBeginDocument{%
+  \sbox0{\tiny00}%
+  \setlength\mintednumbersep{\parindent}%
+  \addtolength\mintednumbersep{-\wd0}%
+}
 
 \newenvironment{longlisting}{\captionsetup{type=listing}}{}
 %\usepackage[skip=2pt]{caption} % example skip set to 2pt

@@ -7,8 +7,11 @@ EXTRA_ARGS=-shell-escape
 
 all: clean build clear
 
+
+draft:
+	$(LATEX) $(EXTRA_ARGS) $(MAIN).tex
+
 build:
-	@echo $(EXTRA_ARGS)
 	$(LATEX) $(EXTRA_ARGS) $(MAIN).tex
 	$(BIBTEX) $(MAIN)
 	$(LATEX) $(EXTRA_ARGS) $(MAIN).tex
@@ -22,7 +25,7 @@ clear:
 	@rm -f $(MAIN).{ps,log,lot,lof,toc,out,dvi,bbl,blg} *.aux
 	@echo Cleared all temporary files
 
-draft:
-	@cp $(MAIN).pdf $(MAIN)-draft-$(DTM).pdf
-	@echo Saved the draft as: $(MAIN)-draft-$(DTM).pdf
+#draft:
+#	@cp $(MAIN).pdf $(MAIN)-draft-$(DTM).pdf
+#	@echo Saved the draft as: $(MAIN)-draft-$(DTM).pdf
 
