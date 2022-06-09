@@ -25,7 +25,7 @@
 
 \begin{document}
 
-\title{A Framework for Counting Archived Frogs}
+\title{BraggHLS}
 
 
 \author{Maksim Levental, Arham, Kaz, Ryan "the champ", Kyle, and Ian Foster}
@@ -44,12 +44,13 @@
 
 \begin{abstract}
 	In many experiment-driven scientific domains, such as high-energy physics and X-ray crystallography, high sample rates necessitate low latency near-sensor data processing.
+	%\ian{Next text seems to me to be unnecessarily complicated. Maybe the logic can be: 1) ``Deep neural network (DNN) methods can enable efficient implementations of key data processing tasks; }
 	Thanks to a recent profusion in high-level frameworks, and example models, Deep Neural Network (DNN) models have been investigated for such use cases.
 	Despite such investigations, few DNNs have been deployed in practice, owing to the inability of deployment targets (hardware accelerators) to meet hard latency and collocation constraints.
 	Here we present a case-study of translating/deploying a particular X-ray crystallography DNN model to an alternative platform, namely Field Programmable Gate Arrays.
 	We discuss some of the currently available workflows, toolchains, and their advantages and disadvantages.
 	Further we discuss an application specific design methodology (specific to this model) to general purpose tools.
-	Our approach achieves lower latency than any of the alternatives at the cost of generalizability, achieving 3µs/333KHz.
+	Our approach achieves lower latency than any of the alternatives at the cost of generalizability, achieving \commnt{TBD}{3µs/333KHz}.
 	Finally, we discuss extensions to our methodology that would enable generalization without any sacrifice in performance.
 \end{abstract}
 
