@@ -5,10 +5,11 @@
 \usepackage{algpseudocode}
 \usepackage{mathtools}
 
- \usepackage[frozencache,cachedir=minted]{minted}
+\usepackage[frozencache,cachedir=minted]{minted}
 % \usepackage[finalizecache,cachedir=minted]{minted}
 %\usepackage[cachedir=_minted,outputdir=latex_output]{minted}
-%\usepackage[cachedir=minted]{minted}
+% \usepackage[cachedir=minted]{minted}
+% \usepackage{minted}
 \renewcommand{\MintedPygmentize}{./scripts/pygmentize.py}
 \newlength{\mintednumbersep}
 \AtBeginDocument{%
@@ -68,4 +69,9 @@
 \makeatother
 
 
+\newcommand{\inlinemlir}[1]{\mintinline{mlir}{#1}}
+\newcommand{\inlinepython}[1]{\mintinline{python}{#1}}
+\newcommand{\inlinev}[1]{\mintinline{verilog}{#1}}
 
+\usepackage{xcolor}
+\newcommand\crule[3][black]{\textcolor{#1}{\rule{#2}{#3}}}

@@ -1,0 +1,59 @@
+It's worth working through the lowering of one of the convolutional layers comprising BraggNN.
+A PyTorch representation of this operation can be seen in Listing~\ref{lst:conv2dpy}, where \inlinepython{*_channel} parameters specify the multiplicity of the input and output feature maps, \inlinepython{kernel_size} refers to the characteristic dimension of the convolution filter/kernel, and \inlinepython{padding} refers to the amount of zero padding that should be added to the input.
+\begin{longlisting}
+	\inputminted{python}{sources/conv2d.py}
+	\caption{PyTorch representation of 2D convolution.}
+	\label{lst:conv2dpy}
+\end{longlisting}
+In terms of abstraction, it's important to note here that this is a completely declarative and abstract description of the operation, with neither specification nor constraint on how the data should be initialized or ordered in memory, nor the hardware that the computation should run on, nor whether some constituent computations could be (or should be) performed in parallel.
+
+The first rung down the ladder of abstraction is TorchScript IR, as seen in Listing~\ref{lst:conv2dtorchscript}, where it's worth pointing out that the tensor corresponding to the weights of the convolution, namely~\mintinline{mlir}{%conv1.weight}, has a fully refined type (including data type, shape and striding) but neither the input tensor (\mintinline{mlir}{%x.1}) nor the output tensor (\mintinline{mlir}{%out.1}) do.
+\begin{longlisting}
+	\inputminted{mlir}{sources/conv2d.ts}
+	\caption{TorchScript representation of 2D convolution.}
+	\label{lst:conv2dtorchscript}
+\end{longlisting}
+This implies that the types of those tensors are determined at runtime, while, as already mentioned, these dimensions are necessary for further lowering.
+Thus the input shape needs to be supplied by the user, while the output shape is in principle determined by the implementation of \inlinemlir{aten::conv2d}.
+This is reflected in the next rung, the first representation of 2D convolution as MLIR, as visible in Listing~\ref{lst:conv2dtorchmlir}.
+\begin{longlisting}
+	\inputminted{mlir}{sources/conv2d.torch.mlir}
+	\caption{Torch dialect representation of 2D convolution.}
+	\label{lst:conv2dtorchmlir}
+\end{longlisting}
+Note that here we have all types for all values fully refined, as well as having their value semantics\footnote{Value-type semantics means for an object that only its value is significant, not its identity. This necessarily implies that copies are performed by value and mutation isn't permitted.} emphasized by the \inlinemlir{vtensor} type.
+Aside from type refinement, the Torch dialect performs complex operator decomposition and translation to basic operations, as evident in the lowering to the linalg dialect (see Listing~\ref{lst:conv2dlinalg}), where we observe that \inlinemlir{torch.aten.conv2d} is decomposed into output tensor declaration (\inlinemlir{linalg.init_tensor}), output tensor initialization (\inlinemlir{linalg.fill}) and finally actual convolution (\inlinemlir{linalg.conv_2d_nchw_fchw}).
+\begin{longlisting}
+	\inputminted{mlir}{sources/conv2d.linalg.mlir}
+	\caption{linalg dialect representation of 2D convolution.}
+	\label{lst:conv2dlinalg}
+\end{longlisting}
+One important thing to note at this level of abstraction is that the decomposition is as such in the service of preserving value semantics.
+While value semantics are important for various analyses, they are in themselves an artifact of abstraction: if we can guarantee no aliasing of \mintinline{mlir}{%arg0} occurs downstream of this convolution, then the \inlinemlir{linalg.init_tensor} and \inlinemlir{linalg.fill} are wasteful (of memory and clock cycles).
+More on this in the methodology section.
+Note that here we also clearly see, for the first time, the sense in which MLIR is a family of mutually compatible dialects; \inlinemlir{arith.constant} operations are part of the arith dialect, which is mutually compatible with most dialects in MLIR.
+
+From the linalg representation there are two choices for the next level of abstraction:
+\begin{enumerate}
+	\item Affine Loops (affine dialect);
+	\item Structured Control Flow Loops (scf dialect).
+\end{enumerate}
+Ultimately we will opt for only one of these (scf) but it's edifying to inspect both.
+\begin{longlisting}
+	\inputminted{mlir}{sources/conv2d.affine.mlir}
+	\caption{affine dialect representation of a 2D convolution.}
+	\label{lst:conv2daffine}
+\end{longlisting}
+As already mentioned, that the affine dialect is a precise formalization of polyhedral semantics.
+It's worth emphasizing that syntax such as \inlinemlir{affine_map<(d0, d1) -> (d0 + d1)>} (an \emph{affine map}, which represents the projection $y = d0 + d1$) is structured and computable.
+That is to say, it has an object representation in memory during compilation that can be manipulated and queried.
+For example, this representation is employed in proving the existence or absence of data dependencies between iterations of adjacent loop nests (such as those in Listing~\ref{lst:conv2daffine}) as a prerequisite for loop fusion; this is implemented by constructing the set of constraints on loop indices and memory accesses (i.e., \mintinline{mlir}{%1[%arg1, %arg2, %arg3, %arg4]} and \mintinline{mlir}{%arg0[%arg1, %arg5, %3, %4]}) and computing the feasible region (using either Presburger Arithmetic~\cite{10.1145/3485539} or Fourier--Motzkin elimination~\cite{10.2307/2322281}).
+Note that this analysis abides a straightforward implementation exactly due to the explicit inclusion of the affine mapping between the loop iteration space and the memory accesses.
+\begin{longlisting}
+	\inputminted{mlir}{sources/conv2d.scf.mlir}
+	\caption{scf dialect representation of a 2D convolution.}
+	\label{lst:conv2dscf}
+\end{longlisting}
+
+The lowering to structured loops in Listing~\ref{lst:conv2dscf} illustrates the kinds of insights available from lowering the level of abstraction of an arbitrary DNN operation; while it's certainly straightforward to infer from the mathematical \commnt{maybe write down the equation?}{definition of convolution} that it is "embarrassingly parallel" across dimensions \commnt{double check}{(\mintinline{mlir}{batch_size, output_channels, output_height, output_width}),} this property is manifestly obvious when considering the resulting loop nest; note that in the inner body of the second loop nest, the load and stores from/to the ultimate result of the convolution (\mintinline{mlir}{%2}) only depend on (\mintinline{mlir}{%arg1, %arg2, %arg3, %arg4}) and that the store follows the load.
+Thus, it becomes clear from just inspection that the inner loops (on \mintinline{mlir}{%arg5}, \mintinline{mlir}{%arg6}, \mintinline{mlir}{%arg7}) can be fully unrolled and that the resulting single loop can be parallelized across (\mintinline{mlir}{%c1} $\times$ \mintinline{mlir}{%c64} $\times$ \mintinline{mlir}{%c9} $\times$ \mintinline{mlir}{%c9}) workers.
