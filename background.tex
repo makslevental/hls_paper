@@ -68,7 +68,7 @@ High-level synthesis tools produce RTL descriptions of digital designs from high
 In particular, Xilinx's Vitis HLS, based on the Autopilot project~\cite{Zhang2008}, recently enabled passing LLVM IR to the tool, rather than C/C++.
 Given a high-level, procedural, representation, HLS performs performs three functions, in order to produce a corresponding RTL design:
 \begin{enumerate}
-	\item HLS schedules operations (such as \mintinline{mlir}{fmult}, \mintinline{mlir}{fadd}, \mintinline{mlir}{load}, \mintinline{mlir}{store}) in order to determine which such operations should occur during each clock-cycle. A schedule depends on three parameters:
+	\item HLS schedules operations (such as \inlinemlir{fmul}, \inlinemlir{fadd}, \inlinemlir{load}, \inlinemlir{store}) in order to determine which such operations should occur during each clock-cycle. A schedule depends on three parameters:
 	      \begin{itemize}
 		      \item The topological ordering of the DFG/CFG of the procedural representation (i.e., the dependencies of operations on results of other operations and resources);
 		      \item The completion time for each operation;
@@ -82,7 +82,7 @@ In addition to fulfilling these three fundamental tasks, high-level synthesis to
 Optimization passes such as store-load forwarding, common subexpression elimination, and constant propagation.
 Loop-unrolling and tiling are also performed at the behest of the user.
 Note that the scheduling problem solved by HLS is reducible an integer programming problem~\cite{tuprints9272}, instance of which are generally NP-hard.
-For certain instances, the scheduling problem can be reformulated as a system of difference constraints.
+For certain instances, the scheduling problem can be reformulated as a system of difference constraints (SDC).
 Such a formulation induces a unimodular matrix representation of the constraint system which is amenable to Bellman-Ford $O(n^2 + mn)$\commnt{this is phrased poorly - unimodular guarantees you integral solutions to the LP but also gives you the shortest path analogy property}{ for checking consistency of a solution (essentially the shortest path problem) }and an LP approach for optimizing the critical path~\cite{1688836}.
 Thus, ostensibly, HLS tools solve computationally intensive problems in order to produce a RTL description of a high-level representation of a DNN.
 At the RTL level of abstraction, there remain two more steps prior to being able to actually deploy to an FPGA; one of them being a final lowering, so called logic synthesis, and the other being Place and Route (PnR).

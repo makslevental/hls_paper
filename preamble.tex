@@ -7,8 +7,6 @@
 
 \usepackage[frozencache,cachedir=minted]{minted}
 % \usepackage[finalizecache,cachedir=minted]{minted}
-%\usepackage[cachedir=_minted,outputdir=latex_output]{minted}
-% \usepackage[cachedir=minted]{minted}
 % \usepackage{minted}
 \renewcommand{\MintedPygmentize}{./scripts/pygmentize.py}
 \newlength{\mintednumbersep}
@@ -31,7 +29,8 @@
 	fontsize=\footnotesize,
 	encoding=utf8,
 	frame=lines,
-	fontfamily=zi4
+	fontfamily=zi4,
+	highlightcolor=green
 }
 \usepackage{etoolbox,xpatch}
 
@@ -75,5 +74,5 @@
 \newcommand{\inlinepython}[1]{\mintinline{python}{#1}}
 \newcommand{\inlinev}[1]{\mintinline{verilog}{#1}}
 
-\usepackage{xcolor}
-\newcommand\crule[3][black]{\textcolor{#1}{\rule{#2}{#3}}}
+\usepackage{soul}
+\sethlcolor{green}

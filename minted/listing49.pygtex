@@ -1,3 +1,3 @@
 \begin{Verbatim}[commandchars=\\\{\}]
-\PYG{n+nv}{\PYGZpc{}arg0}\PYG{p}{[}\PYG{n+nv}{\PYGZpc{}arg1}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nv}{\PYGZpc{}arg5}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nv+nvAnonymous}{\PYGZpc{}3}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nv+nvAnonymous}{\PYGZpc{}4}\PYG{p}{]}
+\PYG{k}{linalg}\PYG{p}{.}\PYG{k}{init\PYGZus{}tensor}
 \end{Verbatim}
