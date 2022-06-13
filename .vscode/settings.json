@@ -31,5 +31,7 @@
                 "%DOCFILE%"
             ]
         }
-    ]
+    ],
+    "editor.wordWrap": "on",
+    "latex-workshop.latex.autoBuild.interval": 500
 }

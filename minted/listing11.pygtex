@@ -1,9 +1,3 @@
 \begin{Verbatim}[commandchars=\\\{\}]
-\PYG{k}{always}\PYG{+w}{ }\PYG{p}{@}\PYG{+w}{ }\PYG{p}{(}\PYG{k}{posedge}\PYG{+w}{ }\PYG{n}{ap\PYGZus{}clk}\PYG{p}{)}\PYG{+w}{ }\PYG{k}{begin}
-\PYG{+w}{  }\PYG{k}{if}\PYG{+w}{ }\PYG{p}{((}\PYG{l+m+mh}{1}\PYG{l+m+mb}{\PYGZsq{}b1}\PYG{+w}{ }\PYG{o}{==}\PYG{+w}{ }\PYG{n}{ap\PYGZus{}CS\PYGZus{}fsm\PYGZus{}state209}\PYG{p}{))}\PYG{+w}{ }\PYG{k}{begin}
-\PYG{+w}{    }\PYG{n}{reg\PYGZus{}1608}\PYG{+w}{ }\PYG{o}{\PYGZlt{}=}\PYG{+w}{ }\PYG{n}{fu\PYGZus{}1076\PYGZus{}p2}\PYG{p}{;}
-\PYG{+w}{    }\PYG{n}{reg\PYGZus{}1613}\PYG{+w}{ }\PYG{o}{\PYGZlt{}=}\PYG{+w}{ }\PYG{n}{fu\PYGZus{}1082\PYGZus{}p2}\PYG{p}{;}
-\PYG{+w}{    }\PYG{n}{reg\PYGZus{}1618}\PYG{+w}{ }\PYG{o}{\PYGZlt{}=}\PYG{+w}{ }\PYG{n}{fu\PYGZus{}646\PYGZus{}p2}\PYG{p}{;}
-\PYG{+w}{  }\PYG{k}{end}
-\PYG{k}{end}
+\PYG{k}{linalg}
 \end{Verbatim}

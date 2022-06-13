@@ -122,8 +122,8 @@ In our experiments (and prior work~\cite{10.1007/978-0-387-72258-0_14}) this app
 Finally, we experiment with alternative bitwidth implementations of IEEE754 floating point.
 With respect to the BraggNN training, we observe that the sample data does not use a full 8 bit exponent (see Figure~\ref{fig:numexp}).
 \begin{figure}
-	\includegraphics[width=\columnwidth]{figures/exp_bits}
-	\caption{Range of exponent values for BraggNN training data.}\label{fig:numexp}
+	\includegraphics[width=\columnwidth]{figures/exp_hist}
+	\caption{Range of exponent values for BraggNN weights.}\label{fig:numexp}
 \end{figure}
 With this in mind, we deploy BraggNN using half precision floats, i.e., using 5 bits to represent the exponent and 11 bits to represent the mantissa.
 This produces floating point arithmetic cores that use fewer registers, LUTs, and having smaller wire delays, again leading to a reduction in overall complexity and end to end latency.
