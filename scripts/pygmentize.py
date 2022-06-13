@@ -40,14 +40,14 @@ class MLIRLexer(RegexLexer):
             (r'#\d+', Name.Variable.Global),
             (r'#[a-z]+', Name.Variable.Global),
             (r'c?' + string, String),
-            (r'(::|->)', Operator.Word),
+            # (r'(:|::|->)', Operator.Word),
             (r'prim', Keyword),
             (r'aten', Keyword),
 
             (r'0[xX][a-fA-F0-9]+', Number),
             (r'-?\d+(?:[.]\d+)?(?:[eE][-+]?\d+(?:[.]\d+)?)?', Number),
 
-            (r'[:=<>{}\[\]()*.,#]|x\b', Punctuation),
+            (r'[=<>{}\[\]()*.,#]|x\b', Punctuation),
             (r'\([^)>]*\)\s*->\s*\([^)>]*\)', Operator.Word),
         ],
         'whitespace': [
@@ -57,19 +57,19 @@ class MLIRLexer(RegexLexer):
         'keyword': [
             # Regular keywords
             (words((
-                'memref', 'for', 'scf', 'step', 'arith', 'addi', 'get_global',
+                'memref', 'for', 'parallel', 'scf', 'step', 'arith', 'addi', 'get_global',
                 'func', 'addf', 'mulf', 'fmult', 'graph', 'fadd',
                 'Constant', 'value', 'strides', 'requires_grad',
                 'device', 'cpu', 'conv2d', 'torch', 'vtensor', 'ListConstruct',
                 'affine', 'copy', 'literal', 'linalg', 'cmpi', 'fill', 'ins', 'outs', 'init_tensor',
                 'dilations', 'conv_2d_nchw_fchw', 'affine_map', 'map', 'apply', 'constant', 'none',
-                'eq', 'load', 'store', 'list', 'return', 'to', 'alloca', 'global', 'true', 'int', 'llvm', 'fmuladd'
+                'eq', 'load', 'store', 'list', 'return', 'to', 'alloca', 'alloc', 'global', 'true', 'int', 'llvm', 'fmuladd'
             ),
                 suffix=r'\b'), Keyword),
 
             # Types
             (words(('void', 'half', 'bfloat', 'float', 'double', 'fp128', 'Tensor', 'NoneType', 'Float', 'tensor',
-                    'x86_fp80', 'ppc_fp128', 'label', 'metadata', 'x86_mmx',
+                    'x86_fp80', 'ppc_fp128', 'label', 'metadata', 'x86_mmx', 'xf16',
                     'x86_amx', 'token', 'index', 'f32')),
              Keyword.Type),
 

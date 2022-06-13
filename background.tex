@@ -54,7 +54,7 @@ Practically speaking, this entails representations of common mathematical operat
 We make extensive use of the linalg dialect as an intermediary between lower-level dialects, such as the \inlinemlir{affine} and \inlinemlir{scf} (structured control flow) dialects, and \inlinemlir{torch} dialect.
 The \inlinemlir{scf} is a straightforward formalization of control flow primitives, such as conditionals and loops, so we do not discuss it in great detail.
 The affine dialect, on the otherhand, provides a formalization of semantics that lend themselves to polyhedral compilation techniques~\cite{polyhedral-mlir}, i.e., techniques that make dependence analysis and loop transformations efficient and reliable.
-We discuss the importance of loop transformations in Section~\ref{sec:methodology}.
+We discuss the importance of loop transformations in Section~\ref{subsec:loop-unrolling}.
 
 The next step in the lowering is LLVM IR, an IR that is, technically speaking, not an MLIR dialect; the purpose of further lowering to LLVM IR is to produce a representation of BraggNN that high-level synthesis tools can consume.
 
@@ -70,14 +70,14 @@ Given a high-level, procedural, representation, HLS proceeds in three steps, in 
 		      \item The completion time for each operation;
 		      \item The user's desired clock rate/frequency;
 	      \end{itemize}
-	\item HLS associates high-level operations to particular RTL instantiations (called \emph{binding}) for those operations; for example whether to associate an add operation followed by a multiply operation to two separate DSP instances, or whether to associate them both with a single DSP instance (configured to perform fused-multiply-add);
+	\item HLS associates high-level operations to particular RTL instantiations (called \emph{binding}) for those operations; for example whether to associate an add operation followed by a multiply operation to two separate DSP instances, or whether to associate them both with a single DSP instance (e.g., configured to perform fused-multiply-add);
 	\item HLS builds an finite-state machine (FSM) that functions as control logic for the sequence of operations in the schedule.
 \end{enumerate}
 
 In addition to fulfilling these three fundamental tasks, high-level synthesis tools such as Vitis, Bambu~\cite{ferrandi2021bambu}, and LegUp~\cite{10.1145/2514740} perform standard compiler optimization passes on the IR (that they ingest or produce internally).
 Optimization passes such as store-load forwarding, common subexpression elimination, and constant propagation, loop-unrolling and tiling.
 Note that these optimization passes exhibit varying levels of runtime complexity, e.g., store-load forwarding in combination with loop-unrolling is polynomial time in the ``trip-count'' of the loop nest.
-Note also that the scheduling problem solved by HLS is reducible an integer programming problem~\cite{tuprints9272}, instance of which are generally NP-hard.
+Note also that the scheduling problem solved by HLS is reducible an integer programming problem~\cite{tuprints9272}, instances of which are generally NP-hard.
 % For certain instances, the scheduling problem can be reformulated as a system of difference constraints (SDC).
 % Such a formulation induces a unimodular matrix representation of the constraint system which is amenable to Bellman-Ford $O(n^2 + mn)$\commnt{this is phrased poorly - unimodular guarantees you integral solutions to the LP but also gives you the shortest path analogy property}{ for checking consistency of a solution (essentially the shortest path problem) }and an LP approach for optimizing the critical path~\cite{1688836}.
 Thus, HLS tools solve computationally intensive problems in order to produce a RTL description of a high-level representation of a DNN.
@@ -88,7 +88,7 @@ Logic synthesis is the process of mapping RTL to actual hardware primitives on t
 Logic synthesis produces a network list (netlist) describing the logical connectivity of various parts of the design.
 For example,
 \begin{longlisting}
-	\inputminted{verilog}{sources/always.v}
+	\inputminted[autogobble,xleftmargin=0.2\columnwidth,xrightmargin=0.2\columnwidth,frame=lines]{verilog}{sources/always.v}
 	\caption[Long Code Example]{A long code example which will break across pages.}
 	\label{lst:long}
 \end{longlisting}

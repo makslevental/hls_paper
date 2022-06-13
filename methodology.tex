@@ -1,74 +1,145 @@
 Inspired by the FloPoCo~\cite{8877424} project, our design methodology can best be described as \emph{computing just right}.
-We aim for just the right amount of compute and abstraction for the task at hand, no more no less.
-This methodology stands in contrast to the design methodologies of architecture designers for commodity hardware accelerators (such as GPUs), which aim to support a large set of use cases.
-Accordingly, our methodology consists of five techniques distilled from such general purpose architectures and tools but simplified for our specific purposes.
+We aim for just the right amount of compute and abstraction for the task at hand, no more, no less.
+This methodology stands in contrast to the design methodologies of architecture designers for commodity hardware accelerators (such as GPUs), which must support a large set of use cases.
+Accordingly, our methodology consists of five techniques distilled from such general purpose architectures and tools but specialized for our specific purposes.
 
 \subsection{Abstract Interpretation for Efficient Transformations}\label{subsec:loop-unrolling}
 
 It is well known that the most straightforward way to achieve lowest latency inference of a DNN is to linearize the control flow graph~\cite{osti_1574050} (i.e., remove branches) and flatten the dataflow graph as much as possible~\cite{10.1145/3295500.3356173} (i.e., execute as many operations in parallel as possible).
-For intermediate level representations of a DNN this corresponds to loop unrolling followed by fusion (alternatively known as unroll and jam~\cite{thomas1971catalogue}).
-For example, consider the pair of loop nests in Listing~\ref{lst:loop_fusion}.
-Note that a loop fusion pass performed by either MLIR or LLVM would verify that memory independence constraints are satisfied for all pairs of stores and loads in each of the loop nests.
+For intermediate level representations of a DNN, this corresponds to loop unrolling followed by fusion (alternatively known as unroll and jam~\cite{thomas1971catalogue}).
+For example, consider the pair of loop nests in Listing~\ref{lst:loop_fusion}, corresponding to \inlinepython{Conv2d(64, 1, 3)}.
+General purpose compilers can readily unroll each of the loop nests, but prior to fusion, due to their conservative correct guarantees, are bound to verify that memory independence constraints are satisfied for all pairs of stores and loads in each of the loop nests.
 Thus, after unrolling the inner loops of the second loop nest (on \mintinline{mlir}{%arg5}, \mintinline{mlir}{%arg6}, \mintinline{mlir}{%arg7}) we incur
 \[
 	\mathtt{\%c1} \times \mathtt{\%c3} \times \mathtt{\%c3} \times 2 \times 4
 \]
 memory independence checks.
-Thus, unroll and fuse optimizations take increasingly longer as one experiments with larger and larger unroll thresholds; the \emph{unroll threshold} determines which loops will be fully unrolled (all loops with trip count less than or equal to the threshold will be unrolled).
+Consequently, unroll and fuse optimizations take increasingly longer as one experiments with larger and larger unroll thresholds; the \emph{unroll threshold} determines which loops will be fully unrolled (all loops with trip count less than or equal to the threshold will be unrolled).
 \begin{longlisting}
-	\inputminted[highlightlines={5,6,17,18,19,22}]{mlir}{sources/loop_fusion.mlir}
-	\caption{Loop fusion and unrolling example, with \hl{emphasis} on loads and stores whose independence must verified.}
+	\inputminted[highlightlines={5,6,17,18,19,22},frame=lines]{mlir}{sources/loop_fusion.mlir}
+	\caption{Loop fusion and unrolling example, for loops corresponding to \inlinepython{Conv2d(64, 1, 3)}, with \hl{emphasis} on loads and stores whose independence must verified.}
 	\label{lst:loop_fusion}
 \end{longlisting}
 \begin{longlisting}
-	\inputminted[highlightlines={5,6,11-13,16},linenos=true,numbersep=\mintednumbersep]{mlir}{sources/unrolled_loop.mlir}
-	\caption{Unrolled and fused loop, for which store-load forwarding can be performed.}
+	\inputminted[highlightlines={5,6,11-13,16},linenos=true,frame=lines,numbersep=\mintednumbersep]{mlir}{sources/unrolled_loop.mlir}
+	\caption{Unrolled and fused loop-nest, for loops corresponding to \inlinepython{Conv2d(1, 64, 3)}, with \hl{emphasis} on which store-load forwards can be performed.}
 	\label{lst:storeloadforwarding}
 \end{longlisting}
 
-%followed by store-load forwarding or, alternatively, wholly promoting stores-loads to registers.
-Following unroll and jam, we are able to perform \emph{store-load forwarding}, i.e., we are able to omit those store operations that store to memory addresses which are subsequently loaded from (with no intervening stores).
-For example, consider the above loop nests fused, with the second loop nest having the inner three loops fully unrolled (see Listing~\ref{lst:storeloadforwarding}); the store operations on lines 6 and 13 can be entirely eliminated and the load operation on line 5 can be forwarded to the \inlinemlir{arith.addf} on line 15.
-For each load operation that follows a store operation, a compiler must check whether the store and the load access the same location in memory, and further verify that there are no intervening store operations to the same memory address;
-with respect to correctness, this requires solving a system of constraints~\cite{10.2307/2322281}.
+Following unroll and jam, we are able to perform \emph{store-load forwarding}, i.e., we are able to promote those store operations which are subsequently loaded from (with no intervening stores) to registers.
+For example, consider the above fused loop nests, with the second loop nest having the inner three loops fully unrolled (see Listing~\ref{lst:storeloadforwarding}); the store operations on lines 6 and 13 can be entirely eliminated and the load operation on line 5 can be forwarded to the \inlinemlir{arith.addf} on line 15.
+Note, for each load operation that follows a store operation, a compiler must check whether the store and the load access the same location in memory, and further verify that there are no intervening store operations to the same memory address.
+In general, this requires solving a system of constraints~\cite{10.2307/2322281}.
 We observe that as loops are further and further unrolled, the cost of this particular optimization grows polynomially; consider a fully unrolled loop nest, with many parallel dataflows, for which a store operation in one dataflow might be forwarded across a parallel dataflow (and thus incur checks against all stores and loads in that parallel dataflow).
 
 In principle, we might rely on MLIR or LLVM to perform each of these optimization passes.
 The chief impediment to relying on these general purpose compilers for our needs is the runtime complexity of the their implementations.
-Note that for general purpose programs this is an acceptable cost, especially given that most development is done without these optimization (leaving the aggressive optimizations for release ready builds).
-For us, given that the logic and dataflow of BraggNN is fixed (having already been iterated on), and given that we are in fact searching the design space for optimal low-level representations of the DNN, the runtimes of these optimization passes are prohibitive (taking on the order of hours and sometimes days to complete).
-Moreover, often their rigor and conservatism are unnecessary given a high-level understanding of the structure of BraggNN; for example, in the case of fully unrolling the above loop nests (forwarding from the stores during initialization to the loads during accumulation), the region within which the forward is safe is clear from the semantics of convolutions.
-The loop indices and corresponding memory addresses for these safe store-load forwards are very easy to compute analytically and ahead of time (even in the presence of complications such as strided tensors).
+For arbitrary programs this development time cost moderate, especially given that most development is done without these optimization (leaving the aggressive optimizations for release builds).
+For us, given that the logic and dataflow of BraggNN is fixed (having already been iterated on), and given that we are in fact searching the design space for optimal low-level representations of the DNN, the runtimes of these optimization passes are prohibitive (taking on the order of hours and sometimes even days to complete).
+Moreover, often their rigor and conservatism are unnecessary given a high-level understanding of the structure of BraggNN; for example, in the case of fully unrolling the above loop nests and forwarding from the stores during initialization to the loads during accumulation, the region within which the forward is safe is clear from the semantics of convolutions.
+The loop indices and corresponding memory addresses for these safe store-load forwards are simple to compute analytically and ahead of time (even in the presence of complications such as strided tensors).
 
-In order to avoid the runtime costs associated with these unnecessarily conservative optimization passes, we omit them.
-Instead, we do not lower BraggNN past the structured control flow (\inlinemlir{scf}) dialect in MLIR, and instead implement an abstract interpreter, which effectively performs the unrolling by ``running'' BraggNN with alternative semantics (see Eqns~\eqref{eqn:semantics}).
-In addition to efficiently unrolling loop nests, our abstract interpreter performs store-load forwarding.
-We also reinterpret remaining stores and loads to memory as reads and writes to registers, thus simplifying our design; such stores and loads would otherwise translate to stores and loads from Block RAM (BRAM).
-Furthermore, since BraggNN is a relatively small DNN, we inline absolutely all of the weight tensors as constants and perform \emph{constant propagation}.
-Finally, our abstract interpreter identifies sequences of multiplications and additions and groups them together such that they can be scheduled to reuse accumulator registers (effectively forming a multiply-accumulator); this grouping is the chief optimization that enables us to efficiently map BraggNN to FPGA.
-In summary we perform the following transformations on the \inlinemlir{scf} representation of BraggNN:
-\begin{enumerate}
-	\item We completely eliminate any latency due to loading from or storing to BRAM for intermediate activations;
-	\item We completely eliminate all logic (i.e., integer arithmetic) related to calculating memory offsets, a non-trivial reduction in instruction count and design complexity (see figure <figure> for reduction in instruction count);
-	\item We instantiate a reduced set of floating point operation cores, and thus reduce complexity and overall latency of our design.
-\end{enumerate}
-Note, we are able to perform the memory to registers promotions owing to the fact that BraggNN is a relatively compact DNN and our target FPGA is plentiful in registers.
-The reinterpreted semantics implemented by our abstract interpreter are presented in Eqns~\eqref{eqn:semantics}.
+In order to avoid the runtime costs associated with these conservative optimization passes, we implement an abstract interpreter for sufficiently lowered DNNs.
+Concretely, we lower BraggNN to the structured control flow (\inlinemlir{scf}) dialect and then interpret this representation of BraggNN with alternative semantics.
+Firstly, our interpreter evaluates functions of loop indices, such as 
+\begin{minted}[autogobble,xleftmargin=0.2\columnwidth,xrightmargin=0.2\columnwidth]{mlir}
+	#map = affine_map<(d0, d1) -> (d0 + d1)>
+	%3 = affine.apply #map(%arg3, %arg6)
+\end{minted}
+or 
+\begin{minted}[autogobble,xleftmargin=0.2\columnwidth,xrightmargin=0.2\columnwidth]{mlir}
+	%3 = arith.addi %arg3, %arg6
+\end{minted}
+where \inlinemlir{%arg3}, \inlinemlir{%arg6} are loop indices.
+This enables us to determine array indices of stores and loads, such as 
+\begin{minted}[autogobble,xleftmargin=0.2\columnwidth,xrightmargin=0.2\columnwidth]{mlir}
+	%2 = memref.alloca() : memref<8xf16>
+	%c1 = arith.constant 1.0
+	memref.store %c1, %2[%3]
+\end{minted}
+Note that evaluation of such memory index arithmetic is typically deferred to runtime in conventional accelerators because of either the control flow inherent in a DNN, or simply a lack of available registers (to store the results).
+Thus, we are able to precompute these index, saving cycles, because BraggNN lacks control flow and FPGAs are abundant in registers.
+Note also that we do not evaluate values corresponding to \inlinemlir{memref.load}s, as they represent BraggNN weights or activations; our interpreter implements such values as proxy objects and merely records the arithmetic operations performed on them.
 
-\begin{figure}
-	\begin{equation}\label{eqn:semantics}
-		\begin{split}
-			f_{Z} \llbracket x \coloneqq y + z\rrbracket (\sigma) &= [ x \mapsto Z ] (\sigma) \\
-			f_{Z} \llbracket x \coloneqq y + z\rrbracket (\sigma) &= [ x \mapsto Z ] (\sigma) \\
-			f_{Z} \llbracket x \coloneqq y + z\rrbracket (\sigma) &= [ x \mapsto Z ] (\sigma) \\
-		\end{split}
-	\end{equation}
-	\caption{This is a placeholder.}\label{fig:semantics}
-\end{figure}
+Secondly, our interpreter unrolls loops by executing them while enforcing SSA.
+That is to say, for a loop whose body has repeated assignments to the same value (ostensibly violating SSA), such as 
+\begin{minted}[autogobble,xleftmargin=0.2\columnwidth,xrightmargin=0.2\columnwidth]{mlir}
+	%c0 = arith.constant 0
+	%c1 = arith.constant 1
+	%c3 = arith.constant 3
+	%c5 = arith.constant 1.35
+	scf.for %arg1 = %c0 to %c3 step %c1 :
+		// cast int to fp
+		%2 = arith.sitofp %arg1
+		%3 = arith.addf %arg1, %c5
+\end{minted}
+we execute the loop and instantiate unique identifiers for the result of each operation:
+\begin{minted}[autogobble,xleftmargin=0.2\columnwidth,xrightmargin=0.2\columnwidth]{mlir}
+	%c0 = arith.constant 0 
+	%c1 = arith.constant 1 
+	%c2 = arith.constant 2 
+	%c3 = arith.constant 3 
+	%c5 = arith.constant 1.35
+	%2_0 = arith.sitofp %c0
+	%3_0 = arith.addf %2_0, %c5
+	%2_1 = arith.sitofp %c1
+	%3_1 = arith.addf %2_1, %c5
+	%2_2 = arith.sitofp %c2
+	%3_2 = arith.addf %2_2, %c5
+	%2_3 = arith.sitofp %c3
+	%3_3 = arith.addf %2_3, %c5
+\end{minted}
+This enables us to both unroll the loop and track dataflow through arithmetic operations (see Section~\ref{subsec:parallel-toposort-scheduling}).
+Finally, our interpreter reinterprets \inlinemlir{memref}s as \emph{geometric symbol tables} (i.e., symbol tables indexed by array indices rather than identifiers/names) and stores/loads as assignments/reads to/from those symbol tables.
+Such semantics, in combination with fully evaluated array indices, enable us to simultaneously track dataflow through activation buffers (which appear as \inlinemlir{memref}) and perform store/load forwarding.
+
+The dataflow analysis carried out by our interpreter enables us to easily infer the flow of weights through the DNN and thus enables us to experiment with two weight storage strategies; namely we can either store weights as BRAMs, uniquely associated with a set of DSP blocks, or as a collection of free registers. 
+The dataflow analysis also enables us to identify sequences of multiplications and additions and group them together such that they can be scheduled to reuse accumulator registers associated with floating point block instantiations (effectively forming a multiply-accumulator); 
+indeed, this grouping is the chief optimization that enables us to efficiently map BraggNN to FPGA.
+See Section~\ref{subsec:parallel-toposort-scheduling} for a discussion on the advantages of both of these.
+
+% We also reinterpret remaining stores and loads to memory as reads and writes to registers, thus simplifying our design; such stores and loads would otherwise translate to stores and loads from Block RAM (BRAM).
+% Furthermore, since BraggNN is a relatively small DNN, we inline absolutely all of the weight tensors as constants and perform \emph{constant propagation}.
+% In summary our abstract interpreter performs the following transformations on the \inlinemlir{scf} representation of BraggNN:
+% \begin{enumerate}
+% 	\item We completely eliminate any latency due to loading from or storing to BRAM for intermediate activations;
+% 	\item We completely eliminate all logic (i.e., integer arithmetic) related to calculating memory offsets, a non-trivial reduction in instruction count and design complexity (see figure <figure> for reduction in instruction count);
+% 	\item We instantiate a reduced set of floating point operation cores, and thus reduce complexity and overall latency of our design.
+% \end{enumerate}
+% Note, we are able to perform the memory to registers promotions owing to the fact that BraggNN is a relatively compact DNN and our target FPGA is plentiful in registers.
+% The reinterpreted semantics implemented by our abstract interpreter are presented in Eqns~\eqref{eqn:semantics}.
+
+% \begin{figure}
+% 	% \begin{equation}\label{eqn:semantics}
+% 	% 	\begin{split}
+% 	% 		\llbracket \%\texttt{\small var} = \inlinemlir{memref.alloca}\texttt{()}\!\!:\!\inlinemlir{memref}\!\!<\!\!k\inlinemlir{xf16}\!\!> \rrbracket &= [\text{allocate }k\text{ 16 bit registers}] \\
+% 	% 		\llbracket \mintedinline{mlir}{\%5 = memref.load \%arg0[\%arg1, \%arg5, \%3, \%4]} \rrbracket &= [\text{allocate }k\text{ 16 bit registers}] \\
+% 	% 	\end{split}
+% 	% \end{equation}
+% 	\begin{multline*}
+% 		\llbracket \inlinemlir{$\%$var = memref.alloca() : memref<$k$xf16>} \rrbracket \implies \\
+% 			\text{allocate $k$ 16 bit registers}
+% 	\end{multline*}
+% 	\begin{multline*}
+% 		\quad\llbracket \inlinemlir{$\%$5 = memref.load $\%$var[$\%$m]} \rrbracket \implies \text{read $m$th register} \quad
+% 	\end{multline*}
+% 	\begin{multline*}
+% 		\quad\quad\llbracket \inlinemlir{$\%$8 = arith.mulf $\%$5, $\%$6} \rrbracket \implies \text{ $\%8 = \%5 \times \%6$} \quad\quad\quad
+% 	\end{multline*}
+% 	\begin{multline*}
+% 		\quad\llbracket \inlinemlir{memref.store $\%$8, $\%$var[$\%$m]} \rrbracket \implies \text{store $\%$8 in $m$th register}\quad
+% 	\end{multline*}
+% 	\begin{multline*}
+% 		\llbracket \inlinemlir{scf.parallel (...) = (...) to (...) step (...)} \rrbracket \implies \\
+% 			 \text{store $\%$8 in $m$th register}
+% 	\end{multline*}
+
+% 	\caption{This is a placeholder.}\label{fig:semantics}
+% \end{figure}
 
 \subsection{Parallel Topological Sort Scheduling}\label{subsec:parallel-toposort-scheduling}
 
-In addition to reducing the runtime of the compiler frontend, our abstract interpreter simplifies the representation such that we may emit a simplified LLVM IR pass to Vitis HLS, and thus, in theory reduce its runtime as well.
+In addition to reducing the runtime of the compiler frontend, our abstract interpreter simplifies the representation such that we may emit a simplified LLVM IR to pass to downstream tools (such Vitis HLS), and thus, in theory reduce their runtime as well.
 In actuality, performing these optimizations has no effect on the runtime of Vitis HLS, since it will rerun the same (or similar) passes as part of its transformation pipeline.
 Thus, a fundamental challenge in implementing BraggNN as a digital design is reducing the time taken by Vitis HLS in performing its own optimizations; in addition to those ultimately redundant optimizations, Vitis' HLS scheduling algorithms takes an inordinate amount of time to schedule the large number of operations that comprise BraggNN when fully unrolled, even after eliding unnecessary operations (such as the integer arithmetic associated with computing memory offsets).
 

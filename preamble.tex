@@ -8,6 +8,12 @@
 \usepackage[frozencache,cachedir=minted]{minted}
 % \usepackage[finalizecache,cachedir=minted]{minted}
 % \usepackage{minted}
+\newmintinline[inlinemlir]{mlir}{}
+\newmintinline[inlinecpp]{cpp}{}
+\newmintinline[inlinepython]{python}{}
+\newmintinline[inlinev]{v}{}
+\newmintinline[inlineasm]{asm}{}
+
 \renewcommand{\MintedPygmentize}{./scripts/pygmentize.py}
 \newlength{\mintednumbersep}
 \AtBeginDocument{%
@@ -30,7 +36,9 @@
 	encoding=utf8,
 	frame=lines,
 	fontfamily=zi4,
-	highlightcolor=green
+	highlightcolor=green,
+	mathescape, 
+	escapeinside=\\$\\$
 }
 \usepackage{etoolbox,xpatch}
 
@@ -70,13 +78,10 @@
 \usepackage{xcolor}
 \newcommand\crule[3][black]{\textcolor{#1}{\rule{#2}{#3}}}
 
-\newcommand{\inlinemlir}[1]{\mintinline{mlir}{#1}}
-\newcommand{\inlinecpp}[1]{\mintinline{cpp}{#1}}
-\newcommand{\inlinepython}[1]{\mintinline{python}{#1}}
-\newcommand{\inlinev}[1]{\mintinline{verilog}{#1}}
-\newcommand{\inlineasm}[1]{\mintinline{asm}{#1}}
 
 \usepackage{soul}
 \sethlcolor{green}
 
 \usepackage{textgreek}
+\usepackage{stmaryrd}
+\usepackage{siunitx}
