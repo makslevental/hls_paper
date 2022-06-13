@@ -58,7 +58,7 @@ This enables us to determine array indices of stores and loads, such as
 	memref.store %c1, %2[%3]
 \end{minted}
 Note that evaluation of such memory index arithmetic is typically deferred to runtime in conventional accelerators because of either the control flow inherent in a DNN, or simply a lack of available registers (to store the results).
-Thus, we are able to precompute these index, saving cycles, because BraggNN lacks control flow and FPGAs are abundant in registers.
+Thus, we are able to precompute these indices, saving cycles, because BraggNN lacks control flow and FPGAs are abundant in registers.
 Note also that we do not evaluate values corresponding to \inlinemlir{memref.load}s, as they represent BraggNN weights or activations; our interpreter implements such values as proxy objects and merely records the arithmetic operations performed on them.
 
 Secondly, our interpreter unrolls loops by executing them while enforcing SSA.
