@@ -1,4 +1,4 @@
 \begin{Verbatim}[commandchars=\\\{\},codes={\catcode`\$=3\catcode`\^=7\catcode`\_=8\relax}]
 \PYG{n+nv+vg}{\PYGZsh{}map}\PYG{+w}{ }\PYG{p}{=}\PYG{+w}{ }\PYG{k}{affine\PYGZus{}map}\PYG{p}{\PYGZlt{}}\PYG{p}{(}\PYG{err}{d}\PYG{l+m}{0}\PYG{p}{,}\PYG{+w}{ }\PYG{err}{d}\PYG{l+m}{1}\PYG{p}{)}\PYG{+w}{ }\PYG{err}{\PYGZhy{}}\PYG{p}{\PYGZgt{}}\PYG{+w}{ }\PYG{p}{(}\PYG{err}{d}\PYG{l+m}{0}\PYG{+w}{ }\PYG{err}{+}\PYG{+w}{ }\PYG{err}{d}\PYG{l+m}{1}\PYG{p}{)}\PYG{p}{\PYGZgt{}}
-\PYG{n+nv+nvAnonymous}{\PYGZpc{}3}\PYG{+w}{ }\PYG{p}{=}\PYG{+w}{ }\PYG{k}{affine}\PYG{p}{.}\PYG{k}{apply}\PYG{+w}{ }\PYG{n+nv+vg}{\PYGZsh{}map}\PYG{p}{(}\PYG{n+nv}{\PYGZpc{}arg3}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nv}{\PYGZpc{}arg6}\PYG{p}{)}
+\PYG{n+nv+nvAnonymous}{\PYGZpc{}3}\PYG{+w}{ }\PYG{p}{=}\PYG{+w}{ }\PYG{k}{affine}\PYG{p}{.}\PYG{k}{apply}\PYG{+w}{ }\PYG{n+nv+vg}{\PYGZsh{}map}\PYG{p}{(}\PYG{n+nv}{\PYGZpc{}i3}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nv}{\PYGZpc{}i6}\PYG{p}{)}
 \end{Verbatim}

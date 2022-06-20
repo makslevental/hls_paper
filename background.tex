@@ -77,9 +77,7 @@ Given a high-level, procedural, representation, HLS proceeds in three steps, in 
 In addition to fulfilling these three fundamental tasks, high-level synthesis tools such as Vitis, Bambu~\cite{ferrandi2021bambu}, and LegUp~\cite{10.1145/2514740} perform standard compiler optimization passes on the IR (that they ingest or produce internally).
 Optimization passes such as store-load forwarding, common subexpression elimination, and constant propagation, loop-unrolling and tiling.
 Note that these optimization passes exhibit varying levels of runtime complexity, e.g., store-load forwarding in combination with loop-unrolling is polynomial time in the ``trip-count'' of the loop nest.
-Note also that the scheduling problem solved by HLS is reducible an integer programming problem~\cite{tuprints9272}, instances of which are generally NP-hard.
-% For certain instances, the scheduling problem can be reformulated as a system of difference constraints (SDC).
-% Such a formulation induces a unimodular matrix representation of the constraint system which is amenable to Bellman-Ford $O(n^2 + mn)$\commnt{this is phrased poorly - unimodular guarantees you integral solutions to the LP but also gives you the shortest path analogy property}{ for checking consistency of a solution (essentially the shortest path problem) }and an LP approach for optimizing the critical path~\cite{1688836}.
+Note also that the scheduling problem solved by HLS is reducible an integer linear programming problem (ILP), instances of which are NP-hard in general.
 Thus, HLS tools solve computationally intensive problems in order to produce a RTL description of a high-level representation of a DNN.
 These ``development time'' costs (i.e., runtime of the tools) strongly inform our ultimate approach to translating BraggNN (see Section~\ref{sec:methodology}). 
 

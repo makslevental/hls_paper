@@ -1,5 +1,5 @@
-Inspired by the FloPoCo~\cite{8877424} project, our design methodology can best be described as \emph{computing just right}.
-We aim for just the right amount of compute and abstraction for the task at hand, no more, no less.
+Inspired by the FloPoCo~\cite{8877424} project, whose floating point (FP) arithmetic core generators we employ, our design methodology can best be described as \emph{computing just right}; 
+we aim for just the right amount of compute and abstraction for the task at hand, no more, no less.
 This methodology stands in contrast to the design methodologies of architecture designers for commodity hardware accelerators (such as GPUs), which must support a large set of use cases.
 Accordingly, our methodology consists of five techniques distilled from such general purpose architectures and tools but specialized for our specific purposes.
 
@@ -7,16 +7,16 @@ Accordingly, our methodology consists of five techniques distilled from such gen
 
 It is well known that the most straightforward way to achieve lowest latency inference of a DNN is to linearize the control flow graph~\cite{osti_1574050} (i.e., remove branches) and flatten the dataflow graph as much as possible~\cite{10.1145/3295500.3356173} (i.e., execute as many operations in parallel as possible).
 For intermediate level representations of a DNN, this corresponds to loop unrolling followed by fusion (alternatively known as unroll and jam~\cite{thomas1971catalogue}).
-For example, consider the pair of loop nests in Listing~\ref{lst:loop_fusion}, corresponding to \inlinepython{Conv2d(64, 1, 3)}.
-General purpose compilers can readily unroll each of the loop nests, but prior to fusion, due to their conservative correct guarantees, are bound to verify that memory independence constraints are satisfied for all pairs of stores and loads in each of the loop nests.
-Thus, after unrolling the inner loops of the second loop nest (on \mintinline{mlir}{%arg5}, \mintinline{mlir}{%arg6}, \mintinline{mlir}{%arg7}) we incur
+For example, consider the pair of loop nests in Listing~\ref{lst:loop_fusion}, corresponding to \inlinepython{Conv2d(out_channels=64, in_channels=1, kernel=3)}.
+General purpose compilers can readily unroll each of the loop nests, but prior to fusion, due to their conservative correctness guarantees, are bound to verify that memory independence constraints are satisfied for all pairs of stores and loads in each of the loop nests.
+Thus, after unrolling the inner loops of the second loop nest (on \mintinline{mlir}{%i5}, \mintinline{mlir}{%i6}, \mintinline{mlir}{%i7}) we incur
 \[
 	\mathtt{\%c1} \times \mathtt{\%c3} \times \mathtt{\%c3} \times 2 \times 4
 \]
 memory independence checks.
 Consequently, unroll and fuse optimizations take increasingly longer as one experiments with larger and larger unroll thresholds; the \emph{unroll threshold} determines which loops will be fully unrolled (all loops with trip count less than or equal to the threshold will be unrolled).
 \begin{longlisting}
-	\inputminted[highlightlines={5,6,17,18,19,22},frame=lines]{mlir}{sources/loop_fusion.mlir}
+	\inputminted[highlightlines={8,9,20,21,22,25},frame=lines]{mlir}{sources/loop_fusion.mlir}
 	\caption{Loop fusion and unrolling example, for loops corresponding to \inlinepython{Conv2d(64, 1, 3)}, with \hl{emphasis} on loads and stores whose independence must verified.}
 	\label{lst:loop_fusion}
 \end{longlisting}
@@ -44,16 +44,16 @@ Concretely, we lower BraggNN to the structured control flow (\inlinemlir{scf}) d
 Firstly, our interpreter evaluates functions of loop indices, such as 
 \begin{minted}[autogobble,xleftmargin=0.2\columnwidth,xrightmargin=0.2\columnwidth]{mlir}
 	#map = affine_map<(d0, d1) -> (d0 + d1)>
-	%3 = affine.apply #map(%arg3, %arg6)
+	%3 = affine.apply #map(%i3, %i6)
 \end{minted}
 or 
 \begin{minted}[autogobble,xleftmargin=0.2\columnwidth,xrightmargin=0.2\columnwidth]{mlir}
-	%3 = arith.addi %arg3, %arg6
+	%3 = arith.addi %i3, %i6
 \end{minted}
-where \inlinemlir{%arg3}, \inlinemlir{%arg6} are loop indices.
+where \inlinemlir{%i3}, \inlinemlir{%i6} are loop indices.
 This enables us to determine array indices of stores and loads, such as 
 \begin{minted}[autogobble,xleftmargin=0.2\columnwidth,xrightmargin=0.2\columnwidth]{mlir}
-	%2 = memref.alloca() : memref<8xf16>
+	%2 = memref.alloca() : memref<8xf32>
 	%c1 = arith.constant 1.0
 	memref.store %c1, %2[%3]
 \end{minted}
@@ -68,10 +68,10 @@ That is to say, for a loop whose body has repeated assignments to the same value
 	%c1 = arith.constant 1
 	%c3 = arith.constant 3
 	%c5 = arith.constant 1.35
-	scf.for %arg1 = %c0 to %c3 step %c1 :
+	scf.for %i1 = %c0 to %c3 step %c1 :
 		// cast int to fp
-		%2 = arith.sitofp %arg1
-		%3 = arith.addf %arg1, %c5
+		%2 = arith.sitofp %i1
+		%3 = arith.addf %i1, %c5
 \end{minted}
 we execute the loop and instantiate unique identifiers for the result of each operation:
 \begin{minted}[autogobble,xleftmargin=0.2\columnwidth,xrightmargin=0.2\columnwidth]{mlir}
@@ -91,7 +91,7 @@ we execute the loop and instantiate unique identifiers for the result of each op
 \end{minted}
 This enables us to both unroll the loop and track dataflow through arithmetic operations (see Section~\ref{subsec:parallel-toposort-scheduling}).
 Finally, our interpreter reinterprets \inlinemlir{memref}s as \emph{geometric symbol tables} (i.e., symbol tables indexed by array indices rather than identifiers/names) and stores/loads as assignments/reads to/from those symbol tables.
-Such semantics, in combination with fully evaluated array indices, enable us to simultaneously track dataflow through activation buffers (which appear as \inlinemlir{memref}) and perform store/load forwarding.
+Such semantics, in combination with fully evaluated array indices, enable us to simultaneously track dataflow through activation buffers (which appear as \inlinemlir{memref}s) and perform store/load forwarding.
 
 The dataflow analysis carried out by our interpreter enables us to easily infer the flow of weights through the DNN and thus enables us to experiment with two weight storage strategies; namely we can either store weights as BRAMs, uniquely associated with a set of DSP blocks, or as a collection of free registers. 
 The dataflow analysis also enables us to identify sequences of multiplications and additions and group them together such that they can be scheduled to reuse accumulator registers associated with floating point block instantiations (effectively forming a multiply-accumulator); 
@@ -112,12 +112,12 @@ See Section~\ref{subsec:parallel-toposort-scheduling} for a discussion on the ad
 % \begin{figure}
 % 	% \begin{equation}\label{eqn:semantics}
 % 	% 	\begin{split}
-% 	% 		\llbracket \%\texttt{\small var} = \inlinemlir{memref.alloca}\texttt{()}\!\!:\!\inlinemlir{memref}\!\!<\!\!k\inlinemlir{xf16}\!\!> \rrbracket &= [\text{allocate }k\text{ 16 bit registers}] \\
-% 	% 		\llbracket \mintedinline{mlir}{\%5 = memref.load \%arg0[\%arg1, \%arg5, \%3, \%4]} \rrbracket &= [\text{allocate }k\text{ 16 bit registers}] \\
+% 	% 		\llbracket \%\texttt{\small var} = \inlinemlir{memref.alloca}\texttt{()}\!\!:\!\inlinemlir{memref}\!\!<\!\!k\inlinemlir{xf32}\!\!> \rrbracket &= [\text{allocate }k\text{ 16 bit registers}] \\
+% 	% 		\llbracket \mintedinline{mlir}{\%5 = memref.load \%i0[\%i1, \%i5, \%3, \%4]} \rrbracket &= [\text{allocate }k\text{ 16 bit registers}] \\
 % 	% 	\end{split}
 % 	% \end{equation}
 % 	\begin{multline*}
-% 		\llbracket \inlinemlir{$\%$var = memref.alloca() : memref<$k$xf16>} \rrbracket \implies \\
+% 		\llbracket \inlinemlir{$\%$var = memref.alloca() : memref<$k$xf32>} \rrbracket \implies \\
 % 			\text{allocate $k$ 16 bit registers}
 % 	\end{multline*}
 % 	\begin{multline*}
@@ -137,64 +137,94 @@ See Section~\ref{subsec:parallel-toposort-scheduling} for a discussion on the ad
 % 	\caption{This is a placeholder.}\label{fig:semantics}
 % \end{figure}
 
-\subsection{Parallel Topological Sort Scheduling}\label{subsec:parallel-toposort-scheduling}
+\subsection{Scheduling}\label{subsec:parallel-toposort-scheduling}
 
 In addition to reducing the runtime of the compiler frontend, our abstract interpreter simplifies the representation such that we may emit a simplified LLVM IR to pass to downstream tools (such Vitis HLS), and thus, in theory reduce their runtime as well.
-In actuality, performing these optimizations has no effect on the runtime of Vitis HLS, since it will rerun the same (or similar) passes as part of its transformation pipeline.
-Thus, a fundamental challenge in implementing BraggNN as a digital design is reducing the time taken by Vitis HLS in performing its own optimizations; in addition to those ultimately redundant optimizations, Vitis' HLS scheduling algorithms takes an inordinate amount of time to schedule the large number of operations that comprise BraggNN when fully unrolled, even after eliding unnecessary operations (such as the integer arithmetic associated with computing memory offsets).
+In practice, performing these optimizations has no effect on the runtime of Vitis HLS, since it reruns the same (or similar) passes as part of its transformation pipeline.
+Hence, one of the first difficulties we faced in implementing BraggNN as a digital design was reducing the time taken by Vitis HLS in performing its own optimizations on the IR emitted by our interpreter. 
+Furthermore, Vitis HLS' scheduling algorithms struggle with the fully unrolled representation of BraggNN, due to the large number of instructions/operations.
+Hence, in order to be able to quickly iterate design experiments, it became necessary to completely eliminate Vitis HLS from the design process.
 
-Thus it becomes necessary to completely eliminate Vitis and (therefore HLS) from the design process.
-Recall that the critical function which Vitis HLS fulfills is the scheduling of operations during each clock cycle, in such a way that they respect the dataflow graph of BraggNN; that schedule then informs the construction of a corresponding FSM.
-In general, for complex programs, this is indeed a computationally intensive task, necessitating formulating the scheduling problem and solving it using either an integer programming solver or, if the problem is formulated as an SDC, an LP solver.
-In the case of BraggNN, and in fact many DNNs, where the dataflow is very regular and where parallel execution is only bounded by the number of DSPs (assuming BRAM access is eliminated), it is straightforward to construct the optimal schedule based solely on a topological sort of the operations.
+Recall that one of the critical functions which Vitis HLS fulfills is the scheduling of operations during each clock cycle, in such a way that they preserve the dataflow graph of BraggNN; that schedule then informs the construction of a corresponding FSM.
+As already mentioned, scheduling arbitrary programs involves formulating and solving ILP, which is an NP-hard problem.
+In the resource-unconstrained case, due to the precedence relations induced by dataflow, the constraint matrix of the associated ILP is \emph{totally unimodular matrix} and the feasible region of the problem is an integral polyhedron. 
+Thus, in such cases, the scheduling problem can be solved optimally in polynomial time with a (non-integer) LP solver~\cite{tuprints9272}.
+While we do not find ourselves in a resource-unconstrained environment, we are still able to make use of this fact by studying the structure of BraggNN.
 
-In fact, by computing the schedule ``by hand'', we can exercise more precise control over DSP usage and thus further reduce the overall complexity of the design.
-That it to say, we can schedule using the maximum number of DSPs possible during each state of the FSM, in contrast to Vitis HLS, which attempts to make conservative use of DSPs (which leads to excessive LUT usage to support time multiplexing of the DSPs); see figure <...> for a comparison the LUT usage using our scheduling algorithm versus Vitis HLS scheduling algorithm.
-One thing to note here is that computing a schedule even just using sequential topological sort becomes costly (in terms of runtime) for the larger scalings of BraggNN, where we need to schedule upwards of 1E6 operations.
-To mitigate these costs as well (in order to enable fast iteration on design choices) we implement a parallelized topological sort~\cite{sanders2019sequential}.
-See Algorithm~\ref{alg:toposort} for a specification of our scheduling algorithm.
-
-\begin{algorithm}
-	\caption{Placeholder}\label{alg:toposort}
-	\begin{algorithmic}
-		\Require $n \geq 0$
-		% \Ensure $y = x^n$
-		% \State $y \gets 1$
-		% \State $X \gets x$
-		% \State $N \gets n$
-		% \While{$N \neq 0$}
-		% \If{$N$ is even}
-		% \State $X \gets X \times X$
-		% \State $N \gets \frac{N}{2}$  \Comment{This is a comment}
-		% \ElsIf{$N$ is odd}
-		% \State $y \gets y \times X$
-		% \State $N \gets N - 1$
-		% \EndIf
-		% \EndWhile
-	\end{algorithmic}
-\end{algorithm}
+%  by imposing dependencies on operations that model a fixed number of resources.
+Consider again the second loop in Listing~\ref{lst:loop_fusion}, which corresponds to the first convolutional layer of BraggNN.
+If we rewrite it using pseudocode
+\inputminted[autogobble,xleftmargin=0.0\columnwidth,xrightmargin=0.0\columnwidth]{mlir}{sources/loop_fusion_mac.mlir}
+\noindent it is easy to observe that the loop can be parallelized on indices \inlinemlir{%i1, %i2, %i3, %i4}.
+Furthermore, it can be observed that inner three loops (on indices \inlinemlir{%i5, %i6, %i7}) represent multiplication and accumulation into \inlinemlir{%tmp}.
+Hence, this loop nest can be implemented as 
+\[
+	\mathtt{\%c1} \times \mathtt{\%c64} \times \mathtt{\%c9} \times \mathtt{\%c9}
+\]
+\emph{processing elements} (PE) operating in parallel, where each PE performs \inlinemlir{mulf} and \inlinemlir{addf} in parallel (the \inlinemlir{addf} operates on the results of the \inlinemlir{mulf} from the previous iteration).
+Note that this structure is replicated for all convolutional layers in BraggNN.
+Thus, our interpreter records this implicit parallelism (by interpreting \inlinemlir{scf.parallel} loop nests) and uses it to create auxiliary dependencies between operations (in addition to dataflow dependencies).
+For example, the above loop nest is interpreted as 
+\inputminted[autogobble,xleftmargin=0.0\columnwidth,xrightmargin=0.0\columnwidth]{mlir}{sources/loop_fusion_parallel.mlir}
+\noindent and unrolls to 
+\inputminted[autogobble,xleftmargin=0.1\columnwidth,xrightmargin=0.1\columnwidth]{mlir}{sources/loop_fusion_parallel_unroll.mlir}
+\noindent where the pairing of dataflow dependency (i.e., SSA values like \inlinemlir{%44}) and \inlinemlir{pe} constrain the scheduling of the arithmetic operations.
+Note that this PE dependency naturally captures the implicit geometry of the operations as well and thus, in principle, minimizes data movement between the PEs (see Section~\ref{sec:discussion} for more on this).
+We can similarly constrain the other operations in BraggNN (such as \inlinemlir{relu}).
+Using the complete set of constraints we formulate the resource-unconstrained problem and solve it using a LP solver (Gurobi through OR-Tools through CIRCT~\cite{CIRCTHardwareDesign}).
 
 \subsection{Bit Twiddling Hacks}\label{subsec:bit-twiddling-hacks}
+\maxx{just btw this is not a term i invented... \url{https://graphics.stanford.edu/~seander/bithacks.html}}
 
-FPGAs do not permit dynamic reconfiguration of DSPs to support fully heterogeneous operations; a set of DSPs associated with floating point addition can be dynamically reconfigured to perform subtraction but multiplication (likewise vice-versa).
-Thus, in order to maximize reuse of DSPs we only instantiate floating point IP cores for multiplication.
-We map the remaining operations necessitated by BraggNN (\inlinemlir{fsub}, \inlinemlir{fexp}, \inlinemlir{relu}, \inlinemlir{fdiv}) to (\inlinemlir{fmul}) and addition (\inlinemlir{fadd}).
-For the cases of \inlinemlir{fsub} and \inlinemlir{fexp} this is straightforward (a bit flip on the sign bit to handle the former and a Taylor series expansion to handle \inlinemlir{fexp}).
+FPGAs do not effectively permit dynamic reconfiguration of DSPs, to support fully distinct operations; e.g., a set of DSPs associated with floating point addition can be dynamically reconfigured to perform subtraction but multiplication (likewise vice-versa).
+Thus, in order to maximize reuse of DSPs (in order to minimize DSPs consumption) we only instantiate FP cores for multiplication and addition.
+We use FloPoCo~\cite{8877424} core generator to generate pipelined implementations of FP addition and multiplication\footnote{FloPoCo's floating point format differs slightly from IEEE754, foregoing subnormals and differently encoding zeroes, infinities and NaNs, for the benefit of reduced complexity.}.
+We map the remaining operations in BraggNN (\inlinemlir{subf}, \inlinemlir{expf}, \inlinemlir{relu}, \inlinemlir{divf}) to \inlinemlir{mulf} and addition \inlinemlir{addf}.
+For the cases of \inlinemlir{subf} and \inlinemlir{expf} this is straightforward (a bit flip on the sign bit to handle the former and a Taylor series expansion to handle the latter).
 For the case of \inlinemlir{relu}, note that for a IEEE 754 $n$-bit floating point number $x$
 $$
 \max(0, x) = x \iff x[0] = 0
 $$
 where $x[0]$ represents the sign bit of $x$.
-Division is the only primitive operation that presents a serious challenge to normalization in this way.
-To represent division (in terms of \inlinemlir{fmul}) we exploit the fact that aliasing a floating point number as an integer effectively calculates the approximate binary logarithm~\cite{enwiki:1081681080} of the number;
-we use this property to approximate the inverse (of a floating point number) and then perform division through multiplication by that inverse.
+A similar relationship holds for FloPoCo FP format.
+Division, needed for implementing \inlinepython{nn.Softmax}, is the only primitive operation that presents a serious challenge to normalization in this way (i.e., a mapping in terms of multiplication and addition).
+To represent division (in terms of \inlinemlir{mulf}) we exploit the fact that aliasing a floating point number as an integer effectively calculates the approximate binary logarithm~\cite{enwiki:1081681080} of the number.
+To see this, observe that for $x=2^{e_{x}}(1+m_{x})$ it's the case that
+\[
+	\log _{2}(x)=e_{x}+\log _{2}(1+m_{x})	\approx e_{x} + m_x + \sigma
+\]
+where $\sigma$ is a free parameter used to fit the approximation.
+Taking $I_x$ to be the bits of floating point $x$ interpreted as an integer, we have 
+\[
+\begin{aligned}
+	I_{x}&=E_{x}L+M_{x}\\
+	&=L(e_{x}+B+m_{x})\\
+	&=L(e_{x}+m_{x}+\sigma +B-\sigma )\\
+	&\approx L\log _{2}(x)+L(B-\sigma )
+\end{aligned}
+\]
+where $E_{x}$ is the "biased exponent" ($e_x + B, B = 127$), $L = 2^{23}$, $M_{x}=m_{x}\times L$.
+Thus, if $y = 1/x$, approximating both $\log y$ and $\log x$, we have 
+\[
+	{\frac {I_{y}}{L}}-(B-\sigma )\approx -\left({\frac {I_{x}}{L}}-(B-\sigma )\right)	
+\]
+or
+\[
+	I_{y}\approx 2 L(B-\sigma ) - I_{x}
+\]
+which, when taking $\sigma \approx 0.0450466$ can be expressed as 
+\[
+	I_y \approx \texttt{0x3F7A3BEA} - I_x
+\]
+thus reducing division to the composition of subtraction (or addition of the negative) and multiplication.
 In our experiments (and prior work~\cite{10.1007/978-0-387-72258-0_14}) this approximation incurs approximately a $4\%$ difference in accuracy per division.
 
-Finally, we experiment with alternative bitwidth implementations of IEEE754 floating point.
+Finally, we experiment with alternative bitwidth implementations of floating point.
 With respect to the BraggNN training, we observe that the sample data does not use a full 8 bit exponent (see Figure~\ref{fig:numexp}).
 \begin{figure}
 	\includegraphics[width=\columnwidth]{figures/exp_hist}
 	\caption{Range of exponent values for BraggNN weights.}\label{fig:numexp}
 \end{figure}
-With this in mind, we deploy BraggNN using half precision floats, i.e., using 5 bits to represent the exponent and 11 bits to represent the mantissa.
+With this in mind, we deploy BraggNN using quarter precision floats, i.e., using 4 bits to represent the exponent and 4 bits to represent the mantissa.
+There is ample prior that shows 8-bit floating point is adequate during training and inference~\cite{https://doi.org/10.48550/arxiv.1812.08011, https://doi.org/10.48550/arxiv.2206.02915, https://doi.org/10.48550/arxiv.2001.05674}.
 This produces floating point arithmetic cores that use fewer registers, LUTs, and having smaller wire delays, again leading to a reduction in overall complexity and end to end latency.

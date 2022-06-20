@@ -1,0 +1,11 @@
+scf.for $\setlength{\fboxsep}{1pt}\colorbox{highlightcolor1}{%i1}$ = %c0 to %c1 step %c1 :
+  scf.for $\setlength{\fboxsep}{1pt}\colorbox{highlightcolor1}{%i2}$ = %c0 to %c64 step %c1 :
+    scf.for $\setlength{\fboxsep}{1pt}\colorbox{highlightcolor1}{%i3}$ = %c0 to %c9 step %c1 :
+      scf.for $\setlength{\fboxsep}{1pt}\colorbox{highlightcolor1}{%i4}$ = %c0 to %c9 step %c1 :
+        scf.for $\setlength{\fboxsep}{1pt}\colorbox{highlightcolor2}{%i5}$ = %c0 to %c1 step %c1 :
+          scf.for $\setlength{\fboxsep}{1pt}\colorbox{highlightcolor2}{%i6}$ = %c0 to %c3 step %c1 :
+            scf.for $\setlength{\fboxsep}{1pt}\colorbox{highlightcolor2}{%i7}$ = %c0 to %c3 step %c1 :
+              %5 = memref.load %inp[%i1, %i5, %i3 + %i6, %i4 + %i7] 
+              %6 = memref.load %weight[$\setlength{\fboxsep}{1pt}\colorbox{highlightcolor1}{%i2}$, $\setlength{\fboxsep}{1pt}\colorbox{highlightcolor2}{%i5}$, $\setlength{\fboxsep}{1pt}\colorbox{highlightcolor2}{%i6}$, $\setlength{\fboxsep}{1pt}\colorbox{highlightcolor2}{%i7}$] 
+              %7 = memref.load %tmp[$\setlength{\fboxsep}{1pt}\colorbox{highlightcolor1}{%i1, %i2, %i3, %i4}$] 
+              %tmp[$\setlength{\fboxsep}{1pt}\colorbox{highlightcolor1}{%i1, %i2, %i3, %i4}$] = %5 * %6 + %7

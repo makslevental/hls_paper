@@ -57,13 +57,13 @@ class MLIRLexer(RegexLexer):
         'keyword': [
             # Regular keywords
             (words((
-                'memref', 'for', 'parallel', 'scf', 'step', 'arith', 'addi', 'get_global',
-                'func', 'addf', 'mulf', 'fmult', 'graph', 'fadd',
+                'memref', 'for', 'parallel', 'scf', 'step', 'arith', 'addi', 'get_global', 'relu'
+                'func', 'addf', 'mulf', 'graph', 'subf', 'expf', 'divf',
                 'Constant', 'value', 'strides', 'requires_grad',
                 'device', 'cpu', 'conv2d', 'torch', 'vtensor', 'ListConstruct',
                 'affine', 'copy', 'literal', 'linalg', 'cmpi', 'fill', 'ins', 'outs', 'init_tensor',
                 'dilations', 'conv_2d_nchw_fchw', 'affine_map', 'map', 'apply', 'constant', 'none',
-                'eq', 'load', 'store', 'list', 'return', 'to', 'alloca', 'alloc', 'global', 'true', 'int', 'llvm', 'fmuladd'
+                'eq', 'load', 'store', 'list', 'return', 'to', 'alloca', 'alloc', 'global', 'true', 'int', 'llvm',
             ),
                 suffix=r'\b'), Keyword),
 

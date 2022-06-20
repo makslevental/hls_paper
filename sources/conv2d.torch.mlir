@@ -1,4 +1,4 @@
-func @forward(%arg0: !torch.vtensor<[1,1,11,11],f32>)
+func @forward(%i0: !torch.vtensor<[1,1,11,11],f32>)
     -> !torch.vtensor<[1,64,9,9],f32> {
   %none = torch.constant.none
   %0 = torch.vtensor.literal(
@@ -10,7 +10,7 @@ func @forward(%arg0: !torch.vtensor<[1,1,11,11],f32>)
     : (!torch.int, !torch.int) -> !torch.list<int>
   %2 = torch.prim.ListConstruct %int0, %int0
     : (!torch.int, !torch.int) -> !torch.list<int>
-  %3 = torch.aten.conv2d %arg0, %0, %none, %1, %2, %1, %int1
+  %3 = torch.aten.conv2d %i0, %0, %none, %1, %2, %1, %int1
     : !torch.vtensor<[1,1,11,11],f32>,
       !torch.vtensor<[64,1,3,3],f32>,
       !torch.none, !torch.list<int>, !torch.list<int>,

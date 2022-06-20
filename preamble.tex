@@ -27,6 +27,10 @@
 \setlength{\belowcaptionskip}{10pt plus 3pt minus 2pt} % Chosen fairly arbitrarily
 \setlength{\abovecaptionskip}{10pt plus 3pt minus 2pt} % Chosen fairly arbitrarily
 
+\colorlet{highlightcolor1}{white!70!green}
+\colorlet{highlightcolor2}{white!70!yellow}
+
+
 \setminted{
 	% linenos=true,
 	autogobble,
@@ -36,7 +40,7 @@
 	encoding=utf8,
 	frame=lines,
 	fontfamily=zi4,
-	highlightcolor=green,
+	highlightcolor=highlightcolor1,
 	mathescape, 
 	escapeinside=\\$\\$
 }
@@ -80,7 +84,7 @@
 
 
 \usepackage{soul}
-\sethlcolor{green}
+\sethlcolor{highlightcolor1}
 
 \usepackage{textgreek}
 \usepackage{stmaryrd}

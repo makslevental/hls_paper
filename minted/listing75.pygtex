@@ -1,3 +1,3 @@
 \begin{Verbatim}[commandchars=\\\{\},codes={\catcode`\$=3\catcode`\^=7\catcode`\_=8\relax}]
-\PYG{k}{linalg}\PYG{p}{.}\PYG{k}{init\PYGZus{}tensor}
+\PYG{n}{nn}\PYG{o}{.}\PYG{n}{Softmax}
 \end{Verbatim}
