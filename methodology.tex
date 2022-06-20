@@ -142,7 +142,7 @@ See Section~\ref{subsec:parallel-toposort-scheduling} for a discussion on the ad
 In addition to reducing the runtime of the compiler frontend, our abstract interpreter simplifies the representation such that we may emit a simplified LLVM IR to pass to downstream tools (such Vitis HLS), and thus, in theory reduce their runtime as well.
 In practice, performing these optimizations has no effect on the runtime of Vitis HLS, since it reruns the same (or similar) passes as part of its transformation pipeline.
 Hence, one of the first difficulties we faced in implementing BraggNN as a digital design was reducing the time taken by Vitis HLS in performing its own optimizations on the IR emitted by our interpreter. 
-Furthermore, Vitis HLS' scheduling algorithms struggle with the fully unrolled representation of BraggNN, due to the large number of instructions/operations.
+Furthermore, Vitis HLS' scheduling algorithms struggle with the fully unrolled representation of BraggNN (\maxx{figure with instruction counts}), due to the large number of instructions/operations.
 Hence, in order to be able to quickly iterate design experiments, it became necessary to completely eliminate Vitis HLS from the design process.
 
 Recall that one of the critical functions which Vitis HLS fulfills is the scheduling of operations during each clock cycle, in such a way that they preserve the dataflow graph of BraggNN; that schedule then informs the construction of a corresponding FSM.

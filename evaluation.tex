@@ -3,11 +3,21 @@ Both tools perform design space exploration but at the cost of high-runtimes and
 
 
 \begin{figure}
-	\includegraphics[width=\columnwidth]{figures/full_fpga.png}
-	\caption{Fully synthesized and placed (on Xilinx Alveo U280) design for BraggNN. \crule[red]{0.25cm}{0.25cm} regions represent \texttt{fmul} leaf cells, while \crule[green]{0.25cm}{0.25cm} regions represent \texttt{fadd} leaf cells.}\label{fig:placed_braggnn}
+	\includegraphics[width=\columnwidth]{figures/full_fpga}
+	\caption{Fully synthesized and placed (on Xilinx Alveo U280) design for BraggNN with IEEE754 FP16. \crule[red]{0.25cm}{0.25cm} regions represent \texttt{fmul} leaf cells, while \crule[green]{0.25cm}{0.25cm} regions represent \texttt{fadd} leaf cells.}\label{fig:placed_braggnn}
 \end{figure}
 
 \begin{figure}
-	\includegraphics[width=\columnwidth]{figures/congestion_alveo.png}
-	\caption{Fully synthesized, placed, \textbf{but not routed} (on Xilinx Alveo U280) design for BraggNN. \crule[violet]{0.25cm}{0.25cm} regions represent areas of high congestion, while \crule[orange]{0.25cm}{0.25cm} regions represent areas of moderate (\crule[green]{0.25cm}{0.25cm} regions represent negligible congestion).}\label{fig:congestion_alveo}
+	\includegraphics[width=\columnwidth]{figures/congestion_alveo}
+	\caption{Fully synthesized, placed, \textbf{but not routed} (on Xilinx Alveo U280) design for BraggNN IEEE754 FP16. \crule[violet]{0.25cm}{0.25cm} regions represent areas of high congestion, while \crule[orange]{0.25cm}{0.25cm} regions represent areas of moderate (\crule[green]{0.25cm}{0.25cm} regions represent negligible congestion).}\label{fig:congestion_alveo}
+\end{figure}
+
+\begin{figure}
+	\includegraphics[width=\columnwidth]{figures/full_fpga}
+	\caption{Fully synthesized and placed (on Xilinx Alveo U280) design for BraggNN with IEEE754 FP16. \crule[red]{0.25cm}{0.25cm} regions represent \texttt{fmul} leaf cells, while \crule[green]{0.25cm}{0.25cm} regions represent \texttt{fadd} leaf cells.}\label{fig:placed_braggnn}
+\end{figure}
+
+\begin{figure}
+	\includegraphics[width=\columnwidth]{figures/congestion_alveo}
+	\caption{Fully synthesized, placed, \textbf{but not routed} (on Xilinx Alveo U280) design for BraggNN IEEE754 FP16. \crule[violet]{0.25cm}{0.25cm} regions represent areas of high congestion, while \crule[orange]{0.25cm}{0.25cm} regions represent areas of moderate (\crule[green]{0.25cm}{0.25cm} regions represent negligible congestion).}\label{fig:congestion_alveo}
 \end{figure}
