@@ -1,3 +1,23 @@
 \begin{Verbatim}[commandchars=\\\{\},codes={\catcode`\$=3\catcode`\^=7\catcode`\_=8\relax}]
-\PYG{k}{expf}
+\PYG{k}{scf}\PYG{p}{.}\PYG{k}{for}\PYG{+w}{ }\PYG{n+nv}{\PYGZpc{}i1}\PYG{+w}{ }\PYG{p}{=}\PYG{+w}{ }\PYG{n+nv}{\PYGZpc{}c0}\PYG{+w}{ }\PYG{k}{to}\PYG{+w}{ }\PYG{n+nv}{\PYGZpc{}c1}\PYG{+w}{ }\PYG{k}{step}\PYG{+w}{ }\PYG{n+nv}{\PYGZpc{}c1}\PYG{+w}{ }\PYG{err}{:}
+\PYG{+w}{  }\PYG{k}{scf}\PYG{p}{.}\PYG{k}{for}\PYG{+w}{ }\PYG{n+nv}{\PYGZpc{}i2}\PYG{+w}{ }\PYG{p}{=}\PYG{+w}{ }\PYG{n+nv}{\PYGZpc{}c0}\PYG{+w}{ }\PYG{k}{to}\PYG{+w}{ }\PYG{n+nv}{\PYGZpc{}c64}\PYG{+w}{ }\PYG{k}{step}\PYG{+w}{ }\PYG{n+nv}{\PYGZpc{}c1}\PYG{+w}{ }\PYG{err}{:}
+\PYG{+w}{    }\PYG{k}{scf}\PYG{p}{.}\PYG{k}{for}\PYG{+w}{ }\PYG{n+nv}{\PYGZpc{}i3}\PYG{+w}{ }\PYG{p}{=}\PYG{+w}{ }\PYG{n+nv}{\PYGZpc{}c0}\PYG{+w}{ }\PYG{k}{to}\PYG{+w}{ }\PYG{n+nv}{\PYGZpc{}c9}\PYG{+w}{ }\PYG{k}{step}\PYG{+w}{ }\PYG{n+nv}{\PYGZpc{}c1}\PYG{+w}{ }\PYG{err}{:}
+\PYG{+w}{      }\PYG{k}{scf}\PYG{p}{.}\PYG{k}{for}\PYG{+w}{ }\PYG{n+nv}{\PYGZpc{}i4}\PYG{+w}{ }\PYG{p}{=}\PYG{+w}{ }\PYG{n+nv}{\PYGZpc{}c0}\PYG{+w}{ }\PYG{k}{to}\PYG{+w}{ }\PYG{n+nv}{\PYGZpc{}c9}\PYG{+w}{ }\PYG{k}{step}\PYG{+w}{ }\PYG{n+nv}{\PYGZpc{}c1}\PYG{+w}{ }\PYG{err}{:}
+\PYG{+w}{        }\PYG{k}{scf}\PYG{p}{.}\PYG{k}{for}\PYG{+w}{ }\PYG{n+nv}{\PYGZpc{}i5}\PYG{+w}{ }\PYG{p}{=}\PYG{+w}{ }\PYG{n+nv}{\PYGZpc{}c0}\PYG{+w}{ }\PYG{k}{to}\PYG{+w}{ }\PYG{n+nv}{\PYGZpc{}c1}\PYG{+w}{ }\PYG{k}{step}\PYG{+w}{ }\PYG{n+nv}{\PYGZpc{}c1}\PYG{+w}{ }\PYG{err}{:}
+\PYG{+w}{          }\PYG{k}{scf}\PYG{p}{.}\PYG{k}{for}\PYG{+w}{ }\PYG{n+nv}{\PYGZpc{}i6}\PYG{+w}{ }\PYG{p}{=}\PYG{+w}{ }\PYG{n+nv}{\PYGZpc{}c0}\PYG{+w}{ }\PYG{k}{to}\PYG{+w}{ }\PYG{n+nv}{\PYGZpc{}c3}\PYG{+w}{ }\PYG{k}{step}\PYG{+w}{ }\PYG{n+nv}{\PYGZpc{}c1}\PYG{+w}{ }\PYG{err}{:}
+\PYG{+w}{            }\PYG{k}{scf}\PYG{p}{.}\PYG{k}{for}\PYG{+w}{ }\PYG{n+nv}{\PYGZpc{}i7}\PYG{+w}{ }\PYG{p}{=}\PYG{+w}{ }\PYG{n+nv}{\PYGZpc{}c0}\PYG{+w}{ }\PYG{k}{to}\PYG{+w}{ }\PYG{n+nv}{\PYGZpc{}c3}\PYG{+w}{ }\PYG{k}{step}\PYG{+w}{ }\PYG{n+nv}{\PYGZpc{}c1}\PYG{+w}{ }\PYG{err}{:}
+\PYG{+w}{              }\PYG{p}{.}\PYG{p}{.}\PYG{p}{.}
+\PYG{+w}{              }\PYG{k}{memref}\PYG{p}{.}\PYG{k}{store}\PYG{+w}{ }\PYG{n+nv+nvAnonymous}{\PYGZpc{}9}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nv}{\PYGZpc{}tmp}\PYG{p}{[}\PYG{n+nv}{\PYGZpc{}i1}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nv}{\PYGZpc{}i2}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nv}{\PYGZpc{}i3}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nv}{\PYGZpc{}i4}\PYG{p}{]}\PYG{+w}{ }
+
+\PYG{p}{.}\PYG{p}{.}\PYG{p}{.}\PYG{+w}{            }
+
+\PYG{k}{scf}\PYG{p}{.}\PYG{k}{for}\PYG{+w}{ }\PYG{n+nv}{\PYGZpc{}i1}\PYG{+w}{ }\PYG{p}{=}\PYG{+w}{ }\PYG{n+nv}{\PYGZpc{}c0}\PYG{+w}{ }\PYG{k}{to}\PYG{+w}{ }\PYG{n+nv}{\PYGZpc{}c1}\PYG{+w}{ }\PYG{k}{step}\PYG{+w}{ }\PYG{n+nv}{\PYGZpc{}c1}\PYG{+w}{ }\PYG{err}{:}
+\PYG{+w}{  }\PYG{k}{scf}\PYG{p}{.}\PYG{k}{for}\PYG{+w}{ }\PYG{n+nv}{\PYGZpc{}i2}\PYG{+w}{ }\PYG{p}{=}\PYG{+w}{ }\PYG{n+nv}{\PYGZpc{}c0}\PYG{+w}{ }\PYG{k}{to}\PYG{+w}{ }\PYG{n+nv}{\PYGZpc{}c32}\PYG{+w}{ }\PYG{k}{step}\PYG{+w}{ }\PYG{n+nv}{\PYGZpc{}c1}\PYG{+w}{ }\PYG{err}{:}
+\PYG{+w}{    }\PYG{k}{scf}\PYG{p}{.}\PYG{k}{for}\PYG{+w}{ }\PYG{n+nv}{\PYGZpc{}i3}\PYG{+w}{ }\PYG{p}{=}\PYG{+w}{ }\PYG{n+nv}{\PYGZpc{}c0}\PYG{+w}{ }\PYG{k}{to}\PYG{+w}{ }\PYG{n+nv}{\PYGZpc{}c9}\PYG{+w}{ }\PYG{k}{step}\PYG{+w}{ }\PYG{n+nv}{\PYGZpc{}c1}\PYG{+w}{ }\PYG{err}{:}
+\PYG{+w}{      }\PYG{k}{scf}\PYG{p}{.}\PYG{k}{for}\PYG{+w}{ }\PYG{n+nv}{\PYGZpc{}i4}\PYG{+w}{ }\PYG{p}{=}\PYG{+w}{ }\PYG{n+nv}{\PYGZpc{}c0}\PYG{+w}{ }\PYG{k}{to}\PYG{+w}{ }\PYG{n+nv}{\PYGZpc{}c9}\PYG{+w}{ }\PYG{k}{step}\PYG{+w}{ }\PYG{n+nv}{\PYGZpc{}c1}\PYG{+w}{ }\PYG{err}{:}
+\PYG{+w}{        }\PYG{n+nl}{scf.for }\PYG{esc}{\setlength{\fboxsep}{1pt}\colorbox{highlightcolor1}{%i5 = %c0 to %c64 step %c1}}\PYG{n+nl}{ :}
+\PYG{+w}{          }\PYG{k}{scf}\PYG{p}{.}\PYG{k}{for}\PYG{+w}{ }\PYG{n+nv}{\PYGZpc{}i6}\PYG{+w}{ }\PYG{p}{=}\PYG{+w}{ }\PYG{n+nv}{\PYGZpc{}c0}\PYG{+w}{ }\PYG{k}{to}\PYG{+w}{ }\PYG{n+nv}{\PYGZpc{}c1}\PYG{+w}{ }\PYG{k}{step}\PYG{+w}{ }\PYG{n+nv}{\PYGZpc{}c1}\PYG{+w}{ }\PYG{err}{:}
+\PYG{+w}{            }\PYG{k}{scf}\PYG{p}{.}\PYG{k}{for}\PYG{+w}{ }\PYG{n+nv}{\PYGZpc{}i7}\PYG{+w}{ }\PYG{p}{=}\PYG{+w}{ }\PYG{n+nv}{\PYGZpc{}c0}\PYG{+w}{ }\PYG{k}{to}\PYG{+w}{ }\PYG{n+nv}{\PYGZpc{}c1}\PYG{+w}{ }\PYG{k}{step}\PYG{+w}{ }\PYG{n+nv}{\PYGZpc{}c1}\PYG{+w}{ }\PYG{err}{:}
+\PYG{+w}{              }\PYG{p}{.}\PYG{p}{.}\PYG{p}{.}
+\PYG{+w}{              }\PYG{n+nv+nvAnonymous}{\PYGZpc{}5}\PYG{+w}{ }\PYG{p}{=}\PYG{+w}{ }\PYG{k}{memref}\PYG{p}{.}\PYG{k}{load}\PYG{+w}{ }\PYG{n+nv}{\PYGZpc{}tmp}\PYG{p}{[}\PYG{n+nv}{\PYGZpc{}i1}\PYG{p}{,}\PYG{+w}{ }\PYG{esc}{\setlength{\fboxsep}{1pt}\colorbox{highlightcolor1}{%i5}}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nv+nvAnonymous}{\PYGZpc{}3}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nv+nvAnonymous}{\PYGZpc{}4}\PYG{p}{]}\PYG{+w}{ }
 \end{Verbatim}
