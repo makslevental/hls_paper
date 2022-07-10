@@ -1,5 +1,0 @@
-\begin{Verbatim}[commandchars=\\\{\},codes={\catcode`\$=3\catcode`\^=7\catcode`\_=8\relax}]
-\PYG{n+nv+nvAnonymous}{\PYGZpc{}2}\PYG{+w}{ }\PYG{p}{=}\PYG{+w}{ }\PYG{k}{memref}\PYG{p}{.}\PYG{k}{alloca}\PYG{p}{(}\PYG{p}{)}\PYG{+w}{ }\PYG{err}{:}\PYG{+w}{ }\PYG{k}{memref}\PYG{p}{\PYGZlt{}}\PYG{k+kt}{8xf32}\PYG{p}{\PYGZgt{}}
-\PYG{n+nv}{\PYGZpc{}c1}\PYG{+w}{ }\PYG{p}{=}\PYG{+w}{ }\PYG{k}{arith}\PYG{p}{.}\PYG{k}{constant}\PYG{+w}{ }\PYG{l+m}{1.0}
-\PYG{k}{memref}\PYG{p}{.}\PYG{k}{store}\PYG{+w}{ }\PYG{n+nv}{\PYGZpc{}c1}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nv+nvAnonymous}{\PYGZpc{}2}\PYG{p}{[}\PYG{n+nv+nvAnonymous}{\PYGZpc{}3}\PYG{p}{]}
-\end{Verbatim}

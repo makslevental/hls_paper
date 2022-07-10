@@ -1,0 +1,25 @@
+\definecolor{color02}{rgb}{0.00,0.00,0.35}
+\definecolor{color05}{rgb}{0.05,0.27,0.65}
+\definecolor{color06}{rgb}{0.08,0.40,0.21}
+\definecolor{color07}{rgb}{0.00,0.00,1.00}
+\definecolor{color08}{rgb}{0.07,0.38,0.01}
+
+
+{\color{color02} \%c0} = {\color{color05} arith.constant} {\color{color06} 0}
+
+{\color{color02} \%c1} = {\color{color05} arith.constant} {\color{color06} 1}
+
+{\color{color02} \%c3} = {\color{color05} arith.constant} {\color{color06} 3}
+
+{\color{color02} \%c5} = {\color{color05} arith.constant}{\color{color06}  1.35}
+
+{\color{color05} scf.for} {\color{color02} \%i1} = {\color{color02} \%c0} {\color{color07} to} 
+{\color{color02} \%c3} {\color{color07} step} {\color{color02} \%c1} :
+
+\,\,\,\,{\color{color08} // cast int to fp}
+
+\,\,\,\,{\color{color02} \%2} = {\color{color05} arith.sitofp} {\color{color02} \%i1}
+
+\,\,\,\,{\color{color02} \%3} = {\color{color05} arith.addf} {\color{color02} \%i1}, 
+{\color{color02} \%c5}
+

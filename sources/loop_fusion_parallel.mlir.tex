@@ -1,0 +1,63 @@
+\definecolor{color02}{rgb}{0.05,0.27,0.65}
+\definecolor{color05}{rgb}{0.00,0.00,0.35}
+\definecolor{color06}{rgb}{0.00,0.00,1.00}
+\definecolor{color07}{rgb}{0.08,0.40,0.21}
+\definecolor{color08}{rgb}{1.00,0.98,0.72}
+\definecolor{color09}{rgb}{0.11,0.35,0.45}
+\definecolor{color10}{rgb}{0.60,1.00,0.57}
+
+
+{\color{color02} scf.parallel} ({\color{color05} \%i1}, {\color{color05} \%i2}, 
+{\color{color05} \%i3}, {\color{color05} \%i4}) = ({\color{color05} \%c0}, {\color{color05} \%c0}, 
+{\color{color05} \%c0}, {\color{color05} \%c0})\,\,
+
+{\color{color02} \,\,\,\,to} ({\color{color05} \%c1}, {\color{color05} \%c64}, 
+{\color{color05} \%c9}, {\color{color05} \%c9}) {\color{color06} step} ({\color{color05} \%c1}, 
+{\color{color05} \%c1}, {\color{color05} \%c1}, {\color{color05} \%c1}) :
+
+{\color{color02} \,\,\,\,scf.for} {\color{color05} \%i5} = {\color{color05} \%c0} 
+{\color{color06} to} {\color{color05} \%c1} {\color{color06} step} {\color{color05} \%c1} 
+:
+
+{\color{color02} \,\,\,\,\,\,\,\,scf.for} {\color{color05} \%i6} = {\color{color05} \%c0} 
+{\color{color06} to} {\color{color05} \%c3} {\color{color06} step} {\color{color05} \%c1} 
+:
+
+{\color{color02} \,\,\,\,\,\,\,\,\,\,\,\,scf.for} {\color{color05} \%i7} = {\color{color05} \%c0} 
+{\color{color06} to} {\color{color05} \%c3} {\color{color06} step} {\color{color05} \%c1} 
+:
+
+\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,{\color{color05} \%3} = {\color{color02} arith.addi} 
+{\color{color05} \%i3}, {\color{color05} \%i6}
+
+\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,{\color{color05} \%4} = {\color{color02} arith.addi} 
+{\color{color05} \%i4}, {\color{color05} \%i7}
+
+\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,{\color{color05} \%5} = {\color{color02} memref.load} 
+{\color{color05} \%inp}[{\color{color05} \%i1}, {\color{color05} \%i5}, \%{\color{color07} 3}, 
+\%{\color{color07} 4}]\,\,
+
+\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,{\color{color05} \%6} = {\color{color02} memref.load} 
+{\color{color05} \%weight}[{\color{color05} \%i2}, {\color{color05} \%i5}, {\color{color05} \%i6}, 
+{\color{color05} \%i7}]\,\,
+
+\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,{\color{color05} \%7} = {\color{color02} memref.load} 
+{\color{color05} \%tmp}[{\color{color05} \%i1}, {\color{color05} \%i2}, {\color{color05} \%i3}, 
+{\color{color05} \%i4}]\,\,
+
+\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,{\color{color05} \hlc[color08]{\%8}} = {\color{color02} arith.mulf} 
+\{ {\color{color05} pe }= \hlc[color08]{(}{\color{color05} \hlc[color08]{\%i1}}\hlc[color08]{, 
+}{\color{color05} \hlc[color08]{\%i2}}\hlc[color08]{, }{\color{color05} \hlc[color08]{\%i3}}\hlc[color08]{, 
+\%}{\color{color09} \hlc[color08]{i4}}\hlc[color08]{)} \} {\color{color05} \%5}, 
+{\color{color05} \%6}
+
+\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,{\color{color05} \hlc[color10]{\%9}} = {\color{color02} arith.addf} 
+\{ {\color{color05} pe }= \hlc[color10]{(}{\color{color05} \hlc[color10]{\%i1}}\hlc[color10]{, 
+}{\color{color05} \hlc[color10]{\%i2}}\hlc[color10]{, }{\color{color05} \hlc[color10]{\%i3}}\hlc[color10]{, 
+\%}{\color{color09} \hlc[color10]{i4}}\hlc[color10]{)} \} {\color{color05} \%7}, 
+{\color{color05} \hlc[color08]{\%8}}
+
+{\color{color02} \,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,memref.store} {\color{color05} \hlc[color10]{\%9}}, 
+{\color{color05} \%tmp}[{\color{color05} \%i1}, {\color{color05} \%i2}, {\color{color05} \%i3}, 
+{\color{color05} \%i4}]\,\,
+

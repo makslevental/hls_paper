@@ -36,9 +36,9 @@ To wit: the LHC currently employs FPGAs (in combination with application specifi
 But FPGAs are not a free lunch; there are two principal challenges in deploying DNNs to FPGAs.
 The first is in translating existing representations of DNNs to Register Transfer Level (RTL) representations, which can be used to configure FPGAs.
 Note, DNNs are typically represented in very high-level deep learning frameworks (such as PyTorch and Tensorflow) that abstract away all implementation details. 
-For example, a convolution operation, specified as \inlinepython{torch.nn.Conv2d(1, 16, 3)}, indicates (prima facie) neither the precise data path of the inputs nor the control flow of the executor; high-level DNN frameworks aim to be \emph{declarative}, intentionally eschewing such low-level details.
+For example, a convolution operation, specified as \texttt{torch.nn.Conv2d(1, 16, 3)}, indicates (prima facie) neither the precise data path of the inputs nor the control flow of the executor; high-level DNN frameworks aim to be \emph{declarative}, intentionally eschewing such low-level details.
 Thus it becomes necessary to \emph{lower} the high-level representation to a lower level representation, which explicitly represents the data path and control flow; effectively one must compile the DNN.
-But compilation necessarily implies some instruction set architecture, i.e. some basic set of data path (e.g., \inlineasm{mov}, \inlineasm{push}) and control flow (e.g., \inlineasm{jmp}, \inlineasm{jne}) primitives,
+But compilation necessarily implies some instruction set architecture, i.e. some basic set of data path (e.g., \texttt{mov}, \texttt{push}) and control flow (e.g., \texttt{jmp}, \texttt{jne}) primitives,
 whereas FPGAs support no such primitives.
 Indeed, for typical use-cases of FPGAs, the development methodology involves a great deal of hand-written or ``hand-generated''~\cite{nikhil2004bluespec} design of the primitive components (adders, multipliers, buses, etc.), a methodology dramatically distinct from conventional software design in general, and DNN design in particular.
 Thus, deploying to FPGA entails reimagining a DNN model as compute architecture unto itself, including sophisticated considerations such as operation scheduling, register pipelining, and wire delay.

@@ -1,10 +1,9 @@
 It's worth working through the lowering of one of the convolutional layers comprising BraggNN.
 A PyTorch representation of this operation can be seen in Listing~\ref{lst:conv2dpy}, where \inlinepython{*_channel} parameters specify the multiplicity of the input and output feature maps, \inlinepython{kernel_size} refers to the characteristic dimension of the convolution filter/kernel, and \inlinepython{padding} refers to the amount of zero padding that should be added to the input.
-\begin{longlisting}
-	\inputminted{python}{sources/conv2d.py}
-	\caption{PyTorch representation of 2D convolution.}
+\begin{mylisting}{PyTorch representation of 2D convolution.}
+	\input{sources/conv2d.py.tex}
 	\label{lst:conv2dpy}
-\end{longlisting}
+\end{mylisting}
 In terms of abstraction, it's important to note here that this is a completely declarative and abstract description of the operation, with neither specification nor constraint on how the data should be initialized or ordered in memory, nor the hardware that the computation should run on, nor whether some constituent computations could be (or should be) performed in parallel.
 
 The first rung down the ladder of abstraction is TorchScript IR, as seen in Listing~\ref{lst:conv2dtorchscript}, where it's worth pointing out that the tensor corresponding to the weights of the convolution, namely~\mintinline{mlir}{%conv1.weight}, has a fully refined type (including data type, shape and striding) but neither the input tensor (\mintinline{mlir}{%x.1}) nor the output tensor (\mintinline{mlir}{%out.1}) do.

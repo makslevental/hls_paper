@@ -1,3 +1,0 @@
-\begin{Verbatim}[commandchars=\\\{\},codes={\catcode`\$=3\catcode`\^=7\catcode`\_=8\relax}]
-\PYG{n+nv+nvAnonymous}{\PYGZpc{}3}\PYG{+w}{ }\PYG{p}{=}\PYG{+w}{ }\PYG{k}{arith}\PYG{p}{.}\PYG{k}{addi}\PYG{+w}{ }\PYG{n+nv}{\PYGZpc{}i3}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nv}{\PYGZpc{}i6}
-\end{Verbatim}

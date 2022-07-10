@@ -1,57 +1,11 @@
 \usepackage[utf8]{inputenc}
 \usepackage{url}
 \usepackage{color,fancyvrb}
-\usepackage{algorithm}
-\usepackage{algpseudocode}
 \usepackage{mathtools}
-
-\usepackage[frozencache,cachedir=minted]{minted}
-% \usepackage[finalizecache,cachedir=minted]{minted}
-% \usepackage{minted}
-\newmintinline[inlinemlir]{mlir}{}
-\newmintinline[inlinecpp]{cpp}{}
-\newmintinline[inlinepython]{python}{}
-\newmintinline[inlinev]{v}{}
-\newmintinline[inlineasm]{asm}{}
-
-\renewcommand{\MintedPygmentize}{./scripts/pygmentize.py}
-\newlength{\mintednumbersep}
-\AtBeginDocument{%
-  \sbox0{\tiny00}%
-  \setlength\mintednumbersep{\parindent}%
-  \addtolength\mintednumbersep{-\wd0}%
-}
-
-\newenvironment{longlisting}{\captionsetup{type=listing}}{}
-%\usepackage[skip=2pt]{caption} % example skip set to 2pt
-\setlength{\belowcaptionskip}{10pt plus 3pt minus 2pt} % Chosen fairly arbitrarily
-\setlength{\abovecaptionskip}{10pt plus 3pt minus 2pt} % Chosen fairly arbitrarily
-
-\colorlet{highlightcolor1}{white!70!green}
-\colorlet{highlightcolor2}{white!70!yellow}
+\usepackage{caption}
+\usepackage{listings}
 
 
-\setminted{
-	% linenos=true,
-	autogobble,
-	breaklines,
-	tabsize=2,
-	fontsize=\footnotesize,
-	encoding=utf8,
-	frame=lines,
-	fontfamily=zi4,
-	highlightcolor=highlightcolor1,
-	mathescape, 
-	escapeinside=\\$\\$
-}
-\usepackage{etoolbox,xpatch}
-
-\makeatletter
-\AtBeginEnvironment{minted}{\dontdofcolorbox}
-\def\dontdofcolorbox{\renewcommand\fcolorbox[4][]{##4}}
-\xpatchcmd{\inputminted}{\minted@fvset}{\minted@fvset\dontdofcolorbox}{}{}
-\xpatchcmd{\mintinline}{\minted@fvset}{\minted@fvset\dontdofcolorbox}{}{} % see https://tex.stackexchange.com/a/401250/
-\makeatother
 
 \setcopyright{acmlicensed}
 \acmDOI{00.000/000_0}
@@ -79,9 +33,44 @@
 }{}
 \makeatother
 
-\usepackage[dvipsnames]{xcolor}
+\setlength{\belowcaptionskip}{10pt plus 3pt minus 2pt} % Chosen fairly arbitrarily
+\setlength{\abovecaptionskip}{10pt plus 3pt minus 2pt} % Chosen fairly arbitrarily
+
+\newenvironment{mylisting}[1]
+    {\def\savedcaption{\caption{#1}}%
+	\captionsetup{type=lstlisting}
+	\par\noindent\hrulefill
+	\resetlinenumber
+	\par\begin{linenumbers}
+	\bf
+	\fontfamily{cmtt}\selectfont
+	\footnotesize
+	\setlength{\parindent}{0pt}
+    }
+    { 
+    \end{linenumbers}
+	\vspace{-5pt}\hrulefill
+	\savedcaption
+    }
+
+\newenvironment{mylistingnocap}
+    {\par\noindent\hrulefill
+	\par
+	\bf
+	\fontfamily{cmtt}\selectfont
+	\scriptsize
+	\setlength{\parindent}{0pt}
+    }
+    { 
+	\vspace{-5pt}\hrulefill\\
+    }
+
+
 \newcommand\crule[3][black]{\textcolor{#1}{\rule{#2}{#3}}}
 
+\usepackage[dvipsnames]{xcolor}
+\colorlet{highlightcolor1}{white!70!green}
+\colorlet{highlightcolor2}{white!70!yellow}
 
 \usepackage{soul}
 \sethlcolor{highlightcolor1}
@@ -89,3 +78,13 @@
 \usepackage{textgreek}
 \usepackage{stmaryrd}
 \usepackage{siunitx}
+
+% % for including other docs (like rtf stuff)
+\usepackage{standalone}
+
+\newcommand{\hlc}[2][yellow]{{%
+    \colorlet{foo}{#1}%
+    \sethlcolor{foo}\hl{#2}}%
+}
+
+\usepackage{lineno}

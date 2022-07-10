@@ -1,0 +1,67 @@
+\definecolor{color02}{rgb}{0.05,0.27,0.65}
+\definecolor{color05}{rgb}{0.00,0.00,0.35}
+\definecolor{color06}{rgb}{0.00,0.00,1.00}
+\definecolor{color07}{rgb}{0.60,1.00,0.57}
+\definecolor{color08}{rgb}{0.08,0.40,0.21}
+
+
+{\color{color02} scf.for} {\color{color05} \%i1} = {\color{color05} \%c0} {\color{color06} to} 
+{\color{color05} \%c1} {\color{color06} step} {\color{color05} \%c1} :
+
+{\color{color02} \,\,\,\,scf.for} {\color{color05} \%i2} = {\color{color05} \%c0} {\color{color06} to} 
+{\color{color05} \%c64} {\color{color06} step} {\color{color05} \%c1} :
+
+{\color{color02} \,\,\,\,\,\,\,\,scf.for} {\color{color05} \%i3} = {\color{color05} \%c0} 
+{\color{color06} to} {\color{color05} \%c9} {\color{color06} step} {\color{color05} \%c1} 
+:
+
+{\color{color02} \,\,\,\,\,\,\,\,\,\,\,\,scf.for} {\color{color05} \%i4} = {\color{color05} \%c0} 
+{\color{color06} to} {\color{color05} \%c9} {\color{color06} step} {\color{color05} \%c1} 
+:
+
+\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,{\color{color05} \hlc[color07]{\%3}}\hlc[color07]{ = }{\color{color02} \hlc[color07]{memref.load}}\hlc[color07]{ 
+}{\color{color05} \hlc[color07]{\%bias}}\hlc[color07]{[}{\color{color05} \hlc[color07]{\%i2}}\hlc[color07]{]}
+
+{\color{color02} \,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,}{\color{color02} \hlc[color07]{memref.store}}\hlc[color07]{ 
+}{\color{color05} \hlc[color07]{\%3}}\hlc[color07]{, }{\color{color05} \hlc[color07]{\%tmp}}\hlc[color07]{[}{\color{color05} \hlc[color07]{\%i1}}\hlc[color07]{, 
+}{\color{color05} \hlc[color07]{\%i2}}\hlc[color07]{, }{\color{color05} \hlc[color07]{\%i3}}\hlc[color07]{, 
+}{\color{color05} \hlc[color07]{\%i4}}\hlc[color07]{]}
+
+\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,...
+
+\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,{\color{color05} \%c2} = {\color{color02} arith.constant} {\color{color08} 2}
+
+\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,{\color{color05} \%38} = {\color{color02} arith.addi} {\color{color05} \%i3}, 
+{\color{color05} \%c1}
+
+\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,{\color{color05} \%39} = {\color{color02} arith.addi} {\color{color05} \%i4}, 
+{\color{color05} \%c2}
+
+\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,{\color{color05} \hlc[color07]{\%40}}\hlc[color07]{ = }{\color{color02} \hlc[color07]{memref.load}}\hlc[color07]{ 
+}{\color{color05} \hlc[color07]{\%inp}}\hlc[color07]{[}{\color{color05} \hlc[color07]{\%i1}}\hlc[color07]{, 
+}{\color{color05} \hlc[color07]{\%c0}}\hlc[color07]{, \%}{\color{color08} \hlc[color07]{38}}\hlc[color07]{, 
+\%}{\color{color08} \hlc[color07]{39}}\hlc[color07]{]}
+
+\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,{\color{color05} \hlc[color07]{\%41}}\hlc[color07]{ = }{\color{color02} \hlc[color07]{memref.load}}\hlc[color07]{ 
+}{\color{color05} \hlc[color07]{\%weight}}\hlc[color07]{[}{\color{color05} \hlc[color07]{\%i2}}\hlc[color07]{, 
+}{\color{color05} \hlc[color07]{\%c0}}\hlc[color07]{, }{\color{color05} \hlc[color07]{\%c1}}\hlc[color07]{, 
+}{\color{color05} \hlc[color07]{\%c2}}\hlc[color07]{]}
+
+\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,{\color{color05} \hlc[color07]{\%42}}\hlc[color07]{ = }{\color{color02} \hlc[color07]{memref.load}}\hlc[color07]{ 
+}{\color{color05} \hlc[color07]{\%tmp}}\hlc[color07]{[}{\color{color05} \hlc[color07]{\%i1}}\hlc[color07]{, 
+}{\color{color05} \hlc[color07]{\%i2}}\hlc[color07]{, }{\color{color05} \hlc[color07]{\%i3}}\hlc[color07]{, 
+}{\color{color05} \hlc[color07]{\%i4}}\hlc[color07]{]}
+
+\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,{\color{color05} \%43} = {\color{color02} arith.mulf} {\color{color05} \%40}, 
+{\color{color05} \%41}
+
+\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,{\color{color05} \%44} = {\color{color02} arith.addf} {\color{color05} \%42}, 
+{\color{color05} \%43}
+
+{\color{color02} \,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,}{\color{color02} \hlc[color07]{memref.store}}\hlc[color07]{ 
+}{\color{color05} \hlc[color07]{\%44}}\hlc[color07]{, }{\color{color05} \hlc[color07]{\%tmp}}\hlc[color07]{[}{\color{color05} \hlc[color07]{\%i1}}\hlc[color07]{, 
+}{\color{color05} \hlc[color07]{\%i2}}\hlc[color07]{, }{\color{color05} \hlc[color07]{\%i3}}\hlc[color07]{, 
+}{\color{color05} \hlc[color07]{\%i4}}\hlc[color07]{]}
+
+\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,...
+

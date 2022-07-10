@@ -7,27 +7,25 @@ Accordingly, our methodology consists of five techniques distilled from such gen
 
 It is well known that the most straightforward way to achieve lowest latency inference of a DNN is to linearize the control flow graph~\cite{osti_1574050} (i.e., remove branches) and flatten the dataflow graph as much as possible~\cite{10.1145/3295500.3356173} (i.e., execute as many operations in parallel as possible).
 For intermediate level representations of a DNN, this corresponds to loop unrolling followed by fusion (alternatively known as unroll and jam~\cite{thomas1971catalogue}).
-For example, consider the pair of loop nests in Listing~\ref{lst:loop_fusion}, corresponding to \inlinepython{Conv2d(out_channels=64, in_channels=1, kernel=3)}.
+For example, consider the pair of loop nests in Listing~\ref{lst:loop_fusion}, corresponding to \texttt{Conv2d(out\_channels=64, in\_channels=1, kernel=3)}.
 General purpose compilers can readily unroll each of the loop nests, but prior to fusion, due to their conservative correctness guarantees, are bound to verify that memory independence constraints are satisfied for all pairs of stores and loads in each of the loop nests.
-Thus, after unrolling the inner loops of the second loop nest (on \mintinline{mlir}{%i5}, \mintinline{mlir}{%i6}, \mintinline{mlir}{%i7}) we incur
+Thus, after unrolling the inner loops of the second loop nest (on \texttt{\%i5}, \texttt{\%i6}, \texttt{\%i7}) we incur
 \[
 	\mathtt{\%c1} \times \mathtt{\%c3} \times \mathtt{\%c3} \times 2 \times 4
 \]
 memory independence checks.
 Consequently, unroll and fuse optimizations take increasingly longer as one experiments with larger and larger unroll thresholds; the \emph{unroll threshold} determines which loops will be fully unrolled (all loops with trip count less than or equal to the threshold will be unrolled).
-\begin{longlisting}
-	\inputminted[highlightlines={8,9,20,21,22,25},frame=lines]{mlir}{sources/loop_fusion.mlir}
-	\caption{Loop fusion and unrolling example, for loops corresponding to \inlinepython{Conv2d(64, 1, 3)}, with \hl{emphasis} on loads and stores whose independence must be verified.}
+\begin{mylisting}{Loop fusion and unrolling example, for loops corresponding to \texttt{Conv2d(64, 1, 3)}, with \hl{emphasis} on loads and stores whose independence must be verified.}
+	\input{sources/loop_fusion.mlir.tex}
 	\label{lst:loop_fusion}
-\end{longlisting}
-\begin{longlisting}
-	\inputminted[highlightlines={5,6,11-13,16},linenos=true,frame=lines,numbersep=\mintednumbersep]{mlir}{sources/unrolled_loop.mlir}
-	\caption{Unrolled and fused loop-nest, for loops corresponding to \inlinepython{Conv2d(1, 64, 3)}, with \hl{emphasis} on which store-load forwards can be performed.}
+\end{mylisting}
+\begin{mylisting}{Unrolled and fused loop-nest, for loops corresponding to \texttt{Conv2d(1, 64, 3)}, with \hl{emphasis} on which store-load forwards can be performed.}
+	\input{sources/unrolled_loop.mlir.tex}
 	\label{lst:storeloadforwarding}
-\end{longlisting}
+\end{mylisting}
 
 Following unroll and jam, we are able to perform \emph{store-load forwarding}, i.e., we are able to promote those store operations which are subsequently loaded from (with no intervening stores) to registers.
-For example, consider the above fused loop nests, with the second loop nest having the inner three loops fully unrolled (see Listing~\ref{lst:storeloadforwarding}); the store operations on lines 6 and 13 can be entirely eliminated and the load operation on line 5 can be forwarded to the \inlinemlir{arith.addf} on line 15.
+For example, consider the above fused loop nests, with the second loop nest having the inner three loops fully unrolled (see Listing~\ref{lst:storeloadforwarding}); the store operations on lines 6 and 13 can be entirely eliminated and the load operation on line 5 can be forwarded to the \texttt{arith.addf} on line 15.
 Note, for each load operation that follows a store operation, a compiler must check whether the store and the load access the same location in memory, and further verify that there are no intervening store operations to the same memory address.
 In general, this requires solving a system of constraints~\cite{10.2307/2322281}.
 We observe that as loops are further and further unrolled, the cost of this particular optimization grows polynomially; consider a fully unrolled loop nest, with many parallel dataflows, for which a store operation in one dataflow might be forwarded across a parallel dataflow (and thus incur checks against all stores and loads in that parallel dataflow).
@@ -40,58 +38,32 @@ Moreover, often their rigor and conservatism are unnecessary given a high-level 
 The loop indices and corresponding memory addresses for these safe store-load forwards are simple to compute analytically and ahead of time (even in the presence of complications such as strided tensors).
 
 In order to avoid the runtime costs associated with these conservative optimization passes, we implement an abstract interpreter for sufficiently lowered DNNs.
-Concretely, we lower BraggNN to the structured control flow (\inlinemlir{scf}) dialect and then interpret this representation of BraggNN with alternative semantics.
+Concretely, we lower BraggNN to the structured control flow (\texttt{scf}) dialect and then interpret this representation of BraggNN with alternative semantics.
 Firstly, our interpreter evaluates functions of loop indices, such as 
-\begin{minted}[autogobble,xleftmargin=0.2\columnwidth,xrightmargin=0.2\columnwidth]{mlir}
-	#map = affine_map<(d0, d1) -> (d0 + d1)>
-	%3 = affine.apply #map(%i3, %i6)
-\end{minted}
-or 
-\begin{minted}[autogobble,xleftmargin=0.2\columnwidth,xrightmargin=0.2\columnwidth]{mlir}
-	%3 = arith.addi %i3, %i6
-\end{minted}
-where \inlinemlir{%i3}, \inlinemlir{%i6} are loop indices.
+\begin{mylistingnocap}
+	\input{sources/scratch1.tex}
+\end{mylistingnocap}
+or {\input{sources/scratch2.tex}}, where \texttt{\%i3}, \texttt{\%i6} are loop indices.
 This enables us to determine array indices of stores and loads, such as 
-\begin{minted}[autogobble,xleftmargin=0.2\columnwidth,xrightmargin=0.2\columnwidth]{mlir}
-	%2 = memref.alloca() : memref<8xf32>
-	%c1 = arith.constant 1.0
-	memref.store %c1, %2[%3]
-\end{minted}
+\begin{mylistingnocap}
+	\input{sources/scratch3.tex}
+\end{mylistingnocap}
 Note that evaluation of such memory index arithmetic is typically deferred to runtime in conventional accelerators because of either the control flow inherent in a DNN, or simply a lack of available registers (to store the results).
 Thus, we are able to precompute these indices, saving cycles, because BraggNN lacks control flow and FPGAs are abundant in registers.
-Note also that we do not evaluate values corresponding to \inlinemlir{memref.load}s, as they represent BraggNN weights or activations; our interpreter implements such values as proxy objects and merely records the arithmetic operations performed on them.
+Note also that we do not evaluate values corresponding to \texttt{memref.load}s, as they represent BraggNN weights or activations; our interpreter implements such values as proxy objects and merely records the arithmetic operations performed on them.
 
 Secondly, our interpreter unrolls loops by executing them while enforcing SSA.
 That is to say, for a loop whose body has repeated assignments to the same value (ostensibly violating SSA), such as 
-\begin{minted}[autogobble,xleftmargin=0.2\columnwidth,xrightmargin=0.2\columnwidth]{mlir}
-	%c0 = arith.constant 0
-	%c1 = arith.constant 1
-	%c3 = arith.constant 3
-	%c5 = arith.constant 1.35
-	scf.for %i1 = %c0 to %c3 step %c1 :
-		// cast int to fp
-		%2 = arith.sitofp %i1
-		%3 = arith.addf %i1, %c5
-\end{minted}
+\begin{mylistingnocap}
+	\input{sources/scratch4.tex}
+\end{mylistingnocap}
 we execute the loop and instantiate unique identifiers for the result of each operation:
-\begin{minted}[autogobble,xleftmargin=0.2\columnwidth,xrightmargin=0.2\columnwidth]{mlir}
-	%c0 = arith.constant 0 
-	%c1 = arith.constant 1 
-	%c2 = arith.constant 2 
-	%c3 = arith.constant 3 
-	%c5 = arith.constant 1.35
-	%2_0 = arith.sitofp %c0
-	%3_0 = arith.addf %2_0, %c5
-	%2_1 = arith.sitofp %c1
-	%3_1 = arith.addf %2_1, %c5
-	%2_2 = arith.sitofp %c2
-	%3_2 = arith.addf %2_2, %c5
-	%2_3 = arith.sitofp %c3
-	%3_3 = arith.addf %2_3, %c5
-\end{minted}
+\begin{mylistingnocap}
+	\input{sources/scratch5.tex}
+\end{mylistingnocap}
 This enables us to both unroll the loop and track dataflow through arithmetic operations (see Section~\ref{subsec:parallel-toposort-scheduling}).
-Finally, our interpreter reinterprets \inlinemlir{memref}s as \emph{geometric symbol tables} (i.e., symbol tables indexed by array indices rather than identifiers/names) and stores/loads as assignments/reads to/from those symbol tables.
-Such semantics, in combination with fully evaluated array indices, enable us to simultaneously track dataflow through activation buffers (which appear as \inlinemlir{memref}s) and perform store/load forwarding.
+Finally, our interpreter reinterprets \texttt{memref}s as \emph{geometric symbol tables} (i.e., symbol tables indexed by array indices rather than identifiers/names) and stores/loads as assignments/reads to/from those symbol tables.
+Such semantics, in combination with fully evaluated array indices, enable us to simultaneously track dataflow through activation buffers (which appear as \texttt{memref}s) and perform store/load forwarding.
 
 The dataflow analysis carried out by our interpreter enables us to easily infer the flow of weights through the DNN and thus enables us to experiment with two weight storage strategies; namely we can either store weights as BRAMs, uniquely associated with a set of DSP blocks, or as a collection of free registers. 
 The dataflow analysis also enables us to identify sequences of multiplications and additions and group them together such that they can be scheduled to reuse accumulator registers associated with floating point block instantiations (effectively forming a multiply-accumulator); 
@@ -101,7 +73,7 @@ See Section~\ref{subsec:parallel-toposort-scheduling} for a discussion on the ad
 
 % We also reinterpret remaining stores and loads to memory as reads and writes to registers, thus simplifying our design; such stores and loads would otherwise translate to stores and loads from Block RAM (BRAM).
 % Furthermore, since BraggNN is a relatively small DNN, we inline absolutely all of the weight tensors as constants and perform \emph{constant propagation}.
-% In summary our abstract interpreter performs the following transformations on the \inlinemlir{scf} representation of BraggNN:
+% In summary our abstract interpreter performs the following transformations on the \texttt{scf} representation of BraggNN:
 % \begin{enumerate}
 % 	\item We completely eliminate any latency due to loading from or storing to BRAM for intermediate activations;
 % 	\item We completely eliminate all logic (i.e., integer arithmetic) related to calculating memory offsets, a non-trivial reduction in instruction count and design complexity (see figure <figure> for reduction in instruction count);
@@ -113,25 +85,25 @@ See Section~\ref{subsec:parallel-toposort-scheduling} for a discussion on the ad
 % \begin{figure}
 % 	% \begin{equation}\label{eqn:semantics}
 % 	% 	\begin{split}
-% 	% 		\llbracket \%\texttt{\small var} = \inlinemlir{memref.alloca}\texttt{()}\!\!:\!\inlinemlir{memref}\!\!<\!\!k\inlinemlir{xf32}\!\!> \rrbracket &= [\text{allocate }k\text{ 16 bit registers}] \\
+% 	% 		\llbracket \%\texttt{\small var} = \texttt{memref.alloca}\texttt{()}\!\!:\!\texttt{memref}\!\!<\!\!k\texttt{xf32}\!\!> \rrbracket &= [\text{allocate }k\text{ 16 bit registers}] \\
 % 	% 		\llbracket \mintedinline{mlir}{\%5 = memref.load \%i0[\%i1, \%i5, \%3, \%4]} \rrbracket &= [\text{allocate }k\text{ 16 bit registers}] \\
 % 	% 	\end{split}
 % 	% \end{equation}
 % 	\begin{multline*}
-% 		\llbracket \inlinemlir{$\%$var = memref.alloca() : memref<$k$xf32>} \rrbracket \implies \\
+% 		\llbracket \texttt{$\%$var = memref.alloca() : memref<$k$xf32>} \rrbracket \implies \\
 % 			\text{allocate $k$ 16 bit registers}
 % 	\end{multline*}
 % 	\begin{multline*}
-% 		\quad\llbracket \inlinemlir{$\%$5 = memref.load $\%$var[$\%$m]} \rrbracket \implies \text{read $m$th register} \quad
+% 		\quad\llbracket \texttt{$\%$5 = memref.load $\%$var[$\%$m]} \rrbracket \implies \text{read $m$th register} \quad
 % 	\end{multline*}
 % 	\begin{multline*}
-% 		\quad\quad\llbracket \inlinemlir{$\%$8 = arith.mulf $\%$5, $\%$6} \rrbracket \implies \text{ $\%8 = \%5 \times \%6$} \quad\quad\quad
+% 		\quad\quad\llbracket \texttt{$\%$8 = arith.mulf $\%$5, $\%$6} \rrbracket \implies \text{ $\%8 = \%5 \times \%6$} \quad\quad\quad
 % 	\end{multline*}
 % 	\begin{multline*}
-% 		\quad\llbracket \inlinemlir{memref.store $\%$8, $\%$var[$\%$m]} \rrbracket \implies \text{store $\%$8 in $m$th register}\quad
+% 		\quad\llbracket \texttt{memref.store $\%$8, $\%$var[$\%$m]} \rrbracket \implies \text{store $\%$8 in $m$th register}\quad
 % 	\end{multline*}
 % 	\begin{multline*}
-% 		\llbracket \inlinemlir{scf.parallel (...) = (...) to (...) step (...)} \rrbracket \implies \\
+% 		\llbracket \texttt{scf.parallel (...) = (...) to (...) step (...)} \rrbracket \implies \\
 % 			 \text{store $\%$8 in $m$th register}
 % 	\end{multline*}
 
@@ -155,40 +127,45 @@ While we do not find ourselves in a resource-unconstrained environment, we are s
 %  by imposing dependencies on operations that model a fixed number of resources.
 Consider again the second loop in Listing~\ref{lst:loop_fusion}, which corresponds to the first convolutional layer of BraggNN.
 If we rewrite it using pseudocode
-\inputminted[autogobble,xleftmargin=0.0\columnwidth,xrightmargin=0.0\columnwidth]{mlir}{sources/loop_fusion_mac.mlir}
-\noindent it is easy to observe that the loop can be parallelized on indices \inlinemlir{%i1, %i2, %i3, %i4}.
-Furthermore, it can be observed that inner three loops (on indices \inlinemlir{%i5, %i6, %i7}) represent multiplication and accumulation into \inlinemlir{%tmp}.
+\begin{mylistingnocap}
+	\input{sources/loop_fusion_mac.mlir.tex}
+\end{mylistingnocap}
+\noindent it is easy to observe that the loop can be parallelized on indices \texttt{\%i1, \%i2, \%i3, \%i4}.
+Furthermore, it can be observed that inner three loops (on indices \texttt{\%i5, \%i6, \%i7}) represent multiplication and accumulation into \texttt{\%tmp}.
 Hence, this loop nest can be implemented as 
 \[
 	\mathtt{\%c1} \times \mathtt{\%c64} \times \mathtt{\%c9} \times \mathtt{\%c9}
 \]
-\emph{processing elements} (PE) operating in parallel, where each PE performs \inlinemlir{mulf} and \inlinemlir{addf} in parallel (the \inlinemlir{addf} operates on the results of the \inlinemlir{mulf} from the previous iteration).
+\emph{processing elements} (PE) operating in parallel, where each PE performs \texttt{mulf} and \texttt{addf} in parallel (the \texttt{addf} operates on the results of the \texttt{mulf} from the previous iteration).
 Note that this structure is replicated for all convolutional layers in BraggNN.
-Thus, our interpreter records this implicit parallelism (by interpreting \inlinemlir{scf.parallel} loop nests) and uses it to create auxiliary dependencies between operations (in addition to dataflow dependencies).
+Thus, our interpreter records this implicit parallelism (by interpreting \texttt{scf.parallel} loop nests) and uses it to create auxiliary dependencies between operations (in addition to dataflow dependencies).
 For example, the above loop nest is interpreted as 
-\inputminted[autogobble,xleftmargin=0.0\columnwidth,xrightmargin=0.0\columnwidth]{mlir}{sources/loop_fusion_parallel.mlir}
+\begin{mylistingnocap}
+	\input{sources/loop_fusion_parallel.mlir.tex}
+\end{mylistingnocap}
 \noindent and unrolls to 
-\inputminted[autogobble,xleftmargin=0.1\columnwidth,xrightmargin=0.1\columnwidth]{mlir}{sources/loop_fusion_parallel_unroll.mlir}
-\noindent where the pairing of dataflow dependency (i.e., SSA values like \inlinemlir{%44}) and \inlinemlir{pe} constrain the scheduling of the arithmetic operations.
+\begin{mylistingnocap}
+	\input{sources/loop_fusion_parallel_unroll.mlir.tex}
+\end{mylistingnocap}
+\noindent where the pairing of dataflow dependency (i.e., SSA values like \texttt{\%44}) and \texttt{pe} constrain the scheduling of the arithmetic operations.
 Note that this PE dependency naturally captures the implicit geometry of the operations as well and thus, in principle, minimizes data movement between the PEs (see Section~\ref{sec:discussion} for more on this).
-We can similarly constrain the other operations in BraggNN (such as \inlinemlir{relu}).
+We can similarly constrain the other operations in BraggNN (such as \texttt{relu}).
 Using the complete set of constraints we formulate the resource-unconstrained problem and solve it using a LP solver (Gurobi through OR-Tools through CIRCT~\cite{CIRCTHardwareDesign}).
 
-The behavior of our interpreter with respect to two subtleties merits discussion: fan-out from a particular PE at interface of two DNN layers and the evaluation order of \inlinepython{nn.Softmax}.
+The behavior of our interpreter with respect to two subtleties merits discussion: fan-out from a particular PE at interface of two DNN layers and the evaluation order of \texttt{nn.Softmax}.
 With respect to the former, consider consecutive convolutions
-\begin{longlisting}
-	\inputminted[frame=lines]{mlir}{sources/consecutive_convs.mlir}
-	\caption{Consecutive convolutions illustrating high-fanout from \mintinline{mlir}{\%tmp}.}
+\begin{mylisting}{Consecutive convolutions illustrating high-fanout from \texttt{\%tmp}.}
+	\input{sources/consecutive_convs.mlir.tex}
 	\label{lst:consecutive_convs}
-\end{longlisting}
+\end{mylisting}
 With respect to fan-out from a particular PE, since, by grouping multiplies and accumulates we enforce reuse of result registers, we produce instances of high-fanout from PE result registers at the points \emph{between DNN layers}.
-Consider the consecutive convolutions in Listing~\ref{lst:consecutive_convs}; the result registers of each PE (corresponding to \mintinline{mlir}{%tmp}) have a fan-out of $64 \times k$, where $k$ is the number of other convolutions operating on \mintinline{mlir}{%tmp} (occurring in parallel). 
+Consider the consecutive convolutions in Listing~\ref{lst:consecutive_convs}; the result registers of each PE (corresponding to \texttt{\%tmp}) have a fan-out of $64 \times k$, where $k$ is the number of other convolutions operating on \texttt{\%tmp} (occurring in parallel). 
 More importantly those 64 reads happen sequentially, and thus if the source PE participates in the evaluation of the second convolution (i.e., its result register is overwritten), the computed value will be wrong (essentially a write-after-read error).
 The solution is to reuse result registers of PEs during the evaluation of a layer (saving registers) and copy results to intermediate registers \emph{between layers}. 
 We handle this by enforcing value semantics at the PyTorch level of abstraction (i.e., we insert tensor copies on outputs).
-With respect to the evaluation order of \inlinepython{nn.Softmax}, consider the naive implementation involves elementwise \inlinemlir{expf} followed by sum. 
+With respect to the evaluation order of \texttt{nn.Softmax}, consider the naive implementation involves elementwise \texttt{expf} followed by sum. 
 Evaluating the sum sequentially is clearly wasteful (in terms of latency) and unnecessary; the solution is to enforce the instantiation of a reduction tree of adjacent sums.
-Our interpreter implements this (as a \inlinepython{ReduceAdd} operation) and such a reduction tree collapses the latency logarithmically.
+Our interpreter implements this (as a \texttt{ReduceAdd} operation) and such a reduction tree collapses the latency logarithmically.
 
 \subsection{Bit Twiddling Hacks}\label{subsec:bit-twiddling-hacks}
 \maxx{just btw this is not a term i invented... \url{https://graphics.stanford.edu/~seander/bithacks.html}}
@@ -196,16 +173,16 @@ Our interpreter implements this (as a \inlinepython{ReduceAdd} operation) and su
 FPGAs do not effectively permit dynamic reconfiguration of DSPs, to support fully distinct operations; e.g., a set of DSPs associated with floating point addition can be dynamically reconfigured to perform subtraction but multiplication (likewise vice-versa).
 Thus, in order to maximize reuse of DSPs (in order to minimize DSPs consumption) we only instantiate FP cores for multiplication and addition.
 We use FloPoCo~\cite{8877424} core generator to generate pipelined implementations of FP addition and multiplication\footnote{FloPoCo's floating point format differs slightly from IEEE754, foregoing subnormals and differently encoding zeroes, infinities and NaNs, for the benefit of reduced complexity.}.
-We map the remaining operations in BraggNN (\inlinemlir{subf}, \inlinemlir{expf}, \inlinemlir{relu}, \inlinemlir{divf}) to \inlinemlir{mulf} and addition \inlinemlir{addf}.
-For the cases of \inlinemlir{subf} and \inlinemlir{expf} this is straightforward (a bit flip on the sign bit to handle the former and a Taylor series expansion to handle the latter).
-For the case of \inlinemlir{relu}, note that for a IEEE 754 $n$-bit floating point number $x$
+We map the remaining operations in BraggNN (\texttt{subf}, \texttt{expf}, \texttt{relu}, \texttt{divf}) to \texttt{mulf} and addition \texttt{addf}.
+For the cases of \texttt{subf} and \texttt{expf} this is straightforward (a bit flip on the sign bit to handle the former and a Taylor series expansion to handle the latter).
+For the case of \texttt{relu}, note that for a IEEE 754 $n$-bit floating point number $x$
 $$
 \max(0, x) = x \iff x[0] = 0
 $$
 where $x[0]$ represents the sign bit of $x$.
 A similar relationship holds for FloPoCo FP format.
-Division, needed for implementing \inlinepython{nn.Softmax}, is the only primitive operation that presents a serious challenge to normalization in this way (i.e., a mapping in terms of multiplication and addition).
-To represent division (in terms of \inlinemlir{mulf}) we exploit the fact that aliasing a floating point number as an integer effectively calculates the approximate binary logarithm~\cite{enwiki:1081681080} of the number.
+Division, needed for implementing \texttt{nn.Softmax}, is the only primitive operation that presents a serious challenge to normalization in this way (i.e., a mapping in terms of multiplication and addition).
+To represent division (in terms of \texttt{mulf}) we exploit the fact that aliasing a floating point number as an integer effectively calculates the approximate binary logarithm~\cite{enwiki:1081681080} of the number.
 To see this, observe that for $x=2^{e_{x}}(1+m_{x})$ it's the case that
 \[
 	\log _{2}(x)=e_{x}+\log _{2}(1+m_{x})	\approx e_{x} + m_x + \sigma
