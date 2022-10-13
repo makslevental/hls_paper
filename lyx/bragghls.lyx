@@ -117,7 +117,7 @@ Levental
 
 
 \begin_inset Flex Author Affiliation
-status collapsed
+status open
 
 \begin_layout Plain Layout
 University of Chicago
@@ -516,7 +516,7 @@ lowering
 \emph on
 synthesizing
 \emph default
- a program into a
+ a
 \emph on
  register-transfer level
 \emph default
@@ -528,7 +528,7 @@ design
 \emph on
 hardware description language
 \emph default
- (HDL), is the domain of high-level synthesis (HLS) 
+ (HDL), from a program, is the domain of high-level synthesis (HLS) 
 \begin_inset CommandInset citation
 LatexCommand cite
 key "7368920"
