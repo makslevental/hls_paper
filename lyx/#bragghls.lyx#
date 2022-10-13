@@ -1,0 +1,776 @@
+#LyX 2.3 created this file. For more info see http://www.lyx.org/
+\lyxformat 544
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass IEEEtran
+\begin_preamble
+% for subfigures/subtables
+\usepackage[caption=false,font=footnotesize]{subfig}
+\end_preamble
+\options conference
+\use_default_options false
+\maintain_unincluded_children false
+\language english
+\language_package none
+\inputencoding auto
+\fontencoding global
+\font_roman "default" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\use_microtype false
+\use_dash_ligatures false
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command bibtex
+\index_command default
+\float_placement tbh
+\paperfontsize default
+\spacing single
+\use_hyperref true
+\pdf_title "Your Title"
+\pdf_author "Your Name"
+\pdf_bookmarks true
+\pdf_bookmarksnumbered true
+\pdf_bookmarksopen true
+\pdf_bookmarksopenlevel 1
+\pdf_breaklinks false
+\pdf_pdfborder true
+\pdf_colorlinks false
+\pdf_backref false
+\pdf_pdfusetitle false
+\pdf_quoted_options "pdfpagelayout=OneColumn, pdfnewwindow=true, pdfstartview=XYZ, plainpages=false"
+\papersize default
+\use_geometry false
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 0
+\use_minted 0
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\is_math_indent 0
+\math_numbering_side default
+\quotes_style english
+\dynamic_quotes 0
+\papercolumns 2
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+BraggHLS
+\end_layout
+
+\begin_layout Author
+\begin_inset Flex Author Name
+status open
+
+\begin_layout Plain Layout
+Maksim
+\begin_inset space ~
+\end_inset
+
+Levental
+\end_layout
+
+\end_inset
+
+
+\begin_inset Flex Author Affiliation
+status collapsed
+
+\begin_layout Plain Layout
+University of Chicago
+\begin_inset Newline newline
+\end_inset
+
+Email: test@test.tes
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+and 
+\end_layout
+
+\end_inset
+
+
+\begin_inset Flex Author Name
+status open
+
+\begin_layout Plain Layout
+Second
+\begin_inset space ~
+\end_inset
+
+Name
+\end_layout
+
+\end_inset
+
+
+\begin_inset Flex Author Affiliation
+status collapsed
+
+\begin_layout Plain Layout
+Ecole Superieure
+\begin_inset Newline newline
+\end_inset
+
+Nantes, France
+\begin_inset Newline newline
+\end_inset
+
+Email: second@second.fr
+\end_layout
+
+\end_inset
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+and 
+\end_layout
+
+\end_inset
+
+
+\begin_inset Flex Author Name
+status collapsed
+
+\begin_layout Plain Layout
+Third
+\begin_inset space ~
+\end_inset
+
+Name
+\begin_inset Newline newline
+\end_inset
+
+and Fourth
+\begin_inset space ~
+\end_inset
+
+Name
+\end_layout
+
+\end_inset
+
+
+\begin_inset Flex Author Affiliation
+status collapsed
+
+\begin_layout Plain Layout
+Star Academy
+\begin_inset Newline newline
+\end_inset
+
+San Francisco, California 99999-9999
+\begin_inset Newline newline
+\end_inset
+
+Telephone: (800) 555–5555
+\begin_inset Newline newline
+\end_inset
+
+Fax: (888) 555–5555
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Abstract
+In many experiment-driven scientific domains, such as high-energy physics,
+ material science, and cosmology, very high data rate experiments impose
+ hard constraints on the corresponding data acquisition systems: collected
+ data must either be indiscriminately stored for post-processing and analysis,
+ thereby necessitating large storage capacity, or accurately filtered in
+ real-time, thereby necessitating low latency execution.
+ Deep neural networks, effective in many other filtering tasks, have not
+ been widely employed in such data acquisition systems, due to design and
+ deployment difficulties.
+ This paper presents an open source, lightweight, compiler framework 
+\family typewriter
+BraggHLS
+\family default
+, based on high-level synthesis techniques, for translating high-level represent
+ations of deep neural networks to low-level representations, suitable for
+ deployment to near-sensor devices such as field-programmable gate arrays.
+ We present a case study and evaluation of 
+\family typewriter
+BraggHLS
+\family default
+ on a deep neural network for Bragg peak detection in the context of high-energy
+ diffraction microscopy.
+ We show 
+\family typewriter
+BraggHLS
+\family default
+ is able to produce an implementation with a throughput 4.7µs/sample, which
+ is approximately a 5x improvement over the existing implementation.
+\end_layout
+
+\begin_layout Section
+Introduction
+\end_layout
+
+\begin_layout Standard
+Very high data rates are observed and large datasets are, consequently,
+ generated across a broad range of experiments in scientific domains such
+ as high-energy physics, material science, and cosmology.
+ For example, in high-energy physics, the LHCb detector, at the CERN Large
+ Hadron Collider, is tasked with observing the trajectories of particles
+ produced in proton-proton collisions at a rate of 40 million per second
+ (i.e., 40 MHz) 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "pmlr-v42-glig14"
+literal "false"
+
+\end_inset
+
+.
+ At a packet size of approximately 50kB (per collision), this implies a
+ data rate of approximately 2TB/s.
+ Ultimately, in combination with the other detectors, the LHC processes
+ approximately 100EB of data a year.
+ In materials science, High-Energy Diffraction Microscopy (HEDM) techniques,
+ which provide non-destructive characterization of structure and its evolution
+ in a broad class of single-crystal and polycrystalline materials, can have
+ collection rates approaching 1 MHz 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Hammer_2021"
+literal "false"
+
+\end_inset
+
+, with a corresponding packet size of 80kB.
+ In cosmology, the Square Kilometre Array, a radio telescope projected to
+ be completed in 2024 and to be operational by 2027 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "mcmullin2022square"
+literal "false"
+
+\end_inset
+
+, will sustain data rates in excess of 10 TB/s 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "grainge2017square"
+literal "false"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Naturally, for high data rate experiments, directly storing and distributing
+ such large quantities of data to the associated research communities for
+ further analysis is cost prohibitive.
+ Thus, either compression (in the case of storage and transmission) or outright
+ filtering is employed, i.e., only a small fraction of the most 
+\begin_inset Quotes eld
+\end_inset
+
+interesting
+\begin_inset Quotes erd
+\end_inset
+
+ data is selected at time of collection, with the remainder being permanently
+ discarded.
+ In this work we focus on the filtering approach.
+ Note, that the tradeoff made in employing filtering should be clear: reduced
+ storage at the cost of stronger latency constraints (on the filtering mechanism
+s).
+ In addition, the risk of discarding significant data introduces accuracy
+ (of the filtering mechanisms) as a critical new dimension of the data acquisiti
+on systems.
+ Typically, these filtering mechanisms consist either of physics based models
+ 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "LHCB-FIGURE-2020-018"
+literal "false"
+
+\end_inset
+
+ or machine learning models 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Gligorov_2013"
+literal "false"
+
+\end_inset
+
+; in either case maximally efficient and effective use of the target hardware
+ platform is tantamount to accuracy.
+ Irrespective of the type of technique employed, almost universally, for
+ the lowest latency constraint use cases (sub-microsecond), the technique
+ is deployed to either field-programmable gate arrays (FPGAs) or application-spe
+cific integrated circuits (ASICs) 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Duarte_2018"
+literal "false"
+
+\end_inset
+
+.
+ The reason for this is only FPGAs and ASICs are flexible enough to satisfy
+ the latency constraints for a wide range of techniques.
+\end_layout
+
+\begin_layout Standard
+Deep neural networks (DNNs), a particular type of machine learning model,
+ have been shown to be effective in many scientific and commercial domains
+ due to their 
+\begin_inset Quotes eld
+\end_inset
+
+representational capacity
+\begin_inset Quotes erd
+\end_inset
+
+, i.e., a capacity to (approximately) represent diverse sets of mappings 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "alzubaidi2021review"
+literal "false"
+
+\end_inset
+
+.
+ DNNs 
+\begin_inset Quotes eld
+\end_inset
+
+learn
+\begin_inset Quotes erd
+\end_inset
+
+ to represent a mapping over the course of 
+\begin_inset Quotes eld
+\end_inset
+
+training
+\begin_inset Quotes erd
+\end_inset
+
+, wherein they are iteratively applied to sample data while a 
+\begin_inset Quotes eld
+\end_inset
+
+learning rule
+\begin_inset Quotes erd
+\end_inset
+
+ periodically updates the parameters (weights) parameterize the DNN.
+ In recent years they have been investigated for near real-time scientific
+ use cases 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "liu2019deep,patton2018167,liu2022exploring"
+literal "false"
+
+\end_inset
+
+ but their use in the lowest latency use cases has been very limited 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Duarte_2018"
+literal "false"
+
+\end_inset
+
+.
+ The reasons for this are threefold: 
+\end_layout
+
+\begin_layout Enumerate
+DNNs, by virtue of being deep, are resource intensive, in terms of both
+ memory (for the weights) and compute (floating point arithmetic), thereby
+ preventing their deployment to FPGAs.
+\end_layout
+
+\begin_layout Enumerate
+Graphics Processing Units (GPUs), the conventional target platforms for
+ DNNs, until very recently, have not been performant enough for these very
+ high data rate, very low latency, use cases (due to their low clock speeds
+ and low peripheral bandwidth 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "aaij2020allen"
+literal "false"
+
+\end_inset
+
+).
+\end_layout
+
+\begin_layout Enumerate
+DNNs are (typically) defined, trained, and distributed using high-level
+ frameworks (such as PyTorch 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "paszke2017automatic"
+literal "false"
+
+\end_inset
+
+, TensorFlow 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "https://doi.org/10.48550/arxiv.1603.04467"
+literal "false"
+
+\end_inset
+
+, MXNet 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "https://doi.org/10.48550/arxiv.1512.01274"
+literal "false"
+
+\end_inset
+
+), which abstract all implementation details from the user, thereby making
+ reuse of existing models and weights nigh impossible.
+\end_layout
+
+\begin_layout Standard
+These three barriers 
+\end_layout
+
+\begin_layout Standard
+(for low latency use cases) In general, the task of 
+\emph on
+lowering
+\emph default
+ high-level representations of programs to lower-level representations (potentia
+lly, all the way to an architecture specific representation) is the domain
+ of a compiler.
+\end_layout
+
+\begin_layout Standard
+Recently, deep learning compilers (such as TVM 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "chen2018tvm"
+literal "false"
+
+\end_inset
+
+, MLIR 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "https://doi.org/10.48550/arxiv.2002.11054"
+literal "false"
+
+\end_inset
+
+, and Glow 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "https://doi.org/10.48550/arxiv.1805.00907"
+literal "false"
+
+\end_inset
+
+) have demonstrated the ability to dramatically improve inference latencies
+ 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "https://doi.org/10.48550/arxiv.1809.02697"
+literal "false"
+
+\end_inset
+
+, training times 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "9664259"
+literal "false"
+
+\end_inset
+
+, and memory usage 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "https://doi.org/10.48550/arxiv.1604.06174"
+literal "false"
+
+\end_inset
+
+ of DNNs.
+ These compilers function by extracting intermediate-level representations
+ (IRs) of the DNNs, from the representations produced by the frameworks,
+ and performing various optimizations on those IRs (such as kernel fusion
+ 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "10.1145/2858788.2688521"
+literal "false"
+
+\end_inset
+
+, vectorization 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "maleki2011evaluation"
+literal "false"
+
+\end_inset
+
+, and memory planning 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "https://doi.org/10.48550/arxiv.1604.06174"
+literal "false"
+
+\end_inset
+
+).
+ The highly optimized IR is then used to generate code for various target
+ architectures.
+ Given the successes of these compilers, it's natural to wonder whether
+ they can adapted to the task of sufficiently optimizing DNNs such that
+ they might be suitable for deployment to FPGA (and thus suitable for the
+ lowest latency use cases).
+ 
+\end_layout
+
+\begin_layout Standard
+In this paper, we present 
+\family typewriter
+BraggHLS
+\family default
+
+\begin_inset Foot
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Flex URL
+status open
+
+\begin_layout Plain Layout
+
+https://github.com/makslevental/bragghls
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+, an open source, lightweight, compiler framework which can 
+\emph on
+lower
+\emph default
+ DNNs defined as PyTorch models to FPGA implementations.
+ 
+\family typewriter
+BraggHLS
+\family default
+ uses a combination of techniques from high-level synthesis and dataflow
+ analysis to compile the entire DNN into one synchronous module/circuit/design,
+ thereby eliminating all synchronization resource overheads and achieving
+ ultra-low latency.
+ 
+\family typewriter
+BraggHLS
+\family default
+ is general and supports a wide range of DNN layer types, and thus a wide
+ range of DNNs, but we evaluate it on a DNN designed for identifying Bragg
+ diffraction peaks.
+ In summary our specific contributions include:
+\end_layout
+
+\begin_layout Enumerate
+We describe a compiler framework, 
+\family typewriter
+BraggHLS
+\family default
+, which can transform unoptimized, hardware-agnostic PyTorch models into
+ ultra-low latency FPGA implementations.
+\end_layout
+
+\begin_layout Enumerate
+We implement 
+\family typewriter
+BraggHLS
+\family default
+ as a fully automated compiler that takes as input an image processing algorithm
+ described as a sequence of loop nests and produces an accelerator for the
+ algorithm targeting Xilinx FPGAs.
+ Clockwork is open source and available at 
+\begin_inset CommandInset href
+LatexCommand href
+name "https://github.com/makslevental/bragghls/"
+target "https://github.com/makslevental/bragghls/"
+literal "false"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Enumerate
+We show that designs generated by Clockwork achieve lower resource use than
+ the state-of-the-art stencil compiler SODA [7] while handling a wider range
+ of access patterns, scaling to large, realistic applications, and achieving
+ higher energy efficiency than CPU or GPU implementations of an image processing
+ algorithm with dozens of stages.
+\end_layout
+
+\begin_layout Section
+sdfdf
+\end_layout
+
+\begin_layout Standard
+A convenient byproduct of this procedure is that the DNN becomes decoupled
+ from the framework while remaining computable (insofar as it is adequately
+ described by the IR).
+ In particular, given a compiler that can produce an IR which represents
+ the various deep learning layers (such as convolution, linear, normalization,
+ activation layers) as loop nests, it is possible to further extract control
+ flow and data flow graphs (CFG, DFG) from the IR.
+ Given the CFG and DFG of a DNN
+\end_layout
+
+\begin_layout Standard
+IR and (depending on the compiler) can be 
+\end_layout
+
+\begin_layout Standard
+In this paper, we focus on an open source, lightweight, compiler framework
+ 
+\family typewriter
+BraggHLS
+\end_layout
+
+\begin_layout Standard
+For example, BraggNN, a DNN aimed at identifying Bragg diffraction peaks
+ with high precision, has been shown to make peak position determinations
+ with high accuracy.
+ Still, as of yet DNN models have not seen wide adoption in this area.
+ This is due to the limitations imposed by the hardware platforms on which
+ they can typically be deployed: GPUs and other such DNN accelerators.
+ Primarily, such accelerators do not meet the hard real-time latency constraints
+, and secondarily they cannot be easily colocated with complex sensing apparatus
+es.
+ BraggNN, despite having been shown to have high speedup over the classical
+ pseudo-Voigt peak fitting methods, making determinations in approximately
+ 700µs, still falls short of the 1µs target for handling 1MHz sampling rates.
+ In addition, the current implementation of BraggNN, deployed to either
+ a datacenter class GPU such as a NVIDIA V100, or even a workstation class
+ GPU such as a NVIDIA RTX 2080Ti, has no practicable means to being deployed
+ at the edge, i.e., adjacent or proximal to the high energy microscopy equipment.
+\end_layout
+
+\begin_layout Section
+Background
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:Background"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+Remember though that your final submission is supposed to have all the bibliogra
+phy entries embedded in the \SpecialChar LaTeX
+-file.
+ This means you eventually have to copy the .bbl file into the latex file
+ and remove the bibtex lines.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Separator plain
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset bibtex
+LatexCommand bibtex
+btprint "btPrintCited"
+bibfiles "ref"
+options "IEEEtran"
+
+\end_inset
+
+
+\end_layout
+
+\end_body
+\end_document
