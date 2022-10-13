@@ -376,7 +376,7 @@ literal "false"
 .
  The reason for this is only FPGAs and ASICs are flexible enough to satisfy
  the latency constraints for a wide range of techniques.
- Here we focus on FPGAs.
+ Note, in this work we focus exclusively on FPGAs.
 \end_layout
 
 \begin_layout Standard
@@ -423,7 +423,11 @@ learning rule
 \begin_inset Quotes erd
 \end_inset
 
- periodically updates the parameters (weights) parameterize the DNN.
+ periodically updates the parameters (
+\emph on
+weights
+\emph default
+) that parameterize the DNN.
  In recent years they have been investigated for near real-time scientific
  use cases 
 \begin_inset CommandInset citation
@@ -433,7 +437,7 @@ literal "false"
 
 \end_inset
 
- but their use in the lowest latency use cases has been very limited 
+ but their use for the lowest latency use cases has been very limited 
 \begin_inset CommandInset citation
 LatexCommand cite
 key "Duarte_2018"
@@ -443,12 +447,6 @@ literal "false"
 
 .
  The reasons for this are threefold: 
-\end_layout
-
-\begin_layout Enumerate
-DNNs, by virtue of being deep, are resource intensive, in terms of both
- memory (for the weights) and compute (floating point arithmetic), thereby
- preventing their deployment to FPGAs.
 \end_layout
 
 \begin_layout Enumerate
@@ -464,6 +462,13 @@ literal "false"
 \end_inset
 
 ).
+\end_layout
+
+\begin_layout Enumerate
+DNNs, by virtue of being deep, are resource intensive, in terms of both
+ memory (for the weights) and compute (floating point arithmetic), thereby
+ preventing their deployment to FPGAs, which, in particular, have limited
+ static RAM available.
 \end_layout
 
 \begin_layout Enumerate
@@ -493,21 +498,20 @@ literal "false"
 \end_inset
 
 ), which abstract all implementation details from the user, thereby making
- portability of existing models (to e.g., FPGA) nigh impossible and reuse
- weights difficult.
+ portability of existing model architectures (to e.g., FPGA) nigh impossible.
 \end_layout
 
 \begin_layout Standard
 These above three barriers demand of a solution that can simultaneously
  translate a high-level representation of a DNN to a low-level representation,
- suitable for deployment to FPGA, while optimizing resource usage.
+ suitable for deployment to FPGA, while optimizing resource usage and minimizing
+ latency.
  In general, the task of 
 \emph on
 lowering
 \emph default
- high-level representations of programs to lower-level representations (potentia
-lly, all the way to an architecture specific representation) is the domain
- of a compiler.
+ high-level representations of programs to lower-level representations is
+ the domain of a compiler.
  Correspondingly, the task of 
 \emph on
 synthesizing
@@ -541,8 +545,19 @@ literal "false"
 
 \end_inset
 
-, it turns out they struggle to effectively perform the necessary optimizations
- (despite, often, bundling robust optimizing compilers).
+ and despite, often, bundling robust optimizing compilers, it turns out
+ they struggle to effectively perform the necessary optimizations (see Section
+ 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:Evaluation"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+).
 \end_layout
 
 \begin_layout Standard
@@ -570,7 +585,7 @@ literal "false"
 
 \end_inset
 
-) have demonstrated the ability to dramatically improve inference latencies
+) have demonstrated the ability to dramatically reduce inference latencies
  
 \begin_inset CommandInset citation
 LatexCommand cite
@@ -628,7 +643,7 @@ literal "false"
  architectures.
  Given the successes of these compilers, it's natural to wonder whether
  they can adapted to the task of sufficiently optimizing DNNs such that
- they might synthesized to RTL for deployment to FPGA (and thus suitable
+ they might synthesized to RTL for deployment to FPGA (thus made suitable
  for the lowest latency use cases).
  
 \end_layout
@@ -638,26 +653,6 @@ In this paper, we present
 \family typewriter
 BraggHLS
 \family default
-
-\begin_inset Foot
-status collapsed
-
-\begin_layout Plain Layout
-\begin_inset Flex URL
-status open
-
-\begin_layout Plain Layout
-
-https://github.com/makslevental/bragghls
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\end_inset
-
 , an open source, lightweight, compiler and HLS framework which can lower
  DNNs defined as PyTorch models to FPGA implementations.
  
@@ -756,7 +751,7 @@ reference "sec:Evaluation"
 
 \end_inset
 
- evaluates 
+ describes the Bragg peak detection DNN and evaluates 
 \family typewriter
 BraggHLS
 \family default
