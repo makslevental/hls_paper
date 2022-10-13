@@ -718,8 +718,8 @@ BraggHLS
 \family typewriter
 BraggHLS
 \family default
- can produce synthesizable designs that meeting placement, routing, and
- timing constraints where Vitis HLS cannot.
+ can produce synthesizable designs that meet placement, routing, and timing
+ constraints where Vitis HLS cannot.
 \end_layout
 
 \begin_layout Standard
