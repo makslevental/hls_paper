@@ -211,7 +211,7 @@ keywords = {Dense, GPU, Machine Learning, Sparse, Fused Kernel}
 
 
 @article{osti_1574050,
-title = {Hierarchical Roofline analysis for GPUs: Accelerating performance optimization for the NERSC‐9 Perlmutter system},
+title = {Hierarchical Roofline analysis for GPUs: Accelerating performance optimization for the NERSC-9 Perlmutter system},
 author = {Yang, Charlene and Kurth, Thorsten and Williams, Samuel},
 abstractNote = {},
 doi = {10.1002/cpe.5547},
@@ -263,11 +263,11 @@ month = {11}
 @INPROCEEDINGS{8877424,  author={de Dinechin, Florent},  booktitle={2019 IEEE 26th Symposium on Computer Arithmetic (ARITH)},   title={Reflections on 10 Years of FloPoCo},   year={2019},  volume={},  number={},  pages={187-189},  doi={10.1109/ARITH.2019.00042}}
 
 
-@article{ye2021scalehls,
+@inproceedings{yehpca2022scalehls,
   title={ScaleHLS: A New Scalable High-Level Synthesis Framework on Multi-Level Intermediate Representation},
   author={Ye, Hanchen and Hao, Cong and Cheng, Jianyi and Jeong, Hyunmin and Huang, Jack and Neuendorffer, Stephen and Chen, Deming},
-  journal={arXiv preprint arXiv:2107.11673},
-  year={2021}
+  booktitle={2022 IEEE International Symposium on High-Performance Computer Architecture (HPCA)},
+  year={2022}
 }
 
 @INPROCEEDINGS{9516615,  author={Zhang, Jeff Jun and Bohm Agostini, Nicolas and Song, Shihao and Tan, Cheng and Limaye, Ankur and Amatya, Vinay and Manzano, Joseph and Minutoli, Marco and Castellana, Vito Giovanni and Tumeo, Antonino and Wei, Gu-Yeon and Brooks, David},  booktitle={2021 IEEE 32nd International Conference on Application-specific Systems, Architectures and Processors (ASAP)},   title={Towards Automatic and Agile AI/ML Accelerator Design with End-to-End Synthesis},   year={2021},  volume={},  number={},  pages={218-225},  doi={10.1109/ASAP52443.2021.00040}}
@@ -628,4 +628,43 @@ month = {nov}
   title={Dependence Analysis and Parallelizing Transformations.},
   author={Rajopadhye, Sanjay V},
   year={2002}
+}
+
+@article{10.1145/3296979.3192413,
+author = {Moll, Simon and Hack, Sebastian},
+title = {Partial Control-Flow Linearization},
+year = {2018},
+issue_date = {April 2018},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+volume = {53},
+number = {4},
+issn = {0362-1340},
+url = {https://doi.org/10.1145/3296979.3192413},
+doi = {10.1145/3296979.3192413},
+abstract = {If-conversion is a fundamental technique for vectorization. It accounts for the fact that in a SIMD program, several targets of a branch might be executed because of divergence. Especially for irregular data-parallel workloads, it is crucial to avoid if-converting non-divergent branches to increase SIMD utilization. In this paper, we present partial linearization, a simple and efficient if-conversion algorithm that overcomes several limitations of existing if-conversion techniques. In contrast to prior work, it has provable guarantees on which non-divergent branches are retained and will never duplicate code or insert additional branches. We show how our algorithm can be used in a classic loop vectorizer as well as to implement data-parallel languages such as ISPC or OpenCL. Furthermore, we implement prior vectorizer optimizations on top of partial linearization in a more general way. We evaluate the implementation of our algorithm in LLVM on a range of irregular data analytics kernels, a neutronics simulation benchmark and NAB, a molecular dynamics benchmark from SPEC2017 on AVX2, AVX512, and ARM Advanced SIMD machines and report speedups of up to 146 % over ICC, GCC and Clang O3.},
+journal = {SIGPLAN Not.},
+month = {jun},
+pages = {543-556},
+numpages = {14},
+keywords = {SPMD, Compiler optimizations, SIMD}
+}
+
+
+@inproceedings{10.1145/3192366.3192413,
+author = {Moll, Simon and Hack, Sebastian},
+title = {Partial Control-Flow Linearization},
+year = {2018},
+isbn = {9781450356985},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/3192366.3192413},
+doi = {10.1145/3192366.3192413},
+abstract = {If-conversion is a fundamental technique for vectorization. It accounts for the fact that in a SIMD program, several targets of a branch might be executed because of divergence. Especially for irregular data-parallel workloads, it is crucial to avoid if-converting non-divergent branches to increase SIMD utilization. In this paper, we present partial linearization, a simple and efficient if-conversion algorithm that overcomes several limitations of existing if-conversion techniques. In contrast to prior work, it has provable guarantees on which non-divergent branches are retained and will never duplicate code or insert additional branches. We show how our algorithm can be used in a classic loop vectorizer as well as to implement data-parallel languages such as ISPC or OpenCL. Furthermore, we implement prior vectorizer optimizations on top of partial linearization in a more general way. We evaluate the implementation of our algorithm in LLVM on a range of irregular data analytics kernels, a neutronics simulation benchmark and NAB, a molecular dynamics benchmark from SPEC2017 on AVX2, AVX512, and ARM Advanced SIMD machines and report speedups of up to 146 % over ICC, GCC and Clang O3.},
+booktitle = {Proceedings of the 39th ACM SIGPLAN Conference on Programming Language Design and Implementation},
+pages = {543-556},
+numpages = {14},
+keywords = {SIMD, SPMD, Compiler optimizations},
+location = {Philadelphia, PA, USA},
+series = {PLDI 2018}
 }
