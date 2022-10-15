@@ -10,6 +10,8 @@
 \usepackage[caption=false,font=footnotesize]{subfig}
 \usepackage{hyperref}
 \hypersetup{colorlinks=true}
+\usepackage[dvipsnames]{xcolor}
+\definecolor{lgray}{rgb}{0.95, 0.95, 0.95}
 \end_preamble
 \options conference
 \use_default_options false
@@ -72,7 +74,7 @@
 \suppress_date false
 \justification true
 \use_refstyle 0
-\use_minted 0
+\use_minted 1
 \index Index
 \shortcut idx
 \color #008000
@@ -955,7 +957,7 @@ literal "false"
  to performing the translation to MLIR, fully refines all shapes of intermediate
  tensors in the DNN (i.e., computes concrete values for all dimensions of
  each tensor); this is necessary for downstream optimizations and eliminating
- inconsistencies 
+ inconsistencies in the DNN 
 \begin_inset CommandInset citation
 LatexCommand cite
 key "https://doi.org/10.48550/arxiv.2203.08402"
@@ -988,8 +990,8 @@ scf
 \family typewriter
 scf
 \family default
- is a straightforward formalization of control flow primitives, such as
- conditionals and loops, so we do not discuss it in great detail.
+ dialect is a straightforward formalization of control flow primitives,
+ such as conditionals and loops, so we do not discuss it in great detail.
  The 
 \family typewriter
 affine
@@ -1003,16 +1005,8 @@ literal "false"
 
 \end_inset
 
-, i.e., techniques that make dependence analysis and loop transformations
- efficient and reliable.
- We discuss the importance of loop transformations in Section 
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "sec:BraggHLS-compiler-and"
-
-\end_inset
-
-.
+, i.e., techniques that enable loop dependence analysis and loop transformations.
+ We discuss the importance of loop transformations in the following section.
 \end_layout
 
 \begin_layout Subsection
@@ -1097,19 +1091,187 @@ binding
 \end_layout
 
 \begin_layout Enumerate
-HLS builds an finite-state machine (FSM) that functions as control logic
- for the sequence of operations in the schedule.
+HLS builds a finite-state machine (FSM) that implements the schedule of
+ operations as control logic, i.e., logic that initiates operations and routes
+ signals between them during the appropriate FSM stages.
 \end_layout
 
 \begin_layout Standard
 In addition to fulfilling these three fundamental tasks, high-level synthesis
- tools such perform standard compiler optimization passes on the IR (that
- they ingest or produce internally).
- Optimization passes such as store-load forwarding, common subexpression
- elimination, and constant propagation, loop-unrolling and tiling.
- Note that these optimization passes exhibit varying levels of runtime complexit
-y, e.g., store-load forwarding in combination with loop-unrolling is polynomial
- in the 
+ aims to optimize the program, during synthesis.
+ In particular, they try to maximize concurrency and parallelism (number
+ of concurrent operations scheduled during a clock-cycle) in order maximize
+ the throughput and minimize the latency of the final implementation.
+ 
+\end_layout
+
+\begin_layout Standard
+Maximizing parallelism entails rigorous data-flow analysis in order to identify
+ data dependencies that would lead to data hazards in synthesized designs.
+ This data-flow analysis exhibits extremely high runtime as lower latency
+ designs are pursued.
+ This can be understood in terms of loop-nest representations of DNN operations;
+ for example consider a convolution as in listing 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "lis:Single-filter-convolution"
+
+\end_inset
+
+.
+\begin_inset listings
+lstparams "language=Python,float,fontsize={\footnotesize},escapeinside={||},mathescape=true"
+inline false
+status open
+
+\begin_layout Plain Layout
+
+def conv2d(
+\end_layout
+
+\begin_layout Plain Layout
+
+  input = array(|$b$|, |$c_{in}$|, |$h$|, |$w$|),
+\end_layout
+
+\begin_layout Plain Layout
+
+  output = array(|$b$|, |$c_{out}$|, |$h - 2$|, |$w - 2$|),
+\end_layout
+
+\begin_layout Plain Layout
+
+  weight = array(|$c_{out}$|, |$c_{in}$|, |$k$|, |$k$|)
+\end_layout
+
+\begin_layout Plain Layout
+
+):
+\end_layout
+
+\begin_layout Plain Layout
+
+  for iv1 in range(0, |$b$|):
+\end_layout
+
+\begin_layout Plain Layout
+
+    for iv2 in range(0, |$c_{out}$|):
+\end_layout
+
+\begin_layout Plain Layout
+
+      for iv3 in range(0, |$h - 2$|):
+\end_layout
+
+\begin_layout Plain Layout
+
+        for iv4 in range(0, |$w - 2$|):
+\end_layout
+
+\begin_layout Plain Layout
+
+          for iv5 in range(0, |$c_{in}$|):
+\end_layout
+
+\begin_layout Plain Layout
+
+            for iv6 in range(0, |$k$|):
+\end_layout
+
+\begin_layout Plain Layout
+
+              for iv7 in range(0, |$k$|):
+\end_layout
+
+\begin_layout Plain Layout
+
+                _3 = (iv3 + iv6)
+\end_layout
+
+\begin_layout Plain Layout
+
+                _4 = (iv4 + iv7)
+\end_layout
+
+\begin_layout Plain Layout
+
+                _5 = input[iv1, iv5, _3, _4]
+\end_layout
+
+\begin_layout Plain Layout
+
+                _6 = weight[iv2, iv5, iv6, iv7]
+\end_layout
+
+\begin_layout Plain Layout
+
+                _7 = output[iv1, iv2, iv3, iv4]
+\end_layout
+
+\begin_layout Plain Layout
+
+                _8 = _5 * _6
+\end_layout
+
+\begin_layout Plain Layout
+
+                _9 = _7 + _8
+\end_layout
+
+\begin_layout Plain Layout
+
+                output[iv1, iv2, iv3, iv4] = _9
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Padding 1, stride 1, 
+\begin_inset Formula $c_{out}$
+\end_inset
+
+ filter convolution with 
+\begin_inset Formula $k\times k$
+\end_inset
+
+ kernel applied to (
+\begin_inset Formula $\ensuremath{b},\ensuremath{c_{in}},\ensuremath{h},\ensuremath{w}$
+\end_inset
+
+)-dimensional
+\family typewriter
+ input
+\family default
+ tensor, where 
+\begin_inset Formula $b$
+\end_inset
+
+ is the batch size, 
+\begin_inset Formula $c_{in}$
+\end_inset
+
+ is the number of channels, and (
+\begin_inset Formula $h,w$
+\end_inset
+
+) are the height and width, respectively.
+\begin_inset CommandInset label
+LatexCommand label
+name "lis:Single-filter-convolution"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+ Parallel schedules of the arithmetic operations for this loop nest can
+ be computed by first unrolling all the loops up to some 
 \begin_inset Quotes eld
 \end_inset
 
@@ -1117,12 +1279,368 @@ trip-count
 \begin_inset Quotes erd
 \end_inset
 
- of the loop nest.
- Note also that the scheduling problem solved by HLS is reducible an integer
- linear programming problem (ILP), instances of which are NP-hard in general.
- Thus, HLS tools solve computationally intensive problems in order to produce
- a RTL description of a high-level representation of a DNN.
- These 
+ and then computing the topological sort of the operations.
+ The degree to which the loops are unrolled determines how many arithmetic
+ operations can be scheduled in parallel.
+ The issue is that the stores and loads on the 
+\family typewriter
+output
+\family default
+ array prevent reconstruction of explicit relationships between the inputs
+ and outputs of the arithmetic operations across loop iterations.
+ The standard resolution is to perform 
+\emph on
+store-load forwarding
+\emph default
+: pairs of store and load operations to/from the same memory address are
+ eliminated, with the operand of the store forwarded to the uses of the
+ load (see listing 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "lis:Single-filter-convolution-1"
+
+\end_inset
+
+).
+\begin_inset listings
+lstparams "language=Python,float,numbers=left,fontsize={\footnotesize},escapeinside={||},mathescape=true,highlightlines={19,25}"
+inline false
+status open
+
+\begin_layout Plain Layout
+
+def conv2d(
+\end_layout
+
+\begin_layout Plain Layout
+
+  input = array(|$b$|, |$c_{in}$|, |$h$|, |$w$|),
+\end_layout
+
+\begin_layout Plain Layout
+
+  output = array(|$b$|, |$c_{out}$|, |$h - 2$|, |$w - 2$|),
+\end_layout
+
+\begin_layout Plain Layout
+
+  weight = array(|$c_{out}$|, |$c_{in}$|, |$k$|, |$k$|)
+\end_layout
+
+\begin_layout Plain Layout
+
+):
+\end_layout
+
+\begin_layout Plain Layout
+
+  for iv1 in range(0, |$b$|):
+\end_layout
+
+\begin_layout Plain Layout
+
+    for iv2 in range(0, |$c_{out}$|):
+\end_layout
+
+\begin_layout Plain Layout
+
+      for iv3 in range(0, |$h - 2$|):
+\end_layout
+
+\begin_layout Plain Layout
+
+        for iv4 in range(0, |$w - 2$|):
+\end_layout
+
+\begin_layout Plain Layout
+
+	  ...
+\end_layout
+
+\begin_layout Plain Layout
+
+	  # e.g., iv5, iv6, iv7 = 2, 3, ${
+\backslash
+setlength{
+\backslash
+fboxsep}{1pt}
+\backslash
+colorbox{Salmon}{
+\backslash
+texttt{4}}}$
+\end_layout
+
+\begin_layout Plain Layout
+
+	  _31 = (iv3 + iv6) 
+\end_layout
+
+\begin_layout Plain Layout
+
+	  _41 = (iv4 + iv7) 
+\end_layout
+
+\begin_layout Plain Layout
+
+	  _51 = input[iv1, iv5, _31, _41] 
+\end_layout
+
+\begin_layout Plain Layout
+
+	  _61 = weight[iv2, iv5, iv6, iv7] 
+\end_layout
+
+\begin_layout Plain Layout
+
+	  _71 = output[iv1, iv2, iv3, iv4] 
+\end_layout
+
+\begin_layout Plain Layout
+
+	  _81 = _51 * _61 
+\end_layout
+
+\begin_layout Plain Layout
+
+	  |${
+\backslash
+setlength{ 
+\backslash
+fboxsep}{1pt} 
+\backslash
+colorbox{green}{ 
+\backslash
+texttt{
+\backslash
+_91}}}$| = _71 + _81 
+\end_layout
+
+\begin_layout Plain Layout
+
+	  output[iv1, iv2, iv3, iv4] = _91 
+\end_layout
+
+\begin_layout Plain Layout
+
+	  # iv5, iv6, iv7 = 2, 3, ${
+\backslash
+setlength{
+\backslash
+fboxsep}{1pt}
+\backslash
+colorbox{Salmon}{
+\backslash
+texttt{5}}}$
+\end_layout
+
+\begin_layout Plain Layout
+
+	  _32 = (iv3 + iv6) 
+\end_layout
+
+\begin_layout Plain Layout
+
+	  _42 = (iv4 + iv7) 
+\end_layout
+
+\begin_layout Plain Layout
+
+	  _52 = input[iv1, iv5, _32, _42] 
+\end_layout
+
+\begin_layout Plain Layout
+
+	  _62 = weight[iv2, iv5, iv6, iv7] 
+\end_layout
+
+\begin_layout Plain Layout
+
+	  |${
+\backslash
+setlength{
+\backslash
+fboxsep}{1pt}
+\backslash
+colorbox{yellow}{
+\backslash
+texttt{
+\backslash
+_72}}}$| = output[iv1, iv2, iv3, iv4] 
+\end_layout
+
+\begin_layout Plain Layout
+
+	  _82 = _52 * _62 
+\end_layout
+
+\begin_layout Plain Layout
+
+	  _92 = |${
+\backslash
+setlength{
+\backslash
+fboxsep}{1pt}
+\backslash
+colorbox{yellow}{
+\backslash
+texttt{
+\backslash
+_72}}}$| + _82 
+\end_layout
+
+\begin_layout Plain Layout
+
+	  output[iv1, iv2, iv3, iv4] = _92
+\end_layout
+
+\begin_layout Plain Layout
+
+	  ...
+\end_layout
+
+\begin_layout Plain Layout
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Store-load forwarding across successive iterations (e.g.,
+\family typewriter
+ iv7
+\family default
+ 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+$={
+\backslash
+setlength{
+\backslash
+fboxsep}{1pt}
+\backslash
+colorbox{Salmon}{
+\backslash
+texttt{4}}}, {
+\backslash
+setlength{
+\backslash
+fboxsep}{1pt}
+\backslash
+colorbox{Salmon}{
+\backslash
+texttt{5}}}$
+\end_layout
+
+\end_inset
+
+) of the inner loop in listing 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "lis:Single-filter-convolution"
+
+\end_inset
+
+, after unrolling.
+ The forwarding opportunity is from the store on line 19 to the load on
+ line 25; both can be eliminated and 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+${
+\backslash
+setlength{
+\backslash
+fboxsep}{1pt}
+\backslash
+colorbox{green}{
+\backslash
+texttt{
+\backslash
+_91}}}$
+\end_layout
+
+\end_inset
+
+ can replace uses of 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+${
+\backslash
+setlength{
+\backslash
+fboxsep}{1pt}
+\backslash
+colorbox{yellow}{
+\backslash
+texttt{
+\backslash
+_72}}}$
+\end_layout
+
+\end_inset
+
+, such as in the computation of 
+\family typewriter
+_92
+\family default
+ (and potentially many others).
+\begin_inset CommandInset label
+LatexCommand label
+name "lis:Single-filter-convolution-1"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+ In order for this transformation to be correct (preserve program semantics),
+ for each pair of candidate store and load operations, it must be verified
+ that there are no intervening memory operations.
+ Note, the number of such checks scales polynomially in the parameters of
+ the convolution since the loop nest unrolls into 
+\begin_inset Formula $b\times c_{out}\times\left(h-2\right)\times\left(w-2\right)\times c_{in}\times k^{2}$
+\end_inset
+
+ store-load pairs.
+ Note also, while in the case of listing 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "lis:Single-filter-convolution"
+
+\end_inset
+
+ the verification is straightforward, in general it might involve solving
+ a small constraint satisfaction program 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "rajopadhye2002dependence"
+literal "false"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Finally, note, though greedy solutions to the scheduling problem solved
+ by HLS are possible, in principle scheduling is an integer linear programming
+ problem (ILP), instances of which are NP-hard.
+ In summary, HLS tools solve computationally intensive problems in order
+ to produce a RTL description of a high-level representation of a DNN.
+ These phases of the HLS process incur 
 \begin_inset Quotes eld
 \end_inset
 
@@ -1130,10 +1648,20 @@ development time
 \begin_inset Quotes erd
 \end_inset
 
- costs (i.e., runtime of the tools) impose practical limitations on the amount
- of design space exploration (for the purpose of achieving latency goals)
- which can be performed.
+ costs (i.e., runtime of the tools) and impose practical limitations on the
+ amount of design space exploration (for the purpose of achieving latency
+ goals) which can be performed.
  
+\family typewriter
+BraggHLS 
+\family default
+addresses these issues by enabling the user to employ heuristics (during
+ both the parallelization and scheduling phases) which, while not guaranteed
+ to be correct, can be 
+\emph on
+behaviourally verified
+\emph default
+.
 \end_layout
 
 \begin_layout Subsection
@@ -1214,7 +1742,7 @@ asdasd
 \begin_inset Float figure
 wide true
 sideways false
-status collapsed
+status open
 
 \begin_layout Plain Layout
 \align center
@@ -1226,7 +1754,7 @@ status open
 \begin_layout Plain Layout
 \align center
 \begin_inset Graphics
-	filename /Users/mlevental/dev_projects/hls_paper/data/cpps/addmm.pdf
+	filename ../data/addmm.pdf
 	lyxscale 50
 	width 100col%
 
@@ -1264,7 +1792,7 @@ status open
 \begin_layout Plain Layout
 \align center
 \begin_inset Graphics
-	filename /Users/mlevental/dev_projects/hls_paper/data/cpps/braggnn.pdf
+	filename ../data/braggnn.pdf
 	lyxscale 50
 	width 100col%
 
@@ -1320,7 +1848,7 @@ status open
 \begin_layout Plain Layout
 \align center
 \begin_inset Graphics
-	filename /Users/mlevental/dev_projects/hls_paper/data/cpps/conv.pdf
+	filename ../data/conv.pdf
 	lyxscale 50
 	width 100col%
 
@@ -1358,7 +1886,7 @@ status open
 \begin_layout Plain Layout
 \align center
 \begin_inset Graphics
-	filename /Users/mlevental/dev_projects/hls_paper/data/cpps/matmul.pdf
+	filename ../data/matmul.pdf
 	lyxscale 50
 	width 100col%
 
@@ -1406,12 +1934,12 @@ Resource usage and latency vs.
 \begin_inset Float figure
 wide true
 sideways false
-status collapsed
+status open
 
 \begin_layout Plain Layout
 \align center
 \begin_inset Graphics
-	filename /Users/mlevental/dev_projects/hls_paper/data/cpps/elapsed_time.pdf
+	filename ../data/elapsed_time.pdf
 	lyxscale 50
 	width 100col%
 

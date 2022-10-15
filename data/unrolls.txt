@@ -1,0 +1,334 @@
+(venv) mlevental@mlevental-CORSAIR-ONE-PRO-a200:~/dev_projects/scalehls/examples$ ./emithlscpp.sh braggnn.tosa 
+/home/mlevental/dev_projects/scalehls/examples/braggnn.tosa
+~/dev_projects/scalehls/examples/braggnn ~/dev_projects/scalehls/examples
+2
+
+real    0m0.995s
+user    0m1.009s
+sys     0m0.008s
+4
+
+real    0m1.256s
+user    0m1.274s
+sys     0m0.004s
+8
+
+real    0m1.676s
+user    0m1.685s
+sys     0m0.012s
+16
+
+real    0m2.857s
+user    0m2.866s
+sys     0m0.012s
+32
+
+real    0m4.551s
+user    0m4.564s
+sys     0m0.008s
+64
+
+real    0m8.592s
+user    0m8.582s
+sys     0m0.024s
+128
+
+real    0m15.303s
+user    0m15.312s
+sys     0m0.012s
+256
+
+real    0m31.901s
+user    0m31.904s
+sys     0m0.016s
+512
+
+real    0m44.825s
+user    0m44.830s
+sys     0m0.012s
+1024
+
+real    1m37.627s
+user    1m37.614s
+sys     0m0.028s
+2048
+
+real    4m0.286s
+user    4m0.252s
+sys     0m0.040s
+4096
+
+real    6m10.930s
+user    6m10.865s
+sys     0m0.064s
+8192
+
+real    11m0.595s
+user    11m0.499s
+sys     0m0.088s
+16384
+cannot open input file '/home/mlevental/dev_projects/scalehls/examples/braggnn.tosa': No such file or directory
+
+real    0m0.007s
+user    0m0.007s
+sys     0m0.000s
+32768
+cannot open input file '/home/mlevental/dev_projects/scalehls/examples/braggnn.tosa': No such file or directory
+
+real    0m0.004s
+user    0m0.004s
+sys     0m0.000s
+65536
+cannot open input file '/home/mlevental/dev_projects/scalehls/examples/braggnn.tosa': No such file or directory
+
+real    0m0.004s
+user    0m0.004s
+sys     0m0.000s
+(venv) mlevental@mlevental-CORSAIR-ONE-PRO-a200:~/dev_projects/scalehls/examples$ 
+
+
+(venv) mlevental@mlevental-CORSAIR-ONE-PRO-a200:~/dev_projects/scalehls/examples$ ./emithlscpp.sh /home/mlevental/dev_projects/bragghls/examples/lenet_32/lenet.mlir
+/home/mlevental/dev_projects/bragghls/examples/lenet_32/lenet.mlir
+~/dev_projects/scalehls/examples/lenet ~/dev_projects/scalehls/examples
+2
+
+real    0m0.509s
+user    0m0.518s
+sys     0m0.004s
+4
+
+real    0m0.678s
+user    0m0.684s
+sys     0m0.008s
+8
+
+real    0m1.053s
+user    0m1.063s
+sys     0m0.004s
+16
+
+real    0m1.952s
+user    0m1.961s
+sys     0m0.004s
+32
+
+real    0m3.908s
+user    0m3.918s
+sys     0m0.004s
+64
+
+real    0m4.811s
+user    0m4.809s
+sys     0m0.016s
+128
+
+real    0m9.304s
+user    0m9.302s
+sys     0m0.016s
+256
+
+real    0m15.716s
+user    0m15.718s
+sys     0m0.012s
+512
+
+real    0m22.150s
+user    0m22.152s
+sys     0m0.012s
+1024
+
+real    0m42.009s
+user    0m42.003s
+sys     0m0.020s
+2048
+
+real    0m51.966s
+user    0m51.959s
+sys     0m0.020s
+4096
+
+real    1m52.891s
+user    1m52.847s
+sys     0m0.040s
+8192
+
+real    2m38.480s
+user    2m38.429s
+sys     0m0.052s
+16384
+
+real    8m20.522s
+user    8m20.382s
+sys     0m0.140s
+32768
+
+real    7m22.002s
+user    7m21.823s
+sys     0m0.164s
+65536
+
+real    9m27.813s
+user    9m27.589s
+sys     0m0.200s
+./emithlscpp.sh: line 24: ak: command not found
+./emithlscpp.sh: line 25: syntax error near unexpected token `done'
+./emithlscpp.sh: line 25: `done'
+
+
+(venv) mlevental@mlevental-CORSAIR-ONE-PRO-a200:~/dev_projects/scalehls/examples$ ./emithlscpp.sh /home/mlevental/dev_projects/bragghls/examples/resnet18_16/resnet18.mlir
+/home/mlevental/dev_projects/bragghls/examples/resnet18_16/resnet18.mlir
+~/dev_projects/scalehls/examples/resnet18 ~/dev_projects/scalehls/examples
+2
+
+real    0m2.932s
+user    0m2.952s
+sys     0m0.000s
+4
+
+real    0m3.611s
+user    0m3.628s
+sys     0m0.004s
+8
+
+real    0m4.926s
+user    0m4.925s
+sys     0m0.012s
+16
+
+real    0m7.967s
+user    0m7.980s
+sys     0m0.008s
+32
+
+real    0m15.276s
+user    0m15.280s
+sys     0m0.016s
+64
+
+real    0m30.111s
+user    0m30.124s
+sys     0m0.008s
+128
+
+real    1m4.249s
+user    1m4.074s
+sys     0m0.116s
+256
+
+real    2m19.854s
+user    2m19.769s
+sys     0m0.076s
+512
+
+real    4m12.676s
+user    4m12.640s
+sys     0m0.036s
+1024
+
+real    7m5.042s
+user    7m4.979s
+sys     0m0.068s
+2048
+
+real    13m22.009s
+user    13m21.649s
+sys     0m0.260s
+4096
+
+real    24m56.173s
+user    24m55.629s
+sys     0m0.396s
+8192
+
+real    57m43.147s
+user    57m42.244s
+sys     0m0.536s
+16384
+
+real    162m38.781s
+user    162m34.563s
+sys     0m1.980s
+32768
+
+(venv) mlevental@mlevental-CORSAIR-ONE-PRO-a200:~/dev_projects/scalehls/examples$ ./emithlscpp.sh /home/mlevental/dev_projects/bragghls/examples/vgg16_16/vgg16.mlir
+/home/mlevental/dev_projects/bragghls/examples/vgg16_16/vgg16.mlir
+~/dev_projects/scalehls/examples/vgg16 ~/dev_projects/scalehls/examples
+2
+
+real    0m1.867s
+user    0m1.886s
+sys     0m0.000s
+4
+
+real    0m2.260s
+user    0m2.274s
+sys     0m0.004s
+8
+
+real    0m3.089s
+user    0m3.098s
+sys     0m0.008s
+16
+
+real    0m4.960s
+user    0m4.966s
+sys     0m0.012s
+32
+
+real    0m9.271s
+user    0m9.289s
+sys     0m0.000s
+64
+
+real    0m19.338s
+user    0m19.344s
+sys     0m0.012s
+128
+
+real    0m43.299s
+user    0m43.296s
+sys     0m0.020s
+256
+
+real    1m41.220s
+user    1m41.204s
+sys     0m0.024s
+512
+
+real    2m20.866s
+user    2m20.818s
+sys     0m0.060s
+1024
+
+real    4m4.534s
+user    4m4.454s
+sys     0m0.072s
+2048
+
+real    7m35.271s
+user    7m35.156s
+sys     0m0.116s
+4096
+
+real    12m16.681s
+user    12m16.491s
+sys     0m0.184s
+8192
+
+real    24m36.308s
+user    24m36.072s
+sys     0m0.176s
+16384
+
+real    58m51.000s
+user    58m49.854s
+sys     0m0.600s
+32768
+
+real    118m1.474s
+user    117m59.986s
+sys     0m0.960s
+65536
+
+
+

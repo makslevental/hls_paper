@@ -1,4 +1,4 @@
-%% LyX 2.3.6.2 created this file.  For more info, see http://www.lyx.org/.
+%% LyX 2.3.6 created this file.  For more info, see http://www.lyx.org/.
 %% Do not edit unless you really know what you are doing.
 \documentclass[twocolumn,conference]{IEEEtran}
 \usepackage[T1]{fontenc}
@@ -20,11 +20,16 @@
 \usepackage[caption=false,font=footnotesize]{subfig}
 \usepackage{hyperref}
 \hypersetup{colorlinks=true}
+\usepackage[dvipsnames]{xcolor}
+\definecolor{lgray}{rgb}{0.95, 0.95, 0.95}
 
 \@ifundefined{showcaptionsetup}{}{%
  \PassOptionsToPackage{caption=false}{subfig}}
 \usepackage{subfig}
 \makeatother
+
+\usepackage{minted}
+\renewcommand{\listingscaption}{Listing}
 
 \begin{document}
 \title{\texttt{BraggHLS}}
@@ -260,7 +265,8 @@ this compiler framework, from PyTorch, is the \texttt{torch} dialect
 IR, which, in addition to performing the translation to MLIR, fully
 refines all shapes of intermediate tensors in the DNN (i.e., computes
 concrete values for all dimensions of each tensor); this is necessary
-for downstream optimizations and eliminating inconsistencies \cite{https://doi.org/10.48550/arxiv.2203.08402}.
+for downstream optimizations and eliminating inconsistencies in the
+DNN \cite{https://doi.org/10.48550/arxiv.2203.08402}.
 
 While the \texttt{torch} dialect is necessary for lowering to MLIR
 and shape refinement, it is a representation of a DNN at the same
@@ -268,13 +274,14 @@ level of abstraction as TS IR: it does not capture the precise data
 flow and control flow necessary for novel implementations of DNN operations
 (e.g., for FPGA). Fortunately, MLIR supports lower-level dialects,
 such as the \texttt{affine} and \texttt{scf} (structured control flow)
-dialects. The \texttt{scf} is a straightforward formalization of control
-flow primitives, such as conditionals and loops, so we do not discuss
-it in great detail. The \texttt{affine} dialect, on the otherhand,
-provides a formalization of semantics that lend themselves to polyhedral
-compilation techniques \cite{polyhedral-mlir}, i.e., techniques that
-make dependence analysis and loop transformations efficient and reliable.
-We discuss the importance of loop transformations in Section \ref{sec:BraggHLS-compiler-and}.
+dialects. The \texttt{scf} dialect is a straightforward formalization
+of control flow primitives, such as conditionals and loops, so we
+do not discuss it in great detail. The \texttt{affine} dialect, on
+the otherhand, provides a formalization of semantics that lend themselves
+to polyhedral compilation techniques \cite{polyhedral-mlir}, i.e.,
+techniques that enable loop dependence analysis and loop transformations.
+We discuss the importance of loop transformations in the following
+section.
 
 \subsection{High-level synthesis and FPGA design}
 
@@ -304,24 +311,123 @@ and resources);
 an add operation followed by a multiply operation to two separate
 instances, or whether to associate them both with a single instance
 (e.g., configured to perform a fused-multiply-add);
-\item HLS builds an finite-state machine (FSM) that functions as control
-logic for the sequence of operations in the schedule.
+\item HLS builds a finite-state machine (FSM) that implements the schedule
+of operations as control logic, i.e., logic that initiates operations
+and routes signals between them during the appropriate FSM stages.
 \end{enumerate}
 In addition to fulfilling these three fundamental tasks, high-level
-synthesis tools such perform standard compiler optimization passes
-on the IR (that they ingest or produce internally). Optimization passes
-such as store-load forwarding, common subexpression elimination, and
-constant propagation, loop-unrolling and tiling. Note that these optimization
-passes exhibit varying levels of runtime complexity, e.g., store-load
-forwarding in combination with loop-unrolling is polynomial in the
-``trip-count'' of the loop nest. Note also that the scheduling problem
-solved by HLS is reducible an integer linear programming problem (ILP),
-instances of which are NP-hard in general. Thus, HLS tools solve computationally
-intensive problems in order to produce a RTL description of a high-level
-representation of a DNN. These ``development time'' costs (i.e.,
-runtime of the tools) impose practical limitations on the amount of
-design space exploration (for the purpose of achieving latency goals)
-which can be performed. 
+synthesis aims to optimize the program, during synthesis. In particular,
+they try to maximize concurrency and parallelism (number of concurrent
+operations scheduled during a clock-cycle) in order maximize the throughput
+and minimize the latency of the final implementation. 
+
+Maximizing parallelism entails rigorous data-flow analysis in order
+to identify data dependencies that would lead to data hazards in synthesized
+designs. This data-flow analysis exhibits extremely high runtime as
+lower latency designs are pursued. This can be understood in terms
+of loop-nest representations of DNN operations; for example consider
+a convolution as in listing \ref{lis:Single-filter-convolution}.
+\begin{listing}
+\begin{minted}[fontsize={\footnotesize},escapeinside={||},mathescape=true]{python}
+def conv2d(
+  input = array(|$b$|, |$c_{in}$|, |$h$|, |$w$|),
+  output = array(|$b$|, |$c_{out}$|, |$h - 2$|, |$w - 2$|),
+  weight = array(|$c_{out}$|, |$c_{in}$|, |$k$|, |$k$|)
+):
+  for iv1 in range(0, |$b$|):
+    for iv2 in range(0, |$c_{out}$|):
+      for iv3 in range(0, |$h - 2$|):
+        for iv4 in range(0, |$w - 2$|):
+          for iv5 in range(0, |$c_{in}$|):
+            for iv6 in range(0, |$k$|):
+              for iv7 in range(0, |$k$|):
+                _3 = (iv3 + iv6)
+                _4 = (iv4 + iv7)
+                _5 = input[iv1, iv5, _3, _4]
+                _6 = weight[iv2, iv5, iv6, iv7]
+                _7 = output[iv1, iv2, iv3, iv4]
+                _8 = _5 * _6
+                _9 = _7 + _8
+                output[iv1, iv2, iv3, iv4] = _9
+\end{minted}
+\caption{Padding 1, stride 1, $c_{out}$ filter convolution with $k\times k$
+kernel applied to ($\ensuremath{b},\ensuremath{c_{in}},\ensuremath{h},\ensuremath{w}$)-dimensional\texttt{
+input} tensor, where $b$ is the batch size, $c_{in}$ is the number
+of channels, and ($h,w$) are the height and width, respectively.\label{lis:Single-filter-convolution}}
+\end{listing}
+ Parallel schedules of the arithmetic operations for this loop nest
+can be computed by first unrolling all the loops up to some ``trip-count''
+and then computing the topological sort of the operations. The degree
+to which the loops are unrolled determines how many arithmetic operations
+can be scheduled in parallel. The issue is that the stores and loads
+on the \texttt{output} array prevent reconstruction of explicit relationships
+between the inputs and outputs of the arithmetic operations across
+loop iterations. The standard resolution is to perform \emph{store-load
+forwarding}: pairs of store and load operations to/from the same memory
+address are eliminated, with the operand of the store forwarded to
+the uses of the load (see listing \ref{lis:Single-filter-convolution-1}).
+\begin{listing}
+\begin{minted}[numbers=left,fontsize={\footnotesize},escapeinside={||},mathescape=true,highlightlines={19,25}]{python}
+def conv2d(
+  input = array(|$b$|, |$c_{in}$|, |$h$|, |$w$|),
+  output = array(|$b$|, |$c_{out}$|, |$h - 2$|, |$w - 2$|),
+  weight = array(|$c_{out}$|, |$c_{in}$|, |$k$|, |$k$|)
+):
+  for iv1 in range(0, |$b$|):
+    for iv2 in range(0, |$c_{out}$|):
+      for iv3 in range(0, |$h - 2$|):
+        for iv4 in range(0, |$w - 2$|):
+	  ...
+	  # e.g., iv5, iv6, iv7 = 2, 3, ${\setlength{\fboxsep}{1pt}\colorbox{Salmon}{\texttt{4}}}$
+	  _31 = (iv3 + iv6) 
+	  _41 = (iv4 + iv7) 
+	  _51 = input[iv1, iv5, _31, _41] 
+	  _61 = weight[iv2, iv5, iv6, iv7] 
+	  _71 = output[iv1, iv2, iv3, iv4] 
+	  _81 = _51 * _61 
+	  |${\setlength{ \fboxsep}{1pt} \colorbox{green}{ \texttt{\_91}}}$| = _71 + _81 
+	  output[iv1, iv2, iv3, iv4] = _91 
+	  # iv5, iv6, iv7 = 2, 3, ${\setlength{\fboxsep}{1pt}\colorbox{Salmon}{\texttt{5}}}$
+	  _32 = (iv3 + iv6) 
+	  _42 = (iv4 + iv7) 
+	  _52 = input[iv1, iv5, _32, _42] 
+	  _62 = weight[iv2, iv5, iv6, iv7] 
+	  |${\setlength{\fboxsep}{1pt}\colorbox{yellow}{\texttt{\_72}}}$| = output[iv1, iv2, iv3, iv4] 
+	  _82 = _52 * _62 
+	  _92 = |${\setlength{\fboxsep}{1pt}\colorbox{yellow}{\texttt{\_72}}}$| + _82 
+	  output[iv1, iv2, iv3, iv4] = _92
+	  ...
+\end{minted}
+\caption{Store-load forwarding across successive iterations (e.g.,\texttt{
+iv7} $={\setlength{\fboxsep}{1pt}\colorbox{Salmon}{\texttt{4}}}, {\setlength{\fboxsep}{1pt}\colorbox{Salmon}{\texttt{5}}}$)
+of the inner loop in listing \ref{lis:Single-filter-convolution},
+after unrolling. The forwarding opportunity is from the store on line
+19 to the load on line 25; both can be eliminated and ${\setlength{\fboxsep}{1pt}\colorbox{green}{\texttt{\_91}}}$
+can replace uses of ${\setlength{\fboxsep}{1pt}\colorbox{yellow}{\texttt{\_72}}}$,
+such as in the computation of \texttt{\_92} (and potentially many
+others).\label{lis:Single-filter-convolution-1}}
+\end{listing}
+ In order for this transformation to be correct (preserve program
+semantics), for each pair of candidate store and load operations,
+it must be verified that there are no intervening memory operations.
+Note, the number of such checks scales polynomially in the parameters
+of the convolution since the loop nest unrolls into $b\times c_{out}\times\left(h-2\right)\times\left(w-2\right)\times c_{in}\times k^{2}$
+store-load pairs. Note also, while in the case of listing \ref{lis:Single-filter-convolution}
+the verification is straightforward, in general it might involve solving
+a small constraint satisfaction program \cite{rajopadhye2002dependence}.
+
+Finally, note, though greedy solutions to the scheduling problem solved
+by HLS are possible, in principle scheduling is an integer linear
+programming problem (ILP), instances of which are NP-hard. In summary,
+HLS tools solve computationally intensive problems in order to produce
+a RTL description of a high-level representation of a DNN. These phases
+of the HLS process incur ``development time'' costs (i.e., runtime
+of the tools) and impose practical limitations on the amount of design
+space exploration (for the purpose of achieving latency goals) which
+can be performed. \texttt{BraggHLS }addresses these issues by enabling
+the user to employ heuristics (during both the parallelization and
+scheduling phases) which, while not guaranteed to be correct, can
+be \emph{behaviourally verified}.
 
 \subsection{FPGA design}
 
@@ -359,14 +465,14 @@ a proprietary \emph{bitstream}, which is written to the FPGA.
 asdasd
 \begin{figure*}[tbh]
 \begin{centering}
-\subfloat[\texttt{addmm}]{\centering{}\includegraphics[width=1\columnwidth]{/Users/mlevental/dev_projects/hls_paper/data/cpps/addmm}\label{2dlattice-1-1-2}}\subfloat[\texttt{braggnn}]{\centering{}\includegraphics[width=1\columnwidth]{/Users/mlevental/dev_projects/hls_paper/data/cpps/braggnn}\label{2dlattice-1-2-2}}
+\subfloat[\texttt{addmm}]{\centering{}\includegraphics[width=1\columnwidth]{../data/addmm}\label{2dlattice-1-1-2}}\subfloat[\texttt{braggnn}]{\centering{}\includegraphics[width=1\columnwidth]{../data/braggnn}\label{2dlattice-1-2-2}}
 \par\end{centering}
 \medskip{}
 
-\centering{}\label{2dlattice-1-3}\subfloat[\texttt{conv}]{\centering{}\includegraphics[width=1\columnwidth]{/Users/mlevental/dev_projects/hls_paper/data/cpps/conv}\label{2dlattice-1-1-1-1}}\subfloat[\texttt{matmul}]{\centering{}\includegraphics[width=1\columnwidth]{/Users/mlevental/dev_projects/hls_paper/data/cpps/matmul}\label{2dlattice-1-2-1-1}}\caption{Resource usage and latency vs. unroll factor of various DNN modules.}
+\centering{}\label{2dlattice-1-3}\subfloat[\texttt{conv}]{\centering{}\includegraphics[width=1\columnwidth]{../data/conv}\label{2dlattice-1-1-1-1}}\subfloat[\texttt{matmul}]{\centering{}\includegraphics[width=1\columnwidth]{../data/matmul}\label{2dlattice-1-2-1-1}}\caption{Resource usage and latency vs. unroll factor of various DNN modules.}
 \end{figure*}
 \begin{figure*}[tbh]
-\centering{}\includegraphics[width=1\columnwidth]{/Users/mlevental/dev_projects/hls_paper/data/cpps/elapsed_time}\caption{Runtime of Vitis HLS vs. unroll factor.}
+\centering{}\includegraphics[width=1\columnwidth]{../data/elapsed_time}\caption{Runtime of Vitis HLS vs. unroll factor.}
 \end{figure*}
 
 
