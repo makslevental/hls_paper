@@ -12,6 +12,7 @@
 \hypersetup{colorlinks=true}
 \usepackage[dvipsnames]{xcolor}
 \definecolor{lgray}{rgb}{0.95, 0.95, 0.95}
+\usepackage{mathtools}
 \end_preamble
 \options conference
 \use_default_options false
@@ -121,7 +122,7 @@ Levental
 
 
 \begin_inset Flex Author Affiliation
-status open
+status collapsed
 
 \begin_layout Plain Layout
 University of Chicago
@@ -162,7 +163,7 @@ Chard
 
 
 \begin_inset Flex Author Affiliation
-status open
+status collapsed
 
 \begin_layout Plain Layout
 Ecole Superieure
@@ -193,7 +194,7 @@ and
 
 
 \begin_inset Flex Author Name
-status open
+status collapsed
 
 \begin_layout Plain Layout
 Kyle
@@ -710,13 +711,6 @@ BraggHLS
 \end_layout
 
 \begin_layout Enumerate
-We discuss the challenges faced by a compiler and HLS tool in attempting
- to lower DNNs to ultra-low latency designs, including runtime costs incurred
- during design space exploration, challenges meeting resource and timing
- constraints during synthesis, placement, and routing;
-\end_layout
-
-\begin_layout Enumerate
 We describe and implement a compiler framework, 
 \family typewriter
 BraggHLS
@@ -752,7 +746,14 @@ BraggHLS
 BraggHLS
 \family default
  can produce synthesizable designs that meet placement, routing, and timing
- constraints, where Vitis HLS cannot.
+ constraints, where Vitis HLS cannot;
+\end_layout
+
+\begin_layout Enumerate
+We discuss some of the challanges faced after even after successful synthesis
+ of RTL from a high-level representation of a DNN, namely we present a case
+ study DNN RTL implementation and discus the further challanges faced during
+ deployment to FPGA.
 \end_layout
 
 \begin_layout Standard
@@ -946,6 +947,13 @@ literal "false"
 
 \begin_layout Subsubsection
 MLIR
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:MLIR"
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -1192,17 +1200,17 @@ def conv2d(
 
 \begin_layout Plain Layout
 
-  input: array(|$b$|, |$c_{in}$|, |$h$|, |$w$|),
+  input: MemRef(|$b$|, |$c_{in}$|, |$h$|, |$w$|),
 \end_layout
 
 \begin_layout Plain Layout
 
-  output: array(|$b$|, |$c_{out}$|, |$h$|, |$w$|),
+  output: MemRef(|$b$|, |$c_{out}$|, |$h$|, |$w$|),
 \end_layout
 
 \begin_layout Plain Layout
 
-  weight: array(|$c_{out}$|, |$c_{in}$|, |$k$|, |$k$|)
+  weight: MemRef(|$c_{out}$|, |$c_{in}$|, |$k$|, |$k$|)
 \end_layout
 
 \begin_layout Plain Layout
@@ -1286,7 +1294,7 @@ def conv2d(
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Padding 
+Python representation of a padding 
 \begin_inset Formula $\left\lfloor k/2\right\rfloor $
 \end_inset
 
@@ -1383,17 +1391,17 @@ def conv2d(
 
 \begin_layout Plain Layout
 
-  input: array(|$b$|, |$c_{in}$|, |$h$|, |$w$|),
+  input: MemRef(|$b$|, |$c_{in}$|, |$h$|, |$w$|),
 \end_layout
 
 \begin_layout Plain Layout
 
-  output: array(|$b$|, |$c_{out}$|, |$h$|, |$w$|),
+  output: MemRef(|$b$|, |$c_{out}$|, |$h$|, |$w$|),
 \end_layout
 
 \begin_layout Plain Layout
 
-  weight: array(|$c_{out}$|, |$c_{in}$|, |$k$|, |$k$|)
+  weight: MemRef(|$c_{out}$|, |$c_{in}$|, |$k$|, |$k$|)
 \end_layout
 
 \begin_layout Plain Layout
@@ -1845,15 +1853,14 @@ name "sec:BraggHLS-compiler-and"
 BraggHLS
 \family default
  is an extensible (implemented in python) HLS framework which employs MLIR
- for extracting loop-nest representations of DNNs implemented as PyTorch
- models.
+ for extracting loop-nest representations of DNNs.
  Critically, and distinctly, it handles the DNN transformations as well
  as scheduling, binding, and FSM extraction; there is no dependence on any
  commercial HLS tools.
  Figure 
 \begin_inset CommandInset ref
 LatexCommand ref
-reference "fig:BraggHLS-framework-overview."
+reference "fig:BraggHLS-framework-overview.-3"
 
 \end_inset
 
@@ -1871,7 +1878,7 @@ status collapsed
 \align center
 \begin_inset Graphics
 	filename ../figures/BraggHLS.pdf
-	width 100col%
+	width 70col%
 
 \end_inset
 
@@ -1886,7 +1893,7 @@ BraggHLS
  framework overview (placeholder).
 \begin_inset CommandInset label
 LatexCommand label
-name "fig:BraggHLS-framework-overview."
+name "fig:BraggHLS-framework-overview.-3"
 
 \end_inset
 
@@ -1901,7 +1908,407 @@ name "fig:BraggHLS-framework-overview."
 \end_inset
 
 .
- We discuss the most significant aspects of the architecture in the following.
+ 
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+BraggHLS
+\family default
+ proceeds by first lowering DNNs from PyTorch to MLIR through TorchScript
+ and the 
+\family typewriter
+torch
+\family default
+ dialect (see Section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "subsec:MLIR"
+
+\end_inset
+
+).
+ They are then further lowered from the 
+\family typewriter
+torch
+\family default
+ dialect to the 
+\family typewriter
+scf
+\family default
+ dialect (through the 
+\family typewriter
+linalg
+\family default
+ dialect).
+ The 
+\family typewriter
+scf
+\family default
+ dialect describes standard control flow primitives, such as conditionals
+ and loops, and is mutually compatible with the 
+\family typewriter
+arith
+\family default
+ and 
+\family typewriter
+memref
+\family default
+ dialects.
+ Such a representation lends itself to a straightforward translation to
+ python (compare Listing 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "lis:Single-filter-convolution"
+
+\end_inset
+
+ to Listing 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "lis:Single-filter-convolution"
+
+\end_inset
+
+) and indeed 
+\family typewriter
+BraggHLS
+\family default
+ performs this translation.
+\begin_inset listings
+lstparams "language=MuPAD,float,fontsize={\footnotesize},escapeinside={||},mathescape=true"
+inline false
+status open
+
+\begin_layout Plain Layout
+
+@conv2d(
+\end_layout
+
+\begin_layout Plain Layout
+
+    %input: memref<|$b 
+\backslash
+times c_{in} 
+\backslash
+times h 
+\backslash
+times w$|>,
+\end_layout
+
+\begin_layout Plain Layout
+
+    %weight: memref<|$b 
+\backslash
+times c_{out} 
+\backslash
+times h 
+\backslash
+times w$|>,
+\end_layout
+
+\begin_layout Plain Layout
+
+    %output: memref<|$c_{out} 
+\backslash
+times c_{in} 
+\backslash
+times k 
+\backslash
+times k$|>
+\end_layout
+
+\begin_layout Plain Layout
+
+) {
+\end_layout
+
+\begin_layout Plain Layout
+
+  scf.for %iv1 = %c0 to |$b$| step %c1 {
+\end_layout
+
+\begin_layout Plain Layout
+
+    scf.for %iv2 = %c0 to |$c_{out}$| step %c1 {
+\end_layout
+
+\begin_layout Plain Layout
+
+      scf.for %iv3 = %c0 to |$h$| step %c1 {
+\end_layout
+
+\begin_layout Plain Layout
+
+        scf.for %iv4 = %c0 to |$w$| step %c1 {
+\end_layout
+
+\begin_layout Plain Layout
+
+          scf.for %iv5 = %c0 to |$c_{in}$| step %c1 {
+\end_layout
+
+\begin_layout Plain Layout
+
+            scf.for %iv6 = %c0 to |$k$| step %c1 {
+\end_layout
+
+\begin_layout Plain Layout
+
+              scf.for %iv7 = %c0 to |$k$| step %c1 {
+\end_layout
+
+\begin_layout Plain Layout
+
+                %3 = arith.addi %iv3, %iv6
+\end_layout
+
+\begin_layout Plain Layout
+
+                %4 = arith.addi %iv4, %iv7
+\end_layout
+
+\begin_layout Plain Layout
+
+                %5 = memref.load %input[
+\end_layout
+
+\begin_layout Plain Layout
+
+                  %iv1, %iv5, %iv3, %3, %4]
+\end_layout
+
+\begin_layout Plain Layout
+
+                %6 = memref.load %weight[
+\end_layout
+
+\begin_layout Plain Layout
+
+                  %iv2, %iv5, %iv6, %iv7]
+\end_layout
+
+\begin_layout Plain Layout
+
+                %7 = memref.load %output[
+\end_layout
+
+\begin_layout Plain Layout
+
+                  %iv1, %iv2, %iv3, %iv4]
+\end_layout
+
+\begin_layout Plain Layout
+
+                %8 = arith.mulf %5, %6
+\end_layout
+
+\begin_layout Plain Layout
+
+                %9 = arith.addf %7, %8
+\end_layout
+
+\begin_layout Plain Layout
+
+                memref.store %9, %output[
+\end_layout
+
+\begin_layout Plain Layout
+
+                  %iv1, %iv2, %iv3, %iv4]
+\end_layout
+
+\begin_layout Plain Layout
+
+              } 
+\end_layout
+
+\begin_layout Plain Layout
+
+            }
+\end_layout
+
+\begin_layout Plain Layout
+
+          }  
+\end_layout
+
+\begin_layout Plain Layout
+
+        }
+\end_layout
+
+\begin_layout Plain Layout
+
+      }
+\end_layout
+
+\begin_layout Plain Layout
+
+    }
+\end_layout
+
+\begin_layout Plain Layout
+
+  }
+\end_layout
+
+\begin_layout Plain Layout
+
+  return %2
+\end_layout
+
+\begin_layout Plain Layout
+
+}
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+
+\family typewriter
+scf
+\family default
+ dialect loop representation of the convolution in Listing 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "lis:Single-filter-convolution"
+
+\end_inset
+
+.
+\begin_inset CommandInset label
+LatexCommand label
+name "lis:Single-filter-convolution-2-1"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+ The benefits of translating 
+\family typewriter
+scf
+\family default
+ dialect to python are manifold and discussed in the following (see Section
+ 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "subsec:Symbolic-execution-for"
+
+\end_inset
+
+).
+ Ultimately, 
+\family typewriter
+BraggHLS
+\family default
+ produces a representation of the DNN that can be scheduled efficiently
+ using the scheduling infrastructure in CIRCT 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "oppermann2022eurollvm"
+literal "false"
+
+\end_inset
+
+ (an MLIR adjacent project) and then emits corresponding RTL (as Verilog).
+ 
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+BraggHLS
+\family default
+ delegates to the FloPoCo 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "8877424"
+literal "false"
+
+\end_inset
+
+ hardware the task of generating pipelined implementations of the standard
+ floating point arithmetic operations (
+\family typewriter
+mul
+\family default
+, 
+\family typewriter
+div
+\family default
+, 
+\family typewriter
+add
+\family default
+, 
+\family typewriter
+sub
+\family default
+, 
+\family typewriter
+sqrt
+\family default
+) at various precisions.
+ In addition, we implement a few generic (parameterized by bit width) operators
+ in order to support a range of DNN operations: two-operand maximum (
+\family typewriter
+max
+\family default
+); negation (
+\family typewriter
+neg
+\family default
+); rectified linear units (
+\family typewriter
+relu
+\family default
+).
+ Transcendental functions, such as 
+\family typewriter
+exp
+\family default
+, are implemented using a Taylor series expansion to 
+\begin_inset Formula $k$
+\end_inset
+
+-th order (where 
+\begin_inset Formula $k$
+\end_inset
+
+ is determined on a case by case basis).
+ Note, FloPoCo's floating point representation differs slightly from IEEE754,
+ foregoing subnormals and differently encoding zeroes, infinities and NaNs
+ (for the benefit of reduced complexity) and our implementations 
+\family typewriter
+max
+\family default
+, 
+\family typewriter
+neg
+\family default
+, 
+\family typewriter
+relu
+\family default
+ are adjusted appropriately.
+ 
+\end_layout
+
+\begin_layout Standard
+We now discuss the benefits of translating 
+\family typewriter
+scf
+\family default
+ dialect to python.
 \end_layout
 
 \begin_layout Subsection
@@ -1916,38 +2323,395 @@ name "subsec:Symbolic-execution-for"
 \end_layout
 
 \begin_layout Standard
-First, DNNs are lowered from PyTorch to MLIR through TorchScript and the
- 
+As discussed in Section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "subsec:High-level-synthesis"
+
+\end_inset
+
+, a loop-nest representation of a DNN enables us to effectively perform
+ data-flow analysis and schedule the encompassed arithmetic operations,
+ given that we can first unroll the loops.
+ As also discussed in Section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "subsec:High-level-synthesis"
+
+\end_inset
+
+, the formally correct approach to unrolling a loop nest is prohibitively
+ expensive in terms of runtime.
+ Indeed, for example, in the case of 
 \family typewriter
-torch
+BraggNN
 \family default
- dialect.
- They are then further lowered from the 
-\family typewriter
-torch
-\family default
- dialect to the 
+, repeatedly performing this unrolling was a hindrance to effectively searching
+ the design space for a RTL representation achieving the target latency,
+ since it often took an enormous amount of time (see Figure TODO).
+ Translating 
 \family typewriter
 scf
 \family default
- dialect (through the 
+ dialect to python enables 
 \family typewriter
-linalg
+BraggHLS
 \family default
- dialect) in such a way that the inherent parallelism of each high-level
- operation is preserved (for example, see Listing 
+ to overcome this barrier by enabling a 
+\emph on
+symbolic interpreter
+\emph default
+ for the loop-nest representations.
+ Specifically, after the translation, and after applying some transformations
+ on the resulting python abstract syntax tree (AST), the python code can
+ be executed, with operations on python values determined by class method
+ overloads (see Algorithm 
 \begin_inset CommandInset ref
 LatexCommand ref
-reference "lis:Single-filter-convolution-2"
+reference "alg:scf-dialect-to"
 
 \end_inset
 
 ).
  
+\end_layout
+
+\begin_layout Standard
+
+\size scriptsize
+\begin_inset Float algorithm
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+
+\size scriptsize
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+
+\family typewriter
+scf
+\family default
+ dialect to python translation.
+\begin_inset CommandInset label
+LatexCommand label
+name "alg:scf-dialect-to"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout LyX-Code
+
+\size scriptsize
+\begin_inset Formula 
+\begin{multline*}
+\left\llbracket \texttt{\%5}\right\rrbracket \rightarrow\texttt{\texttt{v5 = Val("\%5")}}\\
+\end{multline*}
+
+\end_inset
+
+
+\begin_inset VSpace -30pt
+\end_inset
+
+
+\begin_inset Formula 
+\begin{multline*}
+\left\llbracket \texttt{memref<}b\times c_{in}\times h\times w\texttt{>}\right\rrbracket \rightarrow\texttt{MemRef(}b\times c_{in}\times h\times w\texttt{)}
+\end{multline*}
+
+\end_inset
+
+
+\begin_inset VSpace -20pt
+\end_inset
+
+
+\end_layout
+
+\begin_layout LyX-Code
+
+\size scriptsize
+\begin_inset Formula 
+\begin{multline*}
+\left\llbracket \texttt{\%5 = memref.load input[\%iv1,\%iv5,\%3,\%4]}\right\rrbracket \\
+\rightarrow\texttt{v5 = input.\_\_getitem\_\_((iv1,iv5,v3,v4))}
+\end{multline*}
+
+\end_inset
+
+
+\begin_inset VSpace -20pt
+\end_inset
+
+
+\end_layout
+
+\begin_layout LyX-Code
+
+\size scriptsize
+\begin_inset Formula 
+\begin{multline*}
+\left\llbracket \texttt{memref.store \%9, output[\%iv1,\%iv5,\%3,\%4]}\right\rrbracket \\
+\rightarrow\texttt{output.\_\_setitem\_\_((iv1,iv5,v3,v4), v9)}
+\end{multline*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout LyX-Code
+
+\size scriptsize
+\begin_inset VSpace -20pt
+\end_inset
+
+
+\end_layout
+
+\begin_layout LyX-Code
+
+\size scriptsize
+\begin_inset Formula 
+\begin{multline*}
+\left\llbracket \texttt{scf.for \%iv1 = \%c0 to }b\texttt{ step \%c1}\right\rrbracket \\
+\rightarrow\texttt{for iv1 in range(c0,}b\texttt{,c1)}
+\end{multline*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout LyX-Code
+
+\size scriptsize
+\begin_inset VSpace -20pt
+\end_inset
+
+
+\end_layout
+
+\begin_layout LyX-Code
+
+\size scriptsize
+\begin_inset Formula 
+\begin{multline*}
+\left\llbracket \texttt{\%3 = arith.addi \%iv3, \%iv6}\right\rrbracket \rightarrow\texttt{\texttt{v3 = iv3 + iv6}}
+\end{multline*}
+
+\end_inset
+
+
+\begin_inset VSpace -20pt
+\end_inset
+
+
+\end_layout
+
+\begin_layout LyX-Code
+
+\end_layout
+
+\begin_layout LyX-Code
+
+\size scriptsize
+\begin_inset Formula 
+\begin{multline*}
+\left\llbracket \texttt{\%8 = arith.mulf \%5, \%6}\right\rrbracket \rightarrow\texttt{\texttt{v8 = v5.\_\_mul\_\_(v6})}
+\end{multline*}
+
+\end_inset
+
+
+\begin_inset VSpace -20pt
+\end_inset
+
+
+\end_layout
+
+\begin_layout LyX-Code
+
+\size scriptsize
+\begin_inset Formula 
+\begin{multline*}
+\left\llbracket \texttt{\%9 = arith.addf \%7, \%8}\right\rrbracket \rightarrow\texttt{\texttt{v9 = v7.\_\_add\_\_(v8)}}
+\end{multline*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout LyX-Code
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+In executing the python code, the 
+\family typewriter
+BraggHLS
+\family default
+ interpreter effectively unrolls loops by executing them under a redefined
+ set semantics, while enforcing SSA.
+ That is to say, for a loop whose body has repeated assignments to the same
+ SSA value (ostensibly violating SSA), we execute the loop and instantiate
+ unique identifiers for the result of each operation.
+ The interpreter then partially evaluates where possible, such as in functions
+ of iteration variables, such as 
+\begin_inset listings
+lstparams "language=MuPAD"
+inline true
+status open
+
+\begin_layout Plain Layout
+
+%3 = arith.addi %iv3, %iv6
+\end_layout
+
+\end_inset
+
+.
+ This enables 
+\family typewriter
+BraggHLS
+\family default
+ to concretely determine array index operands of all stores and loads, such
+ as 
+\begin_inset listings
+lstparams "language=MuPAD"
+inline true
+status open
+
+\begin_layout Plain Layout
+
+memref.load %input[%iv1,%iv5,%iv3,%3,%4]
+\end_layout
+
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Standard
+Note, we do not evaluate values corresponding to floating point arithmetic,
+ as they represent true evaluation of the DNN; our interpreter represents
+ the operands of such operations as symbols and merely records the arithmetic
+ operations performed on them.
+ This enables us to both unroll the loop and track data-flow through arithmetic
+ operations (see Section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "lis:Single-filter-convolution-1"
+
+\end_inset
+
+).
+ Finally, the interpreter reinterprets 
+\family typewriter
+memref
+\family default
+s as 
+\emph on
+geometric symbol tables
+\emph default
+ (i.e., symbol tables indexed by array indices rather than identifiers/names)
+ and stores and loads as assignments/reads to/from those symbol tables.
+ Such semantics, in combination with fully evaluated array indices, enable
+ 
+\family typewriter
+BraggHLS
+\family default
+ to track the flow of data through arithmetic operations and 
+\family typewriter
+memref
+\family default
+s, and thus perform store-load forwarding and efficient scheduling
+\end_layout
+
+\begin_layout Subsection
+Scheduling
+\end_layout
+
+\begin_layout Standard
+Recall that one of the critical functions which HLS fulfills is the scheduling
+ of operations during each clock cycle, in such a way that they preserve
+ the data-flow graph of a DNN; that schedule then informs the construction
+ of a corresponding FSM.
+ As already mentioned, scheduling arbitrary DNNs involves formulating and
+ solving an ILP.
+ In the resource-unconstrained case, due to the precedence relations induced
+ by data-flow, the constraint matrix of the associated ILP is 
+\emph on
+totally unimodular matrix
+\emph default
+ and the feasible region of the problem is an integral polyhedron.
+ Thus, in such cases, the scheduling problem can be solved optimally in
+ polynomial time with a LP solver 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "tuprints9272"
+literal "false"
+
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Standard
+In the resource constrained case it is possible to transform resource constraint
+s into precedence constraints as well, by picking a particular (possible
+ heuristic) linear ordering on the resource-constrained operations.
+ This transformation partitions resource constrained operations into distinct
+ clock cycles, thereby guaranteeing sufficient resources are available for
+ all operations scheduled within the same clock cycle 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "10.1145/3174243.3174268"
+literal "false"
+
+\end_inset
+
+.
+ 
+\family typewriter
+BraggHLS
+\family default
+ uses the inherent parallelism of the loop-nest representation to decide
+ a linear ordering on resource constrained operations: for parallelizable
+ loop-nests, which are reprepresented as 
+\family typewriter
+scf.parallel
+\family default
+ loop-nests (see Listing 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "lis:Single-filter-convolution-2-2"
+
+\end_inset
+
+) 
 \begin_inset listings
 lstparams "language=MuPAD,float,fontsize={\footnotesize},escapeinside={||},mathescape=true"
 inline false
-status open
+status collapsed
 
 \begin_layout Plain Layout
 
@@ -2108,7 +2872,7 @@ reference "lis:Single-filter-convolution"
 .
 \begin_inset CommandInset label
 LatexCommand label
-name "lis:Single-filter-convolution-2"
+name "lis:Single-filter-convolution-2-2"
 
 \end_inset
 
@@ -2122,9 +2886,8 @@ name "lis:Single-filter-convolution-2"
 
 \end_inset
 
-The value of making the parallelism explicit is that we can readily partition
- a DNN across a known set of hardware resources in order to maximize parallelism
-; since for each value of (
+ we can partition the DNN across a known set of hardware resources in order
+ to maximize parallelism; since for each value of (
 \family typewriter
 %iv1
 \family default
@@ -2190,7 +2953,11 @@ add
 .
  Note, DNN hyperparameters such as striding and padding make this a non-trivial
  calculation.
- Once peak usage is determined, successive instances 
+ 
+\end_layout
+
+\begin_layout Standard
+Once peak usage is determined, successive instances 
 \family typewriter
 scf.parallel
 \family default
@@ -2199,233 +2966,7 @@ scf.parallel
 %iv1, %iv2, %iv3, %iv4
 \family default
 ) are bound to the same resources.
- For DNN operations that lower to sequential loop nests (e.g., 
-\family typewriter
-sum
-\family default
-, 
-\family typewriter
-max
-\family default
-,or 
-\family typewriter
-prod
-\family default
-), we fully unroll the loops and use a reduction tree approach.
- 
-\end_layout
-
-\begin_layout Standard
-In addition to enabling us to perform binding, as discussed in Section 
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "subsec:High-level-synthesis"
-
-\end_inset
-
-, a loop-nest representation enables us to effectively perform data-flow
- analysis and schedule the encompassed arithmetic operations (see the next
- Section regarding scheduling), given that we can first unroll the loops.
- As also discussed in Section 
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "subsec:High-level-synthesis"
-
-\end_inset
-
-, the formally correct approach to unrolling a loop nest is prohibitively
- expensive in terms of runtime.
- Indeed, for 
-\family typewriter
-BraggNN
-\family default
-, with respect to producing a RTL representation achieving latency within
- 1000
-\begin_inset Formula $\times$
-\end_inset
-
- of the target latency (i.e., 
-\begin_inset Formula $<$
-\end_inset
-
-1 ms), performing this unrolling in a reasonable amount of time (e.g., 
-\begin_inset Formula $<$
-\end_inset
-
-12 hours) was extremely challenging.
- To overcome this runtime cost during the space exploration phase of the
- design process, the approach that 
-\family typewriter
-BraggHLS
-\family default
- takes is to implement a 
-\emph on
-symbolic interpreter
-\emph default
- for these loop-nest representations.
- Specifically, 
-\family typewriter
-BraggHLS
-\family default
- translates 
-\family typewriter
-scf
-\family default
- dialect MLIR (such as in Listing 
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "lis:Single-filter-convolution-2"
-
-\end_inset
-
-) into legal python code (such as in Listing 
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "lis:Single-filter-convolution"
-
-\end_inset
-
-) and then, after applying some transformations on the resulting python
- abstract syntax tree (AST), executes that python code.
- 
-\end_layout
-
-\begin_layout Standard
-In executing the python code, the 
-\family typewriter
-BraggHLS
-\family default
- interpreter effectively unrolls loops by executing them under a redefined
- set semantics, while enforcing SSA.
- That is to say, for a loop whose body has repeated assignments to the same
- SSA value (ostensibly violating SSA), we execute the loop and instantiate
- unique identifiers for the result of each operation.
- The interpreter then partially evaluates where possible, such as in functions
- of iteration variables, such as 
-\begin_inset listings
-lstparams "language=MuPAD"
-inline true
-status open
-
-\begin_layout Plain Layout
-
-%3 = arith.addi %iv3, %iv6
-\end_layout
-
-\end_inset
-
-.
- This enables 
-\family typewriter
-BraggHLS
-\family default
- to concretely determine array index operands of all stores and loads, such
- as 
-\begin_inset listings
-lstparams "language=MuPAD"
-inline true
-status open
-
-\begin_layout Plain Layout
-
-memref.load %input[%iv1,%iv5,%iv3,%3,%4]
-\end_layout
-
-\end_inset
-
-.
- 
-\end_layout
-
-\begin_layout Standard
-Note, we do not evaluate values corresponding to floating point arithmetic,
- as they represent true evaluation of the DNN; our interpreter represents
- the operands of such operations as symbols and merely records the arithmetic
- operations performed on them.
- This enables us to both unroll the loop and track data-flow through arithmetic
- operations (see Section 
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "lis:Single-filter-convolution-1"
-
-\end_inset
-
-).
- Finally, the interpreter reinterprets 
-\family typewriter
-memref
-\family default
-s as 
-\emph on
-geometric symbol tables
-\emph default
- (i.e., symbol tables indexed by array indices rather than identifiers/names)
- and stores and loads as assignments/reads to/from those symbol tables.
- Such semantics, in combination with fully evaluated array indices, enable
- 
-\family typewriter
-BraggHLS
-\family default
- to track the flow of data through arithmetic operations and 
-\family typewriter
-memref
-\family default
-s, and thus perform store-load forwarding.
- 
-\end_layout
-
-\begin_layout Subsection
-Scheduling
-\end_layout
-
-\begin_layout Standard
-Recall that one of the critical functions which HLS fulfills is the scheduling
- of operations during each clock cycle, in such a way that they preserve
- the data-flow graph of a DNN; that schedule then informs the construction
- of a corresponding FSM.
- As already mentioned, scheduling arbitrary DNNs involves formulating and
- solving an ILP.
- In the resource-unconstrained case, due to the precedence relations induced
- by data-flow, the constraint matrix of the associated ILP is 
-\emph on
-totally unimodular matrix
-\emph default
- and the feasible region of the problem is an integral polyhedron.
- Thus, in such cases, the scheduling problem can be solved optimally in
- polynomial time with a LP solver 
-\begin_inset CommandInset citation
-LatexCommand cite
-key "tuprints9272"
-literal "false"
-
-\end_inset
-
-.
- 
-\end_layout
-
-\begin_layout Standard
-In the resource constrained case it is possible to transform resource constraint
-s into precedence constraints as well, by picking a particular (possible
- heuristic) linear ordering on the resource-constrained operations.
- This transformation partitions resource constrained operations into distinct
- clock cycles, thereby guaranteeing sufficient resources are available for
- all operations scheduled within the same clock cycle 
-\begin_inset CommandInset citation
-LatexCommand cite
-key "10.1145/3174243.3174268"
-literal "false"
-
-\end_inset
-
-.
- 
-\family typewriter
-BraggHLS
-\family default
- uses the inherent parallelism of the loop-nest representation to decide
- a linear ordering on resource constrained operations: since successive
- instances of 
+ Then since successive instances of 
 \family typewriter
 scf.parallel
 \family default
@@ -2437,8 +2978,24 @@ scf.parallel
  scf.parallel
 \family default
  loop nests is determined by the higher-level structure of the DNN.
- For DNN operations that lower to reduction trees, we use As-Late-As-Possible
- scheduling 
+ 
+\end_layout
+
+\begin_layout Standard
+Note, For DNN operations that lower to sequential loop nests (e.g., 
+\family typewriter
+sum
+\family default
+, 
+\family typewriter
+max
+\family default
+,or 
+\family typewriter
+prod
+\family default
+), we fully unroll the loops and transform the resulting, sequential, operations
+ to a reduction tree; we use As-Late-As-Possible scheduling 
 \begin_inset CommandInset citation
 LatexCommand cite
 key "baruch1996scheduling"
@@ -2446,94 +3003,7 @@ literal "false"
 
 \end_inset
 
- amongst the subtrees.
-\end_layout
-
-\begin_layout Subsection
-Floating point arithmetic implementations
-\end_layout
-
-\begin_layout Standard
-We use the FloPoCo 
-\begin_inset CommandInset citation
-LatexCommand cite
-key "8877424"
-literal "false"
-
-\end_inset
-
- hardware generator to generate pipelined implementations of the standard
- floating point arithmetic operations (
-\family typewriter
-mul
-\family default
-, 
-\family typewriter
-div
-\family default
-, 
-\family typewriter
-add
-\family default
-, 
-\family typewriter
-sub
-\family default
-, 
-\family typewriter
-sqrt
-\family default
-) at various precisions.
- In addition, we implement a few generic (parameterized by bit width) operators
- in order to support a range of DNN operations:
-\end_layout
-
-\begin_layout Itemize
-Two-operand maximum (
-\family typewriter
-max
-\family default
-);
-\end_layout
-
-\begin_layout Itemize
-Negation (
-\family typewriter
-neg
-\family default
-);
-\end_layout
-
-\begin_layout Itemize
-Rectified linear units (
-\family typewriter
-relu
-\family default
-), which could, alternatively, be represented as 
-\begin_inset Formula $\text{relu}\left(x\right):=\max(0,x)$
-\end_inset
-
-.
-\end_layout
-
-\begin_layout Standard
-Transcendental functions, such as 
-\family typewriter
-exp
-\family default
-, are implemented using a Taylor series expansion to 
-\begin_inset Formula $k$
-\end_inset
-
-th order (where 
-\begin_inset Formula $k$
-\end_inset
-
- is determined on a case by case basis).
- Note, FloPoCo's floating point format differs slightly from IEEE754, foregoing
- subnormals and differently encoding zeroes, infinities and NaNs, for the
- benefit of reduced complexity.
- 
+ amongst the subtrees of such reduction trees.
 \end_layout
 
 \begin_layout Subsection
@@ -2698,7 +3168,7 @@ BraggHLS
  on randomly generated inputs but with floating point operations now evaluated
  using functional models of the corresponding FloPoCo operators
 \begin_inset Foot
-status open
+status collapsed
 
 \begin_layout Plain Layout
 FloPoCo provides these functional models as C++ implementations - we simply
@@ -2765,6 +3235,10 @@ name "sec:Evaluation"
 \end_inset
 
 
+\end_layout
+
+\begin_layout Subsection
+DNN layers
 \end_layout
 
 \begin_layout Standard
@@ -2993,7 +3467,7 @@ Runtime of Vitis HLS vs.
 
 \end_layout
 
-\begin_layout Section
+\begin_layout Subsection
 
 \family typewriter
 BraggNN
@@ -3006,6 +3480,12 @@ name "sec:BraggNN-case-study"
 \end_inset
 
 
+\end_layout
+
+\begin_layout Standard
+TODO: put the comparison to both the dataflow pipelined numbers and the
+ fully unrolled numbers for braggnn here (save the other eval section for
+ just ops).
 \end_layout
 
 \begin_layout Standard
@@ -3033,7 +3513,7 @@ reference "sec:Introduction"
 \begin_inset listings
 lstparams "language=Python,float,fontsize={\footnotesize},escapeinside={||},mathescape=true"
 inline false
-status open
+status collapsed
 
 \begin_layout Plain Layout
 
@@ -5428,7 +5908,7 @@ reference "fig:BraggHLS-framework-overview.-2"
 \begin_inset Float figure
 wide true
 sideways false
-status open
+status collapsed
 
 \begin_layout Plain Layout
 \align center
