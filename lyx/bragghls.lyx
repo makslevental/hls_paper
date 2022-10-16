@@ -255,18 +255,22 @@ BraggHLS
 , based on high-level synthesis techniques, for translating high-level represent
 ations of deep neural networks to low-level representations, suitable for
  deployment to near-sensor devices such as field-programmable gate arrays.
- We present a case study and evaluation of 
+ We evaluate 
 \family typewriter
 BraggHLS
 \family default
- on a deep neural network for Bragg peak detection in the context of high-energy
- diffraction microscopy.
+ on various workloads and present a case-study deep neural network for Bragg
+ peak detection in the context of high-energy diffraction microscopy.
  We show 
 \family typewriter
 BraggHLS
 \family default
- is able to produce an implementation with a throughput 4.7µs/sample, which
- is approximately a 5x improvement over the existing implementation.
+ is able to produce an implementation of the network with a throughput 4.8
+ µs/sample, which is approximately a 4
+\begin_inset Formula $\times$
+\end_inset
+
+ improvement over the existing implementation.
 \end_layout
 
 \begin_layout Abstract
@@ -280,6 +284,13 @@ LatexCommand tableofcontents
 
 \begin_layout Section
 Introduction
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:Introduction"
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -298,10 +309,10 @@ literal "false"
 \end_inset
 
 .
- With a packet size of approximately 50kB (per collision), this implies
- a data rate of approximately 2TB/s.
+ With a packet size of approximately 50 kB (per collision), this implies
+ a data rate of approximately 2 TB/s.
  Ultimately, in combination with other detectors, the LHC processes approximatel
-y 100EB of data a year.
+y 100 EB of data a year.
  In materials science, high-energy diffraction microscopy (HEDM) techniques,
  which provide non-destructive characterization of structure and its evolution
  in a broad class of single-crystal and polycrystalline materials, can have
@@ -313,8 +324,8 @@ literal "false"
 
 \end_inset
 
-, with a corresponding packet size of 80kB.
- In cosmology, the Square Kilometre Array, a radio telescope projected to
+, with a corresponding packet size of 80 kB.
+ In cosmology, the Square Kilometer Array, a radio telescope projected to
  be completed in 2024 and to be operational by 2027 
 \begin_inset CommandInset citation
 LatexCommand cite
@@ -825,7 +836,7 @@ The path from a high-level, abstract, representations of a DNN to a register-tra
 nsfer level representation can be neatly formulated as a series of progressive
  lowerings between adjacent levels of abstraction.
  Each level of abstraction is rendered as a programming language, IR, or
- HDL, and thus we descibe each lowering in terms the representations and
+ HDL, and thus we describe each lowering in terms the representations and
  tools 
 \family typewriter
 BraggHLS
@@ -995,6 +1006,10 @@ torch
  implementations of DNN operations (e.g., for FPGA).
  Fortunately, MLIR supports lower-level dialects, such as the 
 \family typewriter
+linalg
+\family default
+, 
+\family typewriter
 affine
 \family default
  and 
@@ -1012,8 +1027,8 @@ scf
 \family typewriter
 affine
 \family default
- dialect, on the otherhand, provides a formalization of semantics that lend
- themselves to polyhedral compilation techniques 
+ dialect, on the other hand, provides a formalization of semantics that
+ lend themselves to polyhedral compilation techniques 
 \begin_inset CommandInset citation
 LatexCommand cite
 key "polyhedral-mlir"
@@ -1090,7 +1105,8 @@ load
 \family typewriter
 store
 \family default
-) in order to determine which operations should occur during each clock-cycle.
+) in order to determine which operations should occur during each clock
+ cycle.
  Such a schedule depends on three characteristics of the high-level representati
 on:
 \end_layout
@@ -1118,10 +1134,17 @@ binding
 \emph default
 ) for those operations; for example whether to associate an add operation
  followed by a multiply operation to two separate instances, or whether
- to associate them both with a single instance (e.g., configured to perform
- a fused-multiply-add);
+ to associate them both with a single instance, e.g., conFigured to perform
+ a fused multiply-accumulate (MAC);
 \end_layout
 
+\begin_deeper
+\begin_layout Enumerate
+In the case of floating point arithmetic operations, HLS also (with user
+ guidance) determines the precision of the floating point representation;
+\end_layout
+
+\end_deeper
 \begin_layout Enumerate
 HLS builds a finite-state machine (FSM) that implements the schedule of
  operations as control logic, i.e., logic that initiates operations and routes
@@ -1134,16 +1157,22 @@ In addition to fulfilling these three fundamental tasks, high-level synthesis
  In particular, they try to maximize concurrency and parallelism (number
  of concurrent operations scheduled during a clock-cycle) in order maximize
  the throughput and minimize the latency of the final implementation.
+ Maximizing concurrency entails pipelining operations: operations are executed
+ such that they overlap in time, subject to available resources.
+ Maximizing parallelism entails partitioning the DNN into subsets of operation
+ that can be computed independently and simultaneously and whose results
+ are combined upon completion.
  
 \end_layout
 
 \begin_layout Standard
-Maximizing parallelism entails rigorous data-flow analysis in order to identify
- data dependencies that would lead to data hazards in synthesized designs.
- This data-flow analysis exhibits extremely high runtime as lower latency
- designs are pursued.
+Both maximizing for concurrency and parallelism necessitates data-flow analysis
+ in order to identify data dependencies amongst operations, which would
+ lead to data hazards in synthesized designs.
+ Such data-flow analysis is expensive and grows (in runtime) as higher performan
+ce is pursued.
  This can be understood in terms of loop-nest representations of DNN operations;
- for example consider a convolution as in listing 
+ for example consider a convolution as in Listing 
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "lis:Single-filter-convolution"
@@ -1334,7 +1363,7 @@ store-load forwarding
 \emph default
 : pairs of store and load operations to/from the same memory address are
  eliminated, with the operand of the store forwarded to the uses of the
- load (see listing 
+ load (see Listing 
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "lis:Single-filter-convolution-1"
@@ -1343,7 +1372,7 @@ reference "lis:Single-filter-convolution-1"
 
 ).
 \begin_inset listings
-lstparams "language=Python,float,numbers=left,fontsize={\footnotesize},escapeinside={||},mathescape=true,highlightlines={19,25}"
+lstparams "language=Python,float,numbers=left,fontsize={\footnotesize},escapeinside={||},mathescape=true,highlightlines={19,25},autogobble=true,numbersep=3pt"
 inline false
 status open
 
@@ -1515,7 +1544,17 @@ _72}}}$| = output[iv1, iv2, iv3, iv4]
 
 \begin_layout Plain Layout
 
-	  _92 = |${
+	  |${
+\backslash
+setlength{
+\backslash
+fboxsep}{1pt}
+\backslash
+colorbox{Cyan}{
+\backslash
+texttt{
+\backslash
+_92}}}$| = |${
 \backslash
 setlength{
 \backslash
@@ -1574,7 +1613,7 @@ texttt{5}}}$
 
 \end_inset
 
-) of the inner loop in listing 
+) of the inner loop in Listing 
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "lis:Single-filter-convolution"
@@ -1627,7 +1666,28 @@ _72}}}$
 
 , such as in the computation of 
 \family typewriter
-_92
+
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+${
+\backslash
+setlength{
+\backslash
+fboxsep}{1pt}
+\backslash
+colorbox{Cyan}{
+\backslash
+texttt{
+\backslash
+_92}}}$
+\end_layout
+
+\end_inset
+
+
 \family default
  (and potentially many others).
 \begin_inset CommandInset label
@@ -1655,7 +1715,7 @@ name "lis:Single-filter-convolution-1"
 \end_inset
 
  store-load pairs.
- Note also, while in the case of listing 
+ Note also, while in the case of Listing 
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "lis:Single-filter-convolution"
@@ -1699,12 +1759,12 @@ addresses these issues by enabling the user to employ heuristics (during
  both the parallelization and scheduling phases) which, while not guaranteed
  to be correct, can be 
 \emph on
-behaviourally verified
+behaviorally verified
 \emph default
- (see section 
+ (see Section 
 \begin_inset CommandInset ref
 LatexCommand ref
-reference "subsec:Symbolic-execution-for"
+reference "subsec:AST-transformations-and"
 
 \end_inset
 
@@ -1718,9 +1778,14 @@ FPGA design
 \begin_layout Standard
 At the register-transfer level of abstraction, there remain two more steps
  prior to being able to actually deploy to an FPGA; one of them being a
- final lowering, so called logic synthesis, and the other being place and
+ final lowering, so-called logic synthesis, and the other being place and
  route (P&R).
- Logic synthesis is the process of mapping RTL to actual hardware primitives
+ The entire process is carried out, for example, by Xilinx's Vivado tool.
+ 
+\end_layout
+
+\begin_layout Standard
+Logic synthesis is the process of mapping RTL to actual hardware primitives
  on the FPGA (so-called 
 \emph on
 technology mapping
@@ -1779,8 +1844,9 @@ name "sec:BraggHLS-compiler-and"
 \family typewriter
 BraggHLS
 \family default
- is a customizable HLS framework which employs MLIR for extracting loop-nest
- representations of DNNs implemented as PyTorch models.
+ is an extensible (implemented in python) HLS framework which employs MLIR
+ for extracting loop-nest representations of DNNs implemented as PyTorch
+ models.
  Critically, and distinctly, it handles the DNN transformations as well
  as scheduling, binding, and FSM extraction; there is no dependence on any
  commercial HLS tools.
@@ -1839,7 +1905,7 @@ name "fig:BraggHLS-framework-overview."
 \end_layout
 
 \begin_layout Subsection
-Abstract interpretation for efficient transformations
+Symbolic interpretation for fun and profit
 \begin_inset CommandInset label
 LatexCommand label
 name "subsec:Symbolic-execution-for"
@@ -1869,7 +1935,7 @@ scf
 linalg
 \family default
  dialect) in such a way that the inherent parallelism of each high-level
- operation is preserved (for example, see listing 
+ operation is preserved (for example, see Listing 
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "lis:Single-filter-convolution-2"
@@ -2032,7 +2098,7 @@ times k$|>
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Parallel loop representation of the convolution in listing 
+Parallel loop representation of the convolution in Listing 
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "lis:Single-filter-convolution"
@@ -2057,8 +2123,8 @@ name "lis:Single-filter-convolution-2"
 \end_inset
 
 The value of making the parallelism explicit is that we can readily partition
- a DNN across a known set of hardware resources; since for each value of
- (
+ a DNN across a known set of hardware resources in order to maximize parallelism
+; since for each value of (
 \family typewriter
 %iv1
 \family default
@@ -2078,12 +2144,12 @@ The value of making the parallelism explicit is that we can readily partition
 \family typewriter
 scf.parallel
 \family default
- is independent of all others we can bind all the respective operations
+ is independent of all others, we can bind all the encompassed operations
  to unique hardware resources (DSPs, LUTs, and FFs).
  Thus, we can infer peak resource usage by computing the maximum cardinality
  of the cartesian product of the iteration spaces of the parallel iteration
  variables over all such parallel loops.
- For example, the convolution in listing 
+ For example, the convolution in Listing 
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "lis:Single-filter-convolution-2"
@@ -2101,21 +2167,19 @@ K=\left|\left\{ \texttt{\%iv1}=\texttt{\%c0}+\texttt{\%c1}\times\mathbb{N}\,\wed
 
 \end_inset
 
-collections of resources (such as 
+collections of resources (i.e., 
 \begin_inset Formula $2K$
 \end_inset
 
- DSPs
-\begin_inset Foot
-status open
-
-\begin_layout Plain Layout
-One per floating point operation.
-\end_layout
-
-\end_inset
-
-), where 
+ DSPs if 
+\family typewriter
+mul
+\family default
+, 
+\family typewriter
+add
+\family default
+ bind to 1 DSP each), where 
 \begin_inset Formula $\texttt{\%c1}\times\mathbb{N}$
 \end_inset
 
@@ -2124,10 +2188,35 @@ One per floating point operation.
 \end_inset
 
 .
+ Note, DNN hyperparameters such as striding and padding make this a non-trivial
+ calculation.
+ Once peak usage is determined, successive instances 
+\family typewriter
+scf.parallel
+\family default
+ loop bodies evaluated at the same concrete values of (
+\family typewriter
+%iv1, %iv2, %iv3, %iv4
+\family default
+) are bound to the same resources.
+ For DNN operations that lower to sequential loop nests (e.g., 
+\family typewriter
+sum
+\family default
+, 
+\family typewriter
+max
+\family default
+,or 
+\family typewriter
+prod
+\family default
+), we fully unroll the loops and use a reduction tree approach.
+ 
 \end_layout
 
 \begin_layout Standard
-In addition to enabling us to perform binding, as discussed in section 
+In addition to enabling us to perform binding, as discussed in Section 
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "subsec:High-level-synthesis"
@@ -2135,9 +2224,9 @@ reference "subsec:High-level-synthesis"
 \end_inset
 
 , a loop-nest representation enables us to effectively perform data-flow
- analysis and schedule the encompassed arithmetic operations, given that
- we can first unroll the loops.
- As also discussed in section 
+ analysis and schedule the encompassed arithmetic operations (see the next
+ Section regarding scheduling), given that we can first unroll the loops.
+ As also discussed in Section 
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "subsec:High-level-synthesis"
@@ -2164,30 +2253,55 @@ BraggNN
 \end_inset
 
 12 hours) was extremely challenging.
+ To overcome this runtime cost during the space exploration phase of the
+ design process, the approach that 
+\family typewriter
+BraggHLS
+\family default
+ takes is to implement a 
+\emph on
+symbolic interpreter
+\emph default
+ for these loop-nest representations.
+ Specifically, 
+\family typewriter
+BraggHLS
+\family default
+ translates 
+\family typewriter
+scf
+\family default
+ dialect MLIR (such as in Listing 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "lis:Single-filter-convolution-2"
+
+\end_inset
+
+) into legal python code (such as in Listing 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "lis:Single-filter-convolution"
+
+\end_inset
+
+) and then, after applying some transformations on the resulting python
+ abstract syntax tree (AST), executes that python code.
  
 \end_layout
 
 \begin_layout Standard
-To overcome this, the approach that 
+In executing the python code, the 
 \family typewriter
 BraggHLS
 \family default
- takes is to implement an 
-\emph on
-abstract interpreter
-\emph default
- for these loop-nest representations.
- The 
-\family typewriter
-BraggHLS
-\family default
- interpreter unrolls loops by executing under a redefined set semantics
- (hence abstract) them while enforcing SSA.
+ interpreter effectively unrolls loops by executing them under a redefined
+ set semantics, while enforcing SSA.
  That is to say, for a loop whose body has repeated assignments to the same
- value (ostensibly violating SSA), we execute the loop and instantiate unique
- identifiers for the result of each operation.
- The interpreter then evaluates functions of iteration variables, such as
- 
+ SSA value (ostensibly violating SSA), we execute the loop and instantiate
+ unique identifiers for the result of each operation.
+ The interpreter then partially evaluates where possible, such as in functions
+ of iteration variables, such as 
 \begin_inset listings
 lstparams "language=MuPAD"
 inline true
@@ -2201,8 +2315,12 @@ status open
 \end_inset
 
 .
- This enables us to determine array index operands of all stores and loads,
- such as 
+ This enables 
+\family typewriter
+BraggHLS
+\family default
+ to concretely determine array index operands of all stores and loads, such
+ as 
 \begin_inset listings
 lstparams "language=MuPAD"
 inline true
@@ -2210,18 +2328,22 @@ status open
 
 \begin_layout Plain Layout
 
-memref.load %input[%iv1, %iv5, %iv3, %3, %4]
+memref.load %input[%iv1,%iv5,%iv3,%3,%4]
 \end_layout
 
 \end_inset
 
 .
- Note, we do not evaluate values corresponding to floating point arithmetic,
+ 
+\end_layout
+
+\begin_layout Standard
+Note, we do not evaluate values corresponding to floating point arithmetic,
  as they represent true evaluation of the DNN; our interpreter represents
  the operands of such operations as symbols and merely records the arithmetic
  operations performed on them.
  This enables us to both unroll the loop and track data-flow through arithmetic
- operations (see section 
+ operations (see Section 
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "lis:Single-filter-convolution-1"
@@ -2239,17 +2361,399 @@ geometric symbol tables
 \emph default
  (i.e., symbol tables indexed by array indices rather than identifiers/names)
  and stores and loads as assignments/reads to/from those symbol tables.
- Such semantics, in combination with fully evaluated array indices, enables
+ Such semantics, in combination with fully evaluated array indices, enable
  
 \family typewriter
 BraggHLS
 \family default
- to simultaneously track the flow of data (through arithmetic operations
- and 
+ to track the flow of data through arithmetic operations and 
 \family typewriter
 memref
 \family default
-s), effectively performing store-load forwarding.
+s, and thus perform store-load forwarding.
+ 
+\end_layout
+
+\begin_layout Subsection
+Scheduling
+\end_layout
+
+\begin_layout Standard
+Recall that one of the critical functions which HLS fulfills is the scheduling
+ of operations during each clock cycle, in such a way that they preserve
+ the data-flow graph of a DNN; that schedule then informs the construction
+ of a corresponding FSM.
+ As already mentioned, scheduling arbitrary DNNs involves formulating and
+ solving an ILP.
+ In the resource-unconstrained case, due to the precedence relations induced
+ by data-flow, the constraint matrix of the associated ILP is 
+\emph on
+totally unimodular matrix
+\emph default
+ and the feasible region of the problem is an integral polyhedron.
+ Thus, in such cases, the scheduling problem can be solved optimally in
+ polynomial time with a LP solver 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "tuprints9272"
+literal "false"
+
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Standard
+In the resource constrained case it is possible to transform resource constraint
+s into precedence constraints as well, by picking a particular (possible
+ heuristic) linear ordering on the resource-constrained operations.
+ This transformation partitions resource constrained operations into distinct
+ clock cycles, thereby guaranteeing sufficient resources are available for
+ all operations scheduled within the same clock cycle 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "10.1145/3174243.3174268"
+literal "false"
+
+\end_inset
+
+.
+ 
+\family typewriter
+BraggHLS
+\family default
+ uses the inherent parallelism of the loop-nest representation to decide
+ a linear ordering on resource constrained operations: since successive
+ instances of 
+\family typewriter
+scf.parallel
+\family default
+ loop bodies evaluated at the same concrete values of the iteration variables
+ are bound to the same resources, all resource constrained operations common
+ to both instances are ordered.
+ Note, since each loop nest corresponds to a DNN operation, ordering of
+\family typewriter
+ scf.parallel
+\family default
+ loop nests is determined by the higher-level structure of the DNN.
+ For DNN operations that lower to reduction trees, we use As-Late-As-Possible
+ scheduling 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "baruch1996scheduling"
+literal "false"
+
+\end_inset
+
+ amongst the subtrees.
+\end_layout
+
+\begin_layout Subsection
+Floating point arithmetic implementations
+\end_layout
+
+\begin_layout Standard
+We use the FloPoCo 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "8877424"
+literal "false"
+
+\end_inset
+
+ hardware generator to generate pipelined implementations of the standard
+ floating point arithmetic operations (
+\family typewriter
+mul
+\family default
+, 
+\family typewriter
+div
+\family default
+, 
+\family typewriter
+add
+\family default
+, 
+\family typewriter
+sub
+\family default
+, 
+\family typewriter
+sqrt
+\family default
+) at various precisions.
+ In addition, we implement a few generic (parameterized by bit width) operators
+ in order to support a range of DNN operations:
+\end_layout
+
+\begin_layout Itemize
+Two-operand maximum (
+\family typewriter
+max
+\family default
+);
+\end_layout
+
+\begin_layout Itemize
+Negation (
+\family typewriter
+neg
+\family default
+);
+\end_layout
+
+\begin_layout Itemize
+Rectified linear units (
+\family typewriter
+relu
+\family default
+), which could, alternatively, be represented as 
+\begin_inset Formula $\text{relu}\left(x\right):=\max(0,x)$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Transcendental functions, such as 
+\family typewriter
+exp
+\family default
+, are implemented using a Taylor series expansion to 
+\begin_inset Formula $k$
+\end_inset
+
+th order (where 
+\begin_inset Formula $k$
+\end_inset
+
+ is determined on a case by case basis).
+ Note, FloPoCo's floating point format differs slightly from IEEE754, foregoing
+ subnormals and differently encoding zeroes, infinities and NaNs, for the
+ benefit of reduced complexity.
+ 
+\end_layout
+
+\begin_layout Subsection
+AST transformations and behavioral verification
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:AST-transformations-and"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+In addition to unrolling loop-nests, 
+\family typewriter
+BraggHLS
+\family default
+ performs some simple AST transformations on the python generated from 
+\family typewriter
+scf
+\family default
+ dialect:
+\end_layout
+
+\begin_layout Enumerate
+
+\series bold
+Hoist globals
+\series default
+: all DNN tensors which are fixed (i.e., weights) are moved out of the body
+ of the python 
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+
+\family typewriter
+BraggHLS
+\family default
+ translates the MLIR 
+\family typewriter
+module
+\family default
+ corresponding to the DNN into a single python function in order to simplify
+ analysis and interpretation.
+\end_layout
+
+\end_inset
+
+ and into the parameter list, for the purpose of ultimately exposing them
+ at the RTL module interface; 
+\end_layout
+
+\begin_layout Enumerate
+
+\series bold
+Remove 
+\family typewriter
+if
+\family default
+ expressions
+\series default
+: the 
+\family typewriter
+scf
+\family default
+ dialect represents 
+\family typewriter
+relu
+\family default
+ operations as ternary conditionals, which translate to python ternaries,
+ thus introducing unnecessary control flow;
+\end_layout
+
+\begin_layout Enumerate
+
+\series bold
+Remove MACs
+\series default
+: sequences of 
+\family typewriter
+load
+\family default
+-
+\family typewriter
+multiply
+\family default
+-
+\family typewriter
+add
+\family default
+-
+\family typewriter
+store
+\family default
+ are very common in DNN implementations, thus we schedule such sequences
+ jointly (this transformation coalesces such sequences into a single 
+\family typewriter
+FMAC
+\family default
+);
+\end_layout
+
+\begin_layout Enumerate
+
+\series bold
+Reduce 
+\family typewriter
+for
+\family default
+s
+\series default
+: this transformation implements the reduction tree structure for non-paralleliz
+able loop-nests mentioned in Section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "subsec:Symbolic-execution-for"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+These transformations on the python AST are simple (implemented with procedural
+ pattern matching), extensible, and efficient (marginal runtime cost) because
+ they are unverified: no effort is made to verify their formal correctness.
+ Thus, 
+\family typewriter
+BraggHLS
+\family default
+ trades formal correctness for development time performance.
+ This tradeoff enables quick design space iteration, which for example,
+ enabled us to achieve very low latency implementations for 
+\family typewriter
+BraggNN
+\family default
+ (see Section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:BraggNN-case-study"
+
+\end_inset
+
+).
+\end_layout
+
+\begin_layout Standard
+As a substitute for formal verification, 
+\family typewriter
+BraggHLS
+\family default
+ supports behavioral verification.
+ Specifically, 
+\family typewriter
+BraggHLS
+\family default
+, can generate testbenches for all synthesized RTL.
+ The test vectors for these testbenches are generated by evaluating the
+ transformed representation (i.e., compiling and executing the python AST)
+ on randomly generated inputs but with floating point operations now evaluated
+ using functional models of the corresponding FloPoCo operators
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+FloPoCo provides these functional models as C++ implementations - we simply
+ add python bindings to these C++ implementations.
+\end_layout
+
+\end_inset
+
+.The testbenches can then be run using any IEEE 1364 compliant simulator.
+ For example, we run a battery of such testbenches (corresponding to various
+ DNN operation types), using 
+\family typewriter
+cocotb
+\family default
+ 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "rosser2018cocotb"
+literal "false"
+
+\end_inset
+
+ and 
+\family typewriter
+iverilog
+\family default
+ 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "williamsicarus"
+literal "false"
+
+\end_inset
+
+, as a part of our continuous integration process
+\begin_inset Foot
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Flex URL
+status open
+
+\begin_layout Plain Layout
+
+https://github.com/makslevental/bragghls/actions
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+.
 \end_layout
 
 \begin_layout Section
@@ -2504,6 +3008,2560 @@ name "sec:BraggNN-case-study"
 
 \end_layout
 
+\begin_layout Standard
+High-energy diffraction microscopy techniques can provide non-destructive
+ characterization for a broad class of single-crystal and polycrystalline
+ materials.
+ The critical steps in a typical HEDM experiment involve an analysis to
+ determine precise Bragg diffraction peak characteristics (and reconstruction
+ of material grain information from the peak characteristics).
+ Peak characteristics are typically computed by fitting the peaks to a probabili
+ty distribution, e.g., Gaussian, Lorentzian, Voigt, or Pseudo-Voigt.
+ As already mentioned (in Section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:Introduction"
+
+\end_inset
+
+) the experiments can have collection rates of 80 GB/s.
+ The data rates, though more modest than those observed at the LHC, combined
+ with the runtime of the fitting procedure, merit exploring the same low
+ latency approach in order to enable experimental modalities that depend
+ on measurement-based feedback (i.e., experiment steering).
+ 
+\begin_inset listings
+lstparams "language=Python,float,fontsize={\footnotesize},escapeinside={||},mathescape=true"
+inline false
+status open
+
+\begin_layout Plain Layout
+
+BraggNN(
+\end_layout
+
+\begin_layout Plain Layout
+
+  (cnn_layers_1): Conv2d(|$k 
+\backslash
+times 16 $|, kernel=3, stride=1)
+\end_layout
+
+\begin_layout Plain Layout
+
+  (nlb): NLB(
+\end_layout
+
+\begin_layout Plain Layout
+
+    (theta_layer): Conv2d(|$k 
+\backslash
+times 16 $|, |$k 
+\backslash
+times 8 $|, kernel=1, stride=1)
+\end_layout
+
+\begin_layout Plain Layout
+
+    (phi_layer): Conv2d(|$k 
+\backslash
+times 16 $|, |$k 
+\backslash
+times 8 $|, kernel=1, stride=1)
+\end_layout
+
+\begin_layout Plain Layout
+
+    (g_layer): Conv2d(|$k 
+\backslash
+times 16 $|, |$k 
+\backslash
+times 8 $|, kernel=1, stride=1)
+\end_layout
+
+\begin_layout Plain Layout
+
+    (out_cnn): Conv2d(|$k 
+\backslash
+times 8 $|, |$k 
+\backslash
+times 16 $|, kernel=1, stride=1)
+\end_layout
+
+\begin_layout Plain Layout
+
+    (soft): Softmax()
+\end_layout
+
+\begin_layout Plain Layout
+
+  )
+\end_layout
+
+\begin_layout Plain Layout
+
+  (cnn_layers_2): Sequential(
+\end_layout
+
+\begin_layout Plain Layout
+
+    (0): ReLU()
+\end_layout
+
+\begin_layout Plain Layout
+
+    (1): Conv2d(|$k 
+\backslash
+times 16 $|, |$k 
+\backslash
+times 8 $|, kernel=3, stride=1)
+\end_layout
+
+\begin_layout Plain Layout
+
+    (2): ReLU()
+\end_layout
+
+\begin_layout Plain Layout
+
+    (3): Conv2d(|$k 
+\backslash
+times 8 $|, |$k 
+\backslash
+times 2 $|, kernel=3, stride=1)
+\end_layout
+
+\begin_layout Plain Layout
+
+    (4): ReLU()
+\end_layout
+
+\begin_layout Plain Layout
+
+  )
+\end_layout
+
+\begin_layout Plain Layout
+
+  (dense_layers): Sequential(
+\end_layout
+
+\begin_layout Plain Layout
+
+    (0): Linear(in_features=|$k 
+\backslash
+times 50$|, out_features=|$k 
+\backslash
+times 16 $|)
+\end_layout
+
+\begin_layout Plain Layout
+
+    (1): ReLU()
+\end_layout
+
+\begin_layout Plain Layout
+
+    (2): Linear(in_features=|$k 
+\backslash
+times 16 $|, out_features=|$k 
+\backslash
+times 8 $|)
+\end_layout
+
+\begin_layout Plain Layout
+
+    (3): ReLU()
+\end_layout
+
+\begin_layout Plain Layout
+
+    (4): Linear(in_features=|$k 
+\backslash
+times 8 $|, out_features=|$k 
+\backslash
+times 4 $|)
+\end_layout
+
+\begin_layout Plain Layout
+
+    (5): ReLU()
+\end_layout
+
+\begin_layout Plain Layout
+
+    (6): Linear(in_features=|$k 
+\backslash
+times 4 $|, out_features=2)
+\end_layout
+
+\begin_layout Plain Layout
+
+    (7): ReLU()
+\end_layout
+
+\begin_layout Plain Layout
+
+  )
+\end_layout
+
+\begin_layout Plain Layout
+
+)
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+
+\family typewriter
+BraggNN
+\family default
+ for 
+\begin_inset Formula $k=1,\dots,4$
+\end_inset
+
+.
+\begin_inset CommandInset label
+LatexCommand label
+name "lis:Single-filter-convolution-3"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+\family typewriter
+BraggNN
+\family default
+ 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Liu:fs5198"
+literal "false"
+
+\end_inset
+
+, a DNN aimed at efficiently characterizing Bragg diffraction peaks, achieves
+ a batched latency of 22 µs/sample.
+ This is a large speedup over the classical pseudo-Voigt peak fitting methods,
+ but still falls far short of the 1 µs/sample target for handling the 1
+ MHz sampling rates.
+ In addition, the current implementation of 
+\family typewriter
+BraggNN
+\family default
+, deployed to either a data-center class GPU such as a NVIDIA V100, or even
+ a workstation class GPU such as a NVIDIA RTX 2080Ti, has no practicable
+ means to being deployed at the edge, i.e., adjacent or proximal to the high
+ energy microscopy equipment.
+ We applied 
+\family typewriter
+BraggHLS
+\family default
+ to the PyTorch representation of 
+\family typewriter
+BraggNN
+\family default
+\emph on
+ 
+\emph default
+(see Listing 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "lis:Single-filter-convolution-3"
+
+\end_inset
+
+) and achieve a RTL implementation which synthesizes to a 1,238 interval
+ design that places, routes, and meets timing closure for a clock period
+ of 10 ns (for a Xilinx Alveo U280).
+ The design consists of a three stage pipeline with long stage measuring
+ 480 intervals.
+ Thus, the throughput of the implementation is 4.8 µs/sample.
+ See Table 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "tab:Resource-usage-for"
+
+\end_inset
+
+ for a summary of the resource usage of the implementation.
+\begin_inset Float table
+wide true
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Resource usage for 
+\family typewriter
+BraggNN
+\family default
+ with 
+\begin_inset Formula $k=1$
+\end_inset
+
+ and 
+\begin_inset Formula $\left(5,3\right)$
+\end_inset
+
+-precision FloPoCo 
+\begin_inset CommandInset label
+LatexCommand label
+name "tab:Resource-usage-for"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Tabular
+<lyxtabular version="3" rows="20" columns="7">
+<features booktabs="true" tabularvalignment="middle">
+<column alignment="left" valignment="top">
+<column alignment="left" valignment="top">
+<column alignment="left" valignment="top">
+<column alignment="left" valignment="top">
+<column alignment="left" valignment="top">
+<column alignment="left" valignment="top">
+<column alignment="left" valignment="top">
+<row>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Site Type
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+SLR0
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+SLR1
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+SLR2
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+SLR0 %
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+SLR1 %
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+SLR2 %
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+CLB
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+5047
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+52648
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+53900
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+9.18
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+97.50
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+99.81
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset space \quad{}
+\end_inset
+
+CLBL
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2773
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+28613
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+29227
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+9.47
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+97.72
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+99.82
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset space \quad{}
+\end_inset
+
+CLBM
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2274
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+24035
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+24673
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+8.86
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+97.23
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+99.81
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+CLB LUTs
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+19797
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+263733
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+311794
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+4.50
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+61.05
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+72.17
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset space \quad{}
+\end_inset
+
+LUT as Logic
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+19797
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+263733
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+311794
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+4.50
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+61.05
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+72.17
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset space \quad{}
+\end_inset
+
+
+\begin_inset space \quad{}
+\end_inset
+
+using O5 output only
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+277
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+3944
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+4304
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.06
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.91
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1.00
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset space \quad{}
+\end_inset
+
+
+\begin_inset space \quad{}
+\end_inset
+
+using O6 output only
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+17176
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+202564
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+266733
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+3.91
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+46.89
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+61.74
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset space \quad{}
+\end_inset
+
+
+\begin_inset space \quad{}
+\end_inset
+
+using O5 and O6
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2344
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+57225
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+40757
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.53
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+13.25
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+9.43
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset space \quad{}
+\end_inset
+
+LUT as Memory
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.00
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.00
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.00
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset space \quad{}
+\end_inset
+
+
+\begin_inset space \quad{}
+\end_inset
+
+LUT as Distributed RAM
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.00
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.00
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.00
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset space \quad{}
+\end_inset
+
+
+\begin_inset space \quad{}
+\end_inset
+
+LUT as Shift Register
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.00
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.00
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.00
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+CLB Registers
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+12527
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+286226
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+339820
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1.42
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+33.13
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+39.33
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+CARRY8
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+244
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+5184
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+5184
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.44
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+9.60
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+9.60
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Block RAM Tile
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.00
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.00
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.00
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset space \quad{}
+\end_inset
+
+
+\begin_inset space \quad{}
+\end_inset
+
+RAMB36/FIFO
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.00
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.00
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.00
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset space \quad{}
+\end_inset
+
+
+\begin_inset space \quad{}
+\end_inset
+
+RAMB18
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.00
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.00
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.00
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+URAM
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.00
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.00
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.00
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+DSPs
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.00
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.00
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.00
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Unique Control Sets
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+189
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2641
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+3179
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.17
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2.45
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2.94
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset VSpace bigskip
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Super long line usage across super logic regions for 
+\family typewriter
+BraggNN
+\family default
+
+\begin_inset CommandInset label
+LatexCommand label
+name "tab:Resource-usage-for-1"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Tabular
+<lyxtabular version="3" rows="8" columns="5">
+<features booktabs="true" tabularvalignment="middle">
+<column alignment="left" valignment="top">
+<column alignment="left" valignment="top">
+<column alignment="left" valignment="top">
+<column alignment="left" valignment="top">
+<column alignment="left" valignment="top">
+<row>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset space ~
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Used
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Fixed
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Available
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Util %
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+SLR2 
+\begin_inset Formula $\leftrightarrow$
+\end_inset
+
+ SLR1
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+21366
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset space ~
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+23040
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+92.73
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+SLR1 
+\begin_inset Formula $\rightarrow$
+\end_inset
+
+ SLR2
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset space ~
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset space ~
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+< 0.01
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+SLR2 
+\begin_inset Formula $\rightarrow$
+\end_inset
+
+ SLR1
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+21364
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset space ~
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset space ~
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+92.73
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+SLR1 
+\begin_inset Formula $\leftrightarrow$
+\end_inset
+
+ SLR0
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+3904
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset space ~
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+23040
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+16.94
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+SLR0 
+\begin_inset Formula $\rightarrow$
+\end_inset
+
+ SLR1
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset space ~
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset space ~
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+< 0.01
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+SLR1 
+\begin_inset Formula $\rightarrow$
+\end_inset
+
+ SLR0
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+3902
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset space ~
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset space ~
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+16.94
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Total SLLs Used
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+25270
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset space ~
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset space ~
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset space ~
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The most challenging aspect of implementing 
+\family typewriter
+BraggNN
+\family default
+ was minimizing latency while satisfying compute resource constraints (LUTs,
+ DSPs, BRAMs) and meeting routing 
+\begin_inset Quotes eld
+\end_inset
+
+closure
+\begin_inset Quotes erd
+\end_inset
+
+, i.e., not exceeding available routing resources and avoiding congestion.
+ Two design choices made for the purposes of reducing resource consumption
+ was reducing the precision used for the floating point operations.
+ We reduced the precision from IEEE half precision (5 bits for the exponent
+ and 11 bits for the mantissa) to FloPoCo 
+\begin_inset Formula $\left(5,4\right)$
+\end_inset
+
+-precision (5 bits for the exponent and 4 bits for the mantissa).
+ This was justified by an examination of the distribution of the weights
+ of the fully trained 
+\family typewriter
+BraggNN
+\family default
+ (see figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:BraggHLS-framework-overview.-1"
+
+\end_inset
+
+).
+ 
+\begin_inset Float figure
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename ../figures/exp_hist.pdf
+	width 100col%
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+
+\family typewriter
+BraggHLS
+\family default
+ weights exponent distribution (placeholder).
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:BraggHLS-framework-overview.-1"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+ Reducing the precision enabled us to eliminate BRAMs from the design as
+ well, since, at the lower precision, all weights could be represented as
+ registered constants.
+ The reduced precision also drives the Vivado synthesizer to infer implementatio
+ns of the floating point operations that make no use of DSPs; this was not
+ intentional but seemingly cannot be altereted.
+ Most likely this is due to the fact that DSP48 hardware block includes
+ a 18-bit by 25-bit signed multiplier and a 48-bit adder 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "guideultrascale"
+literal "false"
+
+\end_inset
+
+, neither of which neatly divide the bit width of FloPoCo 
+\begin_inset Formula $\left(5,4\right)$
+\end_inset
+
+-precision cores
+\begin_inset Foot
+status collapsed
+
+\begin_layout Plain Layout
+The actual bit width for FloPoCo 
+\begin_inset Formula $\left(5,4\right)$
+\end_inset
+
+-precision is 12 bits: 1 extra bit is needed for the sign and 2 bits are
+ needed for FloPoCo's handling of exceptional conditions.
+\end_layout
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Achieving routing closure was very difficult due to the nature of the Xilinx's
+ UltraScale architecture, of which the Alveo U280 is an instance.
+ The UltraScale architecture achieves its scale through 
+\begin_inset Quotes eld
+\end_inset
+
+Stacked Silicon Interconnect
+\begin_inset Quotes erd
+\end_inset
+
+ (SSI) technology 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "leibson2013xilinx"
+literal "false"
+
+\end_inset
+
+, which amounts to multiple distinct FPGA dies, called Super Logic Regions
+ (SLRs), on the same chip, connected by interposers.
+ Adjacent SLRs communicate with each other using a limited set of Super
+ Long Lines (SLLs).
+ These SLLs determine the maximum bus width that span two SLRs.
+ On the Alveo U280 there are exactly 23,040 SLLs available between adjacent
+ SLRs and at 
+\begin_inset Formula $\left(5,4\right)$
+\end_inset
+
+-precision 
+\family typewriter
+BraggNN
+\family default
+ needs 23,328 SLLs between SLR2 and SLR1
+\begin_inset Foot
+status collapsed
+
+\begin_layout Plain Layout
+We route the output of 
+\family typewriter
+cnn_layers_1
+\family default
+ (
+\begin_inset Formula $1\times16\times9\times9\times12$
+\end_inset
+
+ wires) as well as the output of 
+\begin_inset Formula $\texttt{soft(theta\_layer}\times\texttt{phi\_layer)}\times\texttt{g\_layer}$
+\end_inset
+
+ (
+\begin_inset Formula $1\times8\times9\times9\times12$
+\end_inset
+
+ wires) from SLR2 to SLR1.
+\end_layout
+
+\end_inset
+
+.
+ Thus, we further reduce the precision to 
+\begin_inset Formula $\left(5,3\right)$
+\end_inset
+
+.
+ Finally, since multiple dies constitute independent clock domains, the
+ SLLs that cross SLRS are sensitive hold time violations due to the higher
+ multi-die variability 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "rapidwright"
+literal "false"
+
+\end_inset
+
+.
+ This multi-die variability leads to high congestion if not addressed.
+ Thus, routing across them needs to handled manually using placement and
+ routing constraints for logic in each SLR and the addition of so-called
+ 
+\begin_inset Quotes eld
+\end_inset
+
+launch
+\begin_inset Quotes erd
+\end_inset
+
+ and 
+\begin_inset Quotes eld
+\end_inset
+
+latch
+\begin_inset Quotes erd
+\end_inset
+
+ registers in each SLR.
+ See figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:BraggHLS-framework-overview.-2"
+
+\end_inset
+
+ for an illustration on the effect of using launch and latch registers as
+ well as placement and routing constraints.
+\begin_inset Float figure
+wide true
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename nopblocks.png
+	lyxscale 20
+	width 100col%
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+
+\family typewriter
+BraggNN
+\family default
+ fails to achieve routing closure without placement and routing constraints
+ and launch and latch registers.
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:BraggHLS-framework-overview.-2-1"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset space \hfill{}
+\end_inset
+
+
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename withpblocks.png
+	lyxscale 20
+	width 100col%
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+
+\family typewriter
+BraggNN
+\family default
+ achieves routing closure with use of per SLR placement and routing constraints
+ (
+\family typewriter
+pblock_1
+\family default
+, 
+\family typewriter
+pblock_2
+\family default
+, 
+\family typewriter
+pblock_3
+\family default
+) and launch and latch registers (not highlighted).
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:BraggHLS-framework-overview.-2-1-1"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Congestion maps for 
+\family typewriter
+BraggNN
+\family default
+ on a Xilinx Alveo U280.
+ 
+\color magenta
+Magenta
+\color inherit
+ indicates area of high congestion.
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:BraggHLS-framework-overview.-2"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout Section
 Conclusion
 \begin_inset CommandInset label
@@ -2513,6 +5571,10 @@ name "sec:Conclusion"
 \end_inset
 
 
+\end_layout
+
+\begin_layout Standard
+287 + 471 + 480
 \end_layout
 
 \begin_layout Standard

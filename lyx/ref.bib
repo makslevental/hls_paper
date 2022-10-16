@@ -668,3 +668,76 @@ keywords = {SIMD, SPMD, Compiler optimizations},
 location = {Philadelphia, PA, USA},
 series = {PLDI 2018}
 }
+
+
+@inproceedings{10.1145/3174243.3174268,
+author = {Dai, Steve and Liu, Gai and Zhang, Zhiru},
+title = {A Scalable Approach to Exact Resource-Constrained Scheduling Based on a Joint SDC and SAT Formulation},
+year = {2018},
+isbn = {9781450356145},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/3174243.3174268},
+doi = {10.1145/3174243.3174268},
+abstract = {Despite increasing adoption of high-level synthesis (HLS) for its design productivity advantage, success in achieving high quality-of-results out-of-the-box is often hindered by the inexactness of the common HLS optimizations. In particular, while scheduling forms the algorithmic core to HLS technology, current scheduling algorithms rely heavily on fundamentally inexact heuristics that make ad hoc local decisions and cannot accurately and globally optimize over a rich set of constraints. To tackle this challenge, we propose a scheduling formulation based on system of integer difference constraints (SDC) and Boolean satisfiability (SAT) to exactly handle a variety of scheduling constraints. We develop a specialized scheduler based on conflict-driven learning and problem-specific knowledge to optimally and efficiently solve the resource-constrained scheduling problem. By leveraging the efficiency of SDC algorithms and scalability of modern SAT solvers, our scheduling technique is able to achieve on average over 100x improvement in runtime over the integer linear programming (ILP) approach while attaining optimal latency. By integrating our scheduling formulation into a state-of-the-art open-source HLS tool, we further demonstrate the applicability of our scheduling technique with a suite of representative benchmarks targeting FPGAs.},
+booktitle = {Proceedings of the 2018 ACM/SIGDA International Symposium on Field-Programmable Gate Arrays},
+pages = {137-146},
+numpages = {10},
+keywords = {satisfiability modulo theory, optimal solution, ilp, exact algorithm, resource-constrained scheduling, system of difference constraints, integer linear programming, rcs, hls, efficiency, satisfiability, sdc, high-level synthesis, scalability, problem-specific knowledge, conflict-driven learning, sat, scheduling},
+location = {Monterey, CALIFORNIA, USA},
+series = {FPGA '18}
+}
+
+@article{baruch1996scheduling,
+  title={Scheduling algorithms for high-level synthesis},
+  author={Baruch, Zoltan},
+  journal={ACAM Scientific Journal},
+  volume={5},
+  number={1-2},
+  pages={48--57},
+  year={1996}
+}
+
+@misc{rosser2018cocotb,
+  title={Cocotb: a Python-based digital logic verification framework},
+  author={Rosser, Benjamin John},
+  year={2018},
+  publisher={CERN}
+}
+
+@article{williamsicarus,
+  title={Icarus Verilog, 1998--2020},
+  author={Williams, Stephen},
+  journal={URL http://iverilog. icarus. com}
+}
+
+@article{Liu:fs5198,
+	author = {Liu, Zhengchun and Sharma, Hemant and Park, Jun-Sang and Kenesei, Peter and Miceli, Antonino and Almer, Jonathan and Kettimuthu, Rajkumar and Foster, Ian},
+	journal = {IUCrJ},
+	month = {Jan},
+	number = {1},
+	pages = {104--113},
+	title = {{{\it BraggNN}: fast X-ray Bragg peak analysis using deep learning}},
+	volume = {9},
+	year = {2022}}
+
+
+@article{guideultrascale,
+  title={UltraScale Architecture DSP Slice},
+  author={Guide, Advance Specification User},
+  publisher={Citeseer}
+}
+
+@article{leibson2013xilinx,
+  title={Xilinx ultrascale: The next-generation architecture for your next-generation architecture},
+  author={Leibson, Steve and Mehta, Nick},
+  journal={Xilinx White Paper WP435},
+  volume={143},
+  year={2013}
+}
+
+@misc{rapidwright,
+  title = {Create placed and routed DCP to cross SLR},
+  howpublished = {\url{https://www.rapidwright.io/docs/SLR_Crosser_DCP_Creator_Tutorial.html}},
+  note = {Accessed: 2022-10-15}
+}
