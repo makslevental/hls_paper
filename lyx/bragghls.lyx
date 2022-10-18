@@ -3246,7 +3246,7 @@ asdasd
 \begin_inset Float figure
 wide true
 sideways false
-status collapsed
+status open
 
 \begin_layout Plain Layout
 \align center
@@ -3296,7 +3296,7 @@ status open
 \begin_layout Plain Layout
 \align center
 \begin_inset Graphics
-	filename ../data/braggnn.pdf
+	filename ../data/batch_norm.pdf
 	lyxscale 50
 	width 100col%
 
@@ -3390,7 +3390,7 @@ status open
 \begin_layout Plain Layout
 \align center
 \begin_inset Graphics
-	filename ../data/matmul.pdf
+	filename /home/mlevental/dev_projects/hls_paper/data/max_pool_2d.pdf
 	lyxscale 50
 	width 100col%
 
@@ -3402,7 +3402,7 @@ status open
 \begin_layout Plain Layout
 
 \family typewriter
-matmul
+max_pool_2d
 \end_layout
 
 \end_inset

@@ -1,4 +1,4 @@
-%% LyX 2.3.6.2 created this file.  For more info, see http://www.lyx.org/.
+%% LyX 2.3.6 created this file.  For more info, see http://www.lyx.org/.
 %% Do not edit unless you really know what you are doing.
 \documentclass[twocolumn,conference]{IEEEtran}
 \usepackage[T1]{fontenc}
@@ -512,7 +512,7 @@ well as scheduling, binding, and FSM extraction; there is no dependence
 on any commercial HLS tools. Figure \ref{fig:BraggHLS-framework-overview.-3}
 shows the architecture of \texttt{BraggHLS} 
 \begin{figure}[tbh]
-\centering{}\includegraphics[width=0.7\columnwidth]{../figures/BraggHLS}\caption{\texttt{BraggHLS} framework overview (placeholder).\label{fig:BraggHLS-framework-overview.-3}}
+\centering{}\includegraphics[width=0.7\columnwidth,bb = 0 0 200 100, draft, type=eps]{../figures/BraggHLS.pdf}\caption{\texttt{BraggHLS} framework overview (placeholder).\label{fig:BraggHLS-framework-overview.-3}}
 \end{figure}
 . 
 
@@ -843,11 +843,11 @@ integration process\footnote{\url{https://github.com/makslevental/bragghls/actio
 asdasd
 \begin{figure*}[tbh]
 \begin{centering}
-\subfloat[\texttt{addmm}]{\centering{}\includegraphics[width=1\columnwidth]{../data/addmm}\label{2dlattice-1-1-2}}\subfloat[\texttt{braggnn}]{\centering{}\includegraphics[width=1\columnwidth]{../data/braggnn}\label{2dlattice-1-2-2}}
+\subfloat[\texttt{addmm}]{\centering{}\includegraphics[width=1\columnwidth]{../data/addmm}\label{2dlattice-1-1-2}}\subfloat[\texttt{braggnn}]{\centering{}\includegraphics[width=1\columnwidth]{../data/batch_norm}\label{2dlattice-1-2-2}}
 \par\end{centering}
 \medskip{}
 
-\centering{}\label{2dlattice-1-3}\subfloat[\texttt{conv}]{\centering{}\includegraphics[width=1\columnwidth]{../data/conv}\label{2dlattice-1-1-1-1}}\subfloat[\texttt{matmul}]{\centering{}\includegraphics[width=1\columnwidth]{../data/matmul}\label{2dlattice-1-2-1-1}}\caption{Resource usage and latency vs. unroll factor of various DNN modules.}
+\centering{}\label{2dlattice-1-3}\subfloat[\texttt{conv}]{\centering{}\includegraphics[width=1\columnwidth]{../data/conv}\label{2dlattice-1-1-1-1}}\subfloat[\texttt{max\_pool\_2d}]{\centering{}\includegraphics[width=1\columnwidth]{/home/mlevental/dev_projects/hls_paper/data/max_pool_2d}\label{2dlattice-1-2-1-1}}\caption{Resource usage and latency vs. unroll factor of various DNN modules.}
 \end{figure*}
 \begin{figure*}[tbh]
 \centering{}\includegraphics[width=1\columnwidth]{../data/elapsed_time}\caption{Runtime of Vitis HLS vs. unroll factor.}
@@ -1011,7 +1011,7 @@ the exponent and 4 bits for the mantissa). This was justified by an
 examination of the distribution of the weights of the fully trained
 \texttt{BraggNN} (see figure \ref{fig:BraggHLS-framework-overview.-1}).
 \begin{figure}[tbh]
-\centering{}\includegraphics[width=1\columnwidth]{../figures/exp_hist}\caption{\texttt{BraggHLS} weights exponent distribution (placeholder).\label{fig:BraggHLS-framework-overview.-1}}
+\centering{}\includegraphics[width=1\columnwidth,bb = 0 0 200 100, draft, type=eps]{../figures/exp_hist.pdf}\caption{\texttt{BraggHLS} weights exponent distribution (placeholder).\label{fig:BraggHLS-framework-overview.-1}}
 \end{figure}
  Reducing the precision enabled us to eliminate BRAMs from the design
 as well, since, at the lower precision, all weights could be represented

@@ -52,31 +52,23 @@ def parse_design_analysis_routed(fp):
 #
 #     return primitives
 
+from io import StringIO
 
 def parse_utilization_routed(fp):
     report_lines = open(fp).readlines()
-    resources = {}
-    resource_lines = {
-        "| CLB LUTs": "LUTs",
-        "| CLB Registers": "Registers",
-        "|   RAMB18": "RAMs",
-        "| DSPs": "DSPs",
-    }
-
-    for line in report_lines:
-        for resource_starts, resource_name in resource_lines.items():
-            if resource_name in resources:
-                continue
-            if line.startswith(resource_starts):
-                util = float(line.strip().split("|")[-2].strip())
-                if util == 0.0:
-                    print()
-                resources[resource_name] = util
-
-                if resource_name == "DSPs":
+    for i, line in enumerate(report_lines):
+        if ". Primitives" in line and "-------------" in report_lines[i + 1]:
+            for j in range(100):
+                next_line = report_lines[i + j]
+                if ". Black Boxes" in next_line and "---------------":
                     break
+            test = StringIO(
+                "\n".join(report_lines[i + 2: i + j]).replace("+", "").replace("-", "").replace("|", ",").strip())
+            df = pd.read_csv(test, sep='\s*,\s*')
+            df = df[["Ref Name",  "Used", "Functional Category"]]
+            df = df.groupby(by=["Functional Category"]).sum()
 
-    return dict(sorted(resources.items()))
+            return dict(sorted(df.to_dict()["Used"].items()))
 
 
 modules = list(
@@ -85,9 +77,7 @@ modules = list(
         """
 addmm
 batch_norm
-braggnn
 conv
-matmul
 max_pool_2d
 soft_max
 """.split(),
@@ -106,48 +96,51 @@ name = re.compile(r"/(.*)_unroll_(.*)/solution1/")
 all_reports = defaultdict(lambda: defaultdict(dict))
 
 for mod in modules:
-    for fp in glob.glob(
-        f"{mod}/**/solution1/impl/verilog/report/*.rpt", recursive=True
-    ):
+    for fp in sorted(glob.glob(
+        f"{mod}/**/solution1/impl/verilog/report/forward_design_analysis_synth.rpt", recursive=True
+    )):
         _mod_name, unroll_factor = name.findall(fp)[0]
         unroll_factor = int(unroll_factor)
-        if fp.endswith("forward_design_analysis_routed.rpt"):
+        if unroll_factor <= 1024:
             req, slack = parse_design_analysis_routed(fp)
             all_reports[mod][unroll_factor]["target_clock_period"] = req
             all_reports[mod][unroll_factor]["slack"] = slack
             all_reports[mod][unroll_factor]["clock_period_minus_wns"] = req - slack
-        elif fp.endswith("forward_utilization_routed.rpt"):
-            resources = parse_utilization_routed(fp)
-            # _primitives = dict(primitives)
-            # luts = reduce(lambda acc, k: acc + (_primitives.pop(k) if "LUT" in k else 0), primitives.keys(), 0)
-            # _primitives["LUT"] = luts
-            # # FDRE Primitive: D Flip-Flop with Clock Enable and Synchronous Reset
-            # # FDSE Primitive: D Flip-Flop with Clock Enable and Synchronous Set
-            # dfs = reduce(lambda acc, k: acc + (_primitives.pop(k) if "FD" in k else 0), primitives.keys(), 0)
-            # _primitives["FD"] = dfs
-            all_reports[mod][unroll_factor].update(resources)
-
-    all_reports[mod] = dict(sorted(all_reports[mod].items()))
 
 
 for mod in modules:
-    for fp in glob.glob(f"{mod}/**/*.json", recursive=True):
+    for fp in sorted(glob.glob(
+        f"{mod}/**/solution1/impl/verilog/report/forward_utilization_synth.rpt", recursive=True
+    )):
         _mod_name, unroll_factor = name.findall(fp)[0]
         unroll_factor = int(unroll_factor)
-        sol_json = json.load(open(fp))
-        lat = sol_json["ModuleInfo"]["Metrics"]["forward"]["Latency"]
-        for k, v in lat.items():
-            try:
-                v = int(v)
-                lat[k] = v
-            except:
-                continue
-        lat.pop("PipelineDepth")
-        lat.pop("PipelineType")
-        if unroll_factor in all_reports[mod]:
-            all_reports[mod][unroll_factor].update(lat)
+        if unroll_factor <= 1024:
+            resources = parse_utilization_routed(fp)
+            if resources:
+                all_reports[mod][unroll_factor].update(resources)
 
-    all_reports[mod] = dict(sorted(all_reports[mod].items()))
+    # all_reports[mod] = dict(sorted(all_reports[mod].items()))
+
+
+for mod in modules:
+    for fp in sorted(glob.glob(f"{mod}/**/*.json", recursive=True)):
+        _mod_name, unroll_factor = name.findall(fp)[0]
+        unroll_factor = int(unroll_factor)
+        if unroll_factor <= 1024:
+            sol_json = json.load(open(fp))
+            lat = sol_json["ModuleInfo"]["Metrics"]["forward"]["Latency"]
+            for k, v in lat.items():
+                try:
+                    v = int(v)
+                    lat[k] = v
+                except:
+                    continue
+            lat.pop("PipelineDepth")
+            lat.pop("PipelineType")
+            if unroll_factor in all_reports[mod]:
+                all_reports[mod][unroll_factor].update(lat)
+
+    # all_reports[mod] = dict(sorted(all_reports[mod].items()))
 
 # INFO: [HLS 200-111] Finished Command csynth_design CPU user time: 1822.87 seconds. CPU system time: 8.56 seconds. Elapsed time: 1860.74 seconds; current allocated memory: 2.120 GB.
 csynth_time = re.compile(
@@ -155,7 +148,7 @@ csynth_time = re.compile(
 )
 
 for mod in modules:
-    for fp in pathlib.Path(".").glob(f'{mod}/**/autopilot.flow.log'):
+    for fp in sorted(pathlib.Path(".").glob(f'{mod}/**/autopilot.flow.log')):
         fp = str(fp.resolve())
         _mod_name, unroll_factor = name.findall(fp)[0]
         unroll_factor = int(unroll_factor)
@@ -166,7 +159,6 @@ for mod in modules:
             elapsed_time = float(elapsed_time)
             if "elapsed_time" in all_reports[mod][unroll_factor]:
                 elapsed_time = max(elapsed_time, all_reports[mod][unroll_factor]["elapsed_time"])
-            print(mod, unroll_factor, elapsed_time)
             all_reports[mod][unroll_factor]["elapsed_time"] = elapsed_time
         except:
             pass
@@ -180,4 +172,6 @@ for mod in all_reports:
     for unroll_factor in all_reports[mod]:
         for metric_name in all_reports[mod][unroll_factor]:
             metric_val = all_reports[mod][unroll_factor][metric_name]
+            print(f"{mod},{unroll_factor},{metric_name},{metric_val}\n")
             csv.write(f"{mod},{unroll_factor},{metric_name},{metric_val}\n")
+            csv.flush()
