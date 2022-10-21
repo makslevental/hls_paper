@@ -9,9 +9,12 @@ df = pd.read_csv("all_reports.csv", header=0, index_col=[0, 1, 2])
 
 font = {
     # "family": "normal",
-    "size": 18}
+    "size": 18
+}
 
 matplotlib.rc("font", **font)
+
+
 # matplotlib.rcParams['text.usetex'] = True
 
 
@@ -25,27 +28,51 @@ def myticks(x, pos):
 
 
 for i, mod in enumerate(df.index.levels[0]):
-    # fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(7, 10), sharex=True)
     fig, ax1 = plt.subplots(figsize=(10, 7))
-    # fig.suptitle(mod, fontsize=16)
 
     patterns = ["/", "\\", "|", "-", "+", "x", "o", "O", ".", "*"]
     bar_chart_colors = {}
     sub_df = df.loc[mod].swaplevel(0, 1)
     metrics = sub_df.index.levels[0]
-    for i, metric in enumerate(["Arithmetic", "BLOCKRAM", "CLB", "Register"]):
+    i = 0
+    for metric in ["DSP", "BRAM", "LUT", "FF"]:
         try:
             vals = sub_df.loc[metric].sort_index()
         except:
+            # r = ax1.bar(
+            #     [-1],
+            #     [-1],
+            #     width=[1],
+            #     log=False,
+            #     label=metric,
+            #     ec="k",
+            #     hatch=patterns[i + 4],
+            # )
             continue
-        xs = vals.index.values
-        diffs = np.diff(xs)/ 10
-        diffs = np.append(diffs, [diffs[-1] * 2])
-        r = ax1.bar(xs + diffs * (-1 + i), vals.values.flatten(), width=diffs, log=False, label=metric, ec="k", hatch=patterns[i+4])
+        xs = np.array(vals.index.values)
+        if xs[-1] == 1024:
+            xs[-1] = xs[-2] + 4
+        vals = vals.values.flatten()
+        if np.all(vals == 0):
+            continue
+        diffs = np.diff(xs) / 10
+        if not len(diffs):
+            continue
+        diffs = np.append(diffs, [diffs[-1] * 1])
+        r = ax1.bar(
+            xs + diffs * (-1 + i),
+            vals,
+            width=diffs,
+            log=False,
+            label=metric,
+            ec="k",
+            hatch=patterns[i + 4],
+        )
         bar_chart_colors[metric] = r.patches[0].get_facecolor()
+        i += 1
         # ax1.plot(vals.index.values, vals.values, label=metric)
 
-    ax1.set_xscale("log")
+    # ax1.set_xscale("log")
     ax1.set_yscale("log")
     ax1.grid(which="major", axis="x", linestyle="--")
     ax1.minorticks_off()  # turns off minor ticks
@@ -67,8 +94,14 @@ for i, mod in enumerate(df.index.levels[0]):
         common_unroll_factors = sorted(
             set(latency_vals.index.values) & set(clock_vals.index.values)
         )
-        times = clock_vals.loc[common_unroll_factors].values * latency_vals.loc[common_unroll_factors].values / 1e3
+        times = (
+                clock_vals.loc[common_unroll_factors].values
+                * latency_vals.loc[common_unroll_factors].values
+                / 1e3
+        )
         times = times.flatten()
+        if common_unroll_factors[-1] == 1024:
+            common_unroll_factors[-1] = common_unroll_factors[-2] + 4
         ax2.plot(
             common_unroll_factors,
             times,
@@ -76,13 +109,13 @@ for i, mod in enumerate(df.index.levels[0]):
             linewidth=2,
             label="Vitis HLS",
             color="magenta",
-            marker="x"
+            marker="x",
         )
     except:
         pass
 
     text = ax2.text(
-        common_unroll_factors[-1], times[-1] + 1, f"{times[-1]:02f} μs", ha="center", va="bottom", color="magenta", weight="bold"
+        common_unroll_factors[-1], times[-1], f"{times[-1]:02f} μs", ha="center", va="bottom", color="magenta", weight="bold"
     )
     text.set_path_effects([PathEffects.withStroke(linewidth=2, foreground='black')])
     ax2.plot([common_unroll_factors[-1]], [times[-1]], marker='X', markersize=5, color="magenta")
@@ -95,11 +128,6 @@ for i, mod in enumerate(df.index.levels[0]):
     # # ax2.plot([common_unroll_factors[-1]], [0.221], marker='X', markersize=5, color="red")
     # ax2.set_xlim([0, 1500])
 
-    ax2.ticklabel_format(axis="y", style="sci", scilimits=(0, 0))
-
-    # ax2.set_xticks(latency_vals.index.values)
-    ax1.set_xticks(latency_vals.index.values)
-    ax1.tick_params(axis='x', rotation=45)
 
     ax2.grid(which="both", axis="y", linestyle="--")
     # ax2.minorticks_off()  # turns off minor ticks
@@ -107,14 +135,27 @@ for i, mod in enumerate(df.index.levels[0]):
     ax1.xaxis.set_major_formatter(ticker.FuncFormatter(myticks))
     ax2.xaxis.set_major_formatter(ticker.FuncFormatter(myticks))
 
+    ax2.ticklabel_format(axis="y", style="sci", scilimits=(0, 0))
+    ax1.set_xticks(common_unroll_factors)
+    labels = [item.get_text() for item in ax1.get_xticklabels()]
+    if common_unroll_factors[-2] == 40:
+        labels[-1] = '1024'
+    ax1.set_xticklabels(labels)
+    ax2.set_xticklabels(labels)
+    ax1.tick_params(axis="x", rotation=45)
+
     # if i == 1:
     #     ax2.legend(loc="upper right", framealpha=1, fontsize=20).set_zorder(102)
     # if i == 0:
     #     ax1.legend(loc="upper left", title="Resources", framealpha=1, fontsize=20).set_zorder(102)
-    ax1.legend(loc="upper left", title="Resources", framealpha=1, fontsize=20).set_zorder(102)
-    ax2.legend(loc="upper right",title="Latency", framealpha=1, fontsize=20).set_zorder(102)
+    ax1.legend(
+        loc="upper left", title="Resources", framealpha=0.8, fontsize=20
+    ).set_zorder(102)
+    ax2.legend(
+        loc="upper right", title="Latency", framealpha=0.8, fontsize=20
+    ).set_zorder(102)
 
-    #https://github.com/matplotlib/matplotlib/issues/3706#issuecomment-817268918
+    # https://github.com/matplotlib/matplotlib/issues/3706#issuecomment-817268918
     all_axes = fig.get_axes()
     for axis in all_axes:
         legend = axis.get_legend()
@@ -139,24 +180,31 @@ elapsed_time_common = set()
 for i, mod in enumerate(df.index.levels[0]):
     sub_df = df.loc[mod].swaplevel(0, 1)
     elapsed_time = sub_df.loc["elapsed_time"].sort_index()
-    elapsed_time_common.update(set(elapsed_time.index.values))
+    xs = np.array(elapsed_time.index.values)
+    if xs[-1] == 1024:
+        xs[-1] = xs[-2] + 4
+    elapsed_time_common.update(set(xs))
 
     # mod = mod.replace("_", r"\_")
     ax1.plot(
-        elapsed_time.index.values,
+        xs,
         elapsed_time.values,
         # label=rf"$\mathtt{{{mod}}}$",
         label=f"{mod}",
     )
 
-ax1.set_xscale("log")
+# ax1.set_xscale("log")
 ax1.set_ylabel("time (s)", fontdict={"fontsize": 25})
 ax1.set_yscale("log")
 ax1.set_xticks(sorted(elapsed_time_common))
 ax1.xaxis.set_major_formatter(ticker.FuncFormatter(myticks))
-font = font_manager.FontProperties(family='Courier New',
-                                   style='normal', size=20)
-ax1.legend(loc="upper left", framealpha=1, fontsize=20, prop=font)
+font = font_manager.FontProperties(family="Courier New", style="normal", size=20)
+ax1.legend(loc="upper left", framealpha=0.8, fontsize=20, prop=font)
+ax1.set_xlabel("unroll factor", fontdict={"fontsize": 25})
 
 fig.tight_layout()
 fig.savefig(f"elapsed_time.pdf")
+
+
+
+

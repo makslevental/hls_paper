@@ -1,11 +1,10 @@
-%% LyX 2.3.6 created this file.  For more info, see http://www.lyx.org/.
+%% LyX 2.3.6.2 created this file.  For more info, see http://www.lyx.org/.
 %% Do not edit unless you really know what you are doing.
 \documentclass[twocolumn,conference]{IEEEtran}
 \usepackage[T1]{fontenc}
 \usepackage[latin9]{inputenc}
 \usepackage{color}
 \usepackage{verbatim}
-\usepackage{float}
 \usepackage{booktabs}
 \usepackage{textcomp}
 \usepackage{url}
@@ -13,6 +12,7 @@
 \usepackage{amssymb}
 \usepackage{stmaryrd}
 \usepackage{graphicx}
+\usepackage{setspace}
 \usepackage[unicode=true,
  bookmarks=true,bookmarksnumbered=true,bookmarksopen=true,bookmarksopenlevel=1,
  breaklinks=false,pdfborder={0 0 0},pdfborderstyle={},backref=false,colorlinks=false]
@@ -26,10 +26,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% LyX specific LaTeX commands.
 %% Because html converters don't know tabularnewline
 \providecommand{\tabularnewline}{\\}
-\floatstyle{ruled}
-\newfloat{algorithm}{tbp}{loa}
-\providecommand{\algorithmname}{Algorithm}
-\floatname{algorithm}{\protect\algorithmname}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Textclass specific LaTeX commands.
 \newenvironment{lyxcode}
@@ -86,11 +82,11 @@ synthesis techniques, for translating high-level representations of
 deep neural networks to low-level representations, suitable for deployment
 to near-sensor devices such as field-programmable gate arrays. We
 evaluate \texttt{BraggHLS} on various workloads and present a case-study
-deep neural network for Bragg peak detection in the context of high-energy
-diffraction microscopy. We show \texttt{BraggHLS} is able to produce
-an implementation of the network with a throughput 4.8 \textmu s/sample,
-which is approximately a 4$\times$ improvement over the existing
-implementation.
+implementation of a deep neural network for Bragg peak detection in
+the context of high-energy diffraction microscopy. We show \texttt{BraggHLS}
+is able to produce an implementation of the network with a throughput
+4.8 \textmu s/sample, which is approximately a 4$\times$ improvement
+over the existing implementation.
 
 \tableofcontents{}
 \end{abstract}
@@ -124,7 +120,7 @@ for further analysis is cost prohibitive. Thus, either compression
 necessary, i.e., only a small fraction of the most ``interesting''
 data is selected at time of collection, with the remainder being permanently
 discarded. In this work we focus on the filtering approach. Note,
-that the tradeoff made in employing filtering should be clear: reduced
+the tradeoff made in employing filtering should be clear: reduced
 storage at the expense of more stringent latency constraints (on the
 filtering mechanisms). In addition, the risk of discarding meaningful
 data introduces accuracy (of the filtering mechanisms) as a critical
@@ -136,7 +132,7 @@ to accuracy. Irrespective of the type of technique employed, almost
 universally, for the ultra-low latency use cases (e.g., sub-microsecond
 latency constraints), the implementation is deployed to either field-programmable
 gate arrays (FPGAs) or application-specific integrated circuits (ASICs)
-\cite{Duarte_2018}. %
+\cite{Duarte_2018}. Here we focus primarily on FPGAs.%
 \begin{comment}
 The reason for this is only FPGAs and ASICs are flexible enough to
 satisfy the latency constraints for a wide range of techniques. Note,
@@ -160,7 +156,7 @@ for DNNs, until very recently, have not been performant enough for
 these very high data rate, very low latency, use cases (due to their
 low clock speeds and low peripheral bandwidth \cite{aaij2020allen});
 \item DNNs, by virtue of their depth, are resource intensive, in terms of
-both memory (for the weights) and compute (floating point arithmetic),
+both memory (for the weights) and compute (floating-point arithmetic),
 thereby preventing their deployment to FPGAs, which, in particular,
 have limited static RAM available;
 \item DNNs are (typically) defined, trained, and distributed using high-level
@@ -181,7 +177,7 @@ synthesis (HLS) \cite{7368920}. While several such HLS tools exist
 \cite{10.1145/2514740,Zhang2008,ferrandi2021bambu} and despite, often,
 bundling robust optimizing compilers, they struggle to effectively
 perform the necessary optimizations in reasonable amounts of time
-(see Section \ref{sec:Evaluation}).
+(see Section \ref{subsec:High-level-synthesis}).
 
 Recently, deep learning compilers (such as TVM \cite{chen2018tvm},
 MLIR \cite{https://doi.org/10.48550/arxiv.2002.11054}, and Glow \cite{https://doi.org/10.48550/arxiv.1805.00907})
@@ -201,13 +197,14 @@ to FPGA.
 
 In this paper, we present \texttt{BraggHLS}, an open source, lightweight,
 compiler and HLS framework which can lower DNNs defined as PyTorch
-models to FPGA implementations. \texttt{BraggHLS} uses a combination
-of compiler and HLS techniques to compile the entire DNN into a \emph{statically
-scheduled} circuit, thereby eliminating all synchronization overheads
-and achieving ultra-low latency. \texttt{BraggHLS} is general and
-supports a wide range of DNN layer types, and thus a wide range of
-DNNs, but particularly focus on a DNN designed for identifying Bragg
-diffraction peaks. In summary our specific contributions include:
+models to FPGA compatible implementations. \texttt{BraggHLS} uses
+a combination of compiler and HLS techniques to compile the entire
+DNN into fully scheduled RTL, thereby eliminating all synchronization
+overheads and achieving ultra-low latency. \texttt{BraggHLS} is general
+and supports a wide range of DNN layer types, and thus a wide range
+of DNNs, but we particularly focus on optimizations relevant to a
+DNN designed for identifying Bragg diffraction peaks. In summary our
+specific contributions include:
 \begin{enumerate}
 \item We describe and implement a compiler framework, \texttt{BraggHLS},
 which can effectively transform unoptimized, hardware-agnostic PyTorch
@@ -218,20 +215,21 @@ and available at \href{https://github.com/makslevental/bragghls/}{https://github
 latency than Xilinx's state-of-the-art commercial HLS tool (Vitis
 HLS) for a variety of DNN layer types. In particular we show that
 \texttt{BraggHLS} can produce synthesizable designs that meet placement,
-routing, and timing constraints, where Vitis HLS cannot;
-\item We discuss some of the challanges faced after even after successful
-synthesis of RTL from a high-level representation of a DNN, namely
-we present a case study DNN RTL implementation and discus the further
-challanges faced during deployment to FPGA.
+routing, and timing constraints for \texttt{BraggNN}, a DNN designed
+for identifying Bragg diffraction peaks;
+\item We discuss some of the challanges faced even after successful synthesis
+of RTL from a high-level representation of a DNN, namely during the
+place and route phases of implementation.
 \end{enumerate}
 The rest of this paper is organized as follows: Section \ref{sec:Background}
-reviews key concepts from compilers, high-level synthesis, and FPGA
-design flows. Section \ref{sec:BraggHLS-compiler-and} describes the
-\texttt{BraggHLS} compiler and HLS framework in detail. Section \ref{sec:Evaluation}
-evaluates \texttt{BraggHLS}\textquoteright s performance, scalability,
-and competitiveness with designs generated by Vitis HLS. Section \ref{sec:BraggNN-case-study}
-describes our case study, \texttt{BraggHLS} applied to \texttt{BraggNN},
-a Bragg peak detection DNN with a target latency of 1\textmu s/sample.
+reviews key concepts from compilers, high-level synthesis, and RTL
+design for FPGA. Section \ref{sec:BraggHLS-compiler-and} describes
+the \texttt{BraggHLS} compiler and HLS framework in detail. Section
+\ref{sec:Evaluation} evaluates \texttt{BraggHLS}\textquoteright s
+performance, scalability, and competitiveness with designs generated
+by Vitis HLS. Section \ref{sec:BraggNN-case-study} describes our
+case study, i.e., \texttt{BraggHLS} applied to \texttt{BraggNN}, a
+Bragg peak detection DNN with a target latency of 1 \textmu s/sample.
 Finally, Section \ref{sec:Conclusion} concludes with a summary, and
 related and future work.
 
@@ -239,12 +237,12 @@ related and future work.
 
 \subsection{Compilers: the path from high to low}
 
-The path from a high-level, abstract, representations of a DNN to
-a register-transfer level representation can be neatly formulated
-as a series of progressive lowerings between adjacent levels of abstraction.
+The path from a high-level, abstract, representation of a DNN to a
+register-transfer level representation can be neatly formulated as
+a series of progressive lowerings between adjacent levels of abstraction.
 Each level of abstraction is rendered as a programming language, IR,
 or HDL, and thus we describe each lowering in terms the representations
-and tools \texttt{BraggHLS} employs:
+and tools \texttt{BraggHLS} employ in manipulating those representations:
 \begin{enumerate}
 \item An imperative, \emph{define-by-run,} Python representation, in PyTorch;
 \item High-level data-flow graph representation, in TorchScript;
@@ -254,33 +252,33 @@ and tools \texttt{BraggHLS} employs:
 
 \subsubsection{PyTorch and TorchScript}
 
-Typically DNN models are represented in terms of high-level frameworks,
+Typically DNN models are represented in terms high-level frameworks,
 themselves implemented within general purpose programming languages.
 Such frameworks are widely used because of their ease of use and large
 library of example implementations of various DNN model architectures.
-\texttt{BraggHLS} is implemented using PyTorch, thus we focus on relevant
-aspects of PyTorch. DNNs developed within PyTorch are \emph{defined-by-run}:
-the author imperatively describes the DNN in terms of high-level operations,
-using python, which when executed materializes the high-level data-flow
-graph (DFG) corresponding to the DNN (e.g., for the purposes of reverse-mode
-automatic differentiation). From the perspective of the user, define-by-run
-enables fast iteration at development time, possibly at the cost of
-some runtime performance. 
+\texttt{BraggHLS} is targets the PyTorch framework, thus we focus
+on relevant aspects of PyTorch. DNNs developed within PyTorch are
+\emph{defined-by-run}: the author imperatively describes the DNN in
+terms of high-level operations, using python, which when executed
+materializes the (partial) high-level data-flow graph (DFG) corresponding
+to the DNN (e.g., for the purposes of reverse-mode automatic differentiation).
+From the perspective of the user, define-by-run enables fast iteration
+at development time, possibly at the cost of some runtime performance. 
 
-From the perspective of compilation, define-by-run precludes efficient
-extraction of the high-level DFG; since the DFG is materialized only
-at runtime, it cannot be inferred from the textual representation
-(i.e., the python source) of the DNN. Furthermore, apriori, the runtime-materialized
-DFG is only partially materialized\footnote{``...instead, every intermediate result records only the subset of
+On the other hand, from the perspective of compilation, define-by-run
+precludes efficient extraction of the high-level DFG; since the DFG
+is materialized only at runtime, it cannot be inferred from the textual
+representation (i.e., the python source) of the DNN. Furthermore,
+a priori, the runtime-materialized DFG is only partially materialized\footnote{``...instead, every intermediate result records only the subset of
 the computation graph that was relevant to their computation.'' \cite{paszke2017automatic}}, and only as an in-memory data structure. Thus, framework support
-is necessary. Indeed, PyTorch supports a Single Static Assignment
-(SSA) IR, called TorchScript (TS) IR and accompanying tracing mechanism
-(the TS JIT) to produce TS IR from conventionally defined PyTorch
-models. Lowering from PyTorch to TS IR enables various useful analyses
-and transformations on a DNN at the level of the high-level DFG (such
-as kernel fusion \cite{10.1145/2858788.2688521}) but targeting FPGAs
-requires a broader collection of transformations. To this end, we
-turn to a recent addition to the compiler ecosystem.
+is necessary for efficiently extracting the full DFG. Indeed, PyTorch
+supports a Single Static Assignment (SSA) IR, called TorchScript (TS)
+IR and accompanying tracing mechanism (the TS JIT), which produces
+TS IR from conventionally defined PyTorch models. Lowering from PyTorch
+to TS IR enables various useful analyses and transformations on a
+DNN at the level of the high-level DFG (such as kernel fusion \cite{10.1145/2858788.2688521})
+but targeting FPGAs requires a broader collection of transformations.
+To this end, we turn to a recent addition to the compiler ecosystem.
 
 \subsubsection{MLIR\label{subsec:MLIR}}
 
@@ -302,32 +300,35 @@ DNN \cite{https://doi.org/10.48550/arxiv.2203.08402}.
 While the \texttt{torch} dialect is necessary for lowering to MLIR
 and shape refinement, it is a representation of a DNN at the same
 level of abstraction as TS IR: it does not capture the precise data
-flow and control flow necessary for novel implementations of DNN operations
-(e.g., for FPGA). Fortunately, MLIR supports lower-level dialects,
-such as the \texttt{linalg}, \texttt{affine} and \texttt{scf} (structured
-control flow) dialects. The \texttt{scf} dialect is a straightforward
-formalization of control flow primitives, such as conditionals and
-loops. The \texttt{affine} dialect, on the other hand, provides a
-formalization of semantics that lend themselves to polyhedral compilation
-techniques \cite{polyhedral-mlir}, i.e., techniques that enable loop
-dependence analysis and loop transformations. Such loop transformations,
-particularly loop unrolling, are crucial for achieving lowest possible
-latencies \cite{yehpca2022scalehls}.
+flow and control flow necessary for de novo implementations of DNN
+operations (e.g., for FPGA). Fortunately, MLIR supports lower-level
+dialects, such as the \texttt{linalg}, \texttt{affine} and \texttt{scf}
+(structured control flow) dialects. The \texttt{scf} dialect describes
+standard control flow primitives, such as conditionals and loops,
+and is mutually compatible with the \texttt{arith} (arithmetic operations)
+and \texttt{memref} (memory buffers) dialects. The \texttt{affine}
+dialect, on the other hand, provides a formalization of semantics
+that lend themselves to polyhedral compilation techniques \cite{polyhedral-mlir},
+i.e., techniques that enable loop dependence analysis and loop transformations.
+Such loop transformations, particularly loop unrolling, are crucial
+for achieving lowest possible latencies \cite{yehpca2022scalehls}
+because they directly inform the concurrency and parallelism of the
+final RTL design.
 
 \subsection{High-level synthesis and FPGA design}
 
 \subsubsection{High-level synthesis\label{subsec:High-level-synthesis}}
 
-High-level synthesis tools produce RTL descriptions of digital designs
-from high-level representations, such as C or C++ \cite{10.1145/2514740,ferrandi2021bambu}.
+High-level synthesis tools produce RTL descriptions of designs from
+high-level representations, such as C or C++ \cite{10.1145/2514740,ferrandi2021bambu}.
 In particular, Xilinx's Vitis HLS, based on the Autopilot project
 \cite{Zhang2008}, is a state-of-the-art HLS tool. Given a high-level,
-procedural, representation, HLS proceeds in three steps, in order
-to produce a corresponding RTL design:
+procedural, representation, HLS carries out three fundamental tasks,
+in order to produce a corresponding RTL design:
 \begin{enumerate}
 \item HLS schedules operations (such as \texttt{mulf}, \texttt{addf}, \texttt{load},
 \texttt{store}) in order to determine which operations should occur
-during each clock cycle. Such a schedule depends on three characteristics
+during each clock cycle; such a schedule depends on three characteristics
 of the high-level representation:
 \begin{enumerate}
 \item The topological ordering of the DFG/CFG of the procedural representation
@@ -336,34 +337,37 @@ and resources);
 \item The completion time for each operation;
 \item The user's desired clock rate/frequency;
 \end{enumerate}
-\item HLS associates operations to particular RTL instantiations (called
-\emph{binding}) for those operations; for example whether to associate
-an add operation followed by a multiply operation to two separate
-instances, or whether to associate them both with a single instance,
-e.g., conFigured to perform a fused multiply-accumulate (MAC);
+\item HLS associates (called \emph{binding}) operations to particular RTL
+instantiations of intellectual property (IP) for those operations;
+for example whether to associate an addition operation followed by
+a multiply operation to IPs for each, or whether to associate them
+both with a single IP, designed to perform a ``fused'' multiply-accumulate
+(MAC);
 \begin{enumerate}
-\item In the case of floating point arithmetic operations, HLS also (with
-user guidance) determines the precision of the floating point representation;
+\item In the case of floating-point arithmetic operations, HLS also (with
+user guidance) determines the precision of the floating-point representation;
 \end{enumerate}
 \item HLS builds a finite-state machine (FSM) that implements the schedule
 of operations as control logic, i.e., logic that initiates operations
-and routes signals between them during the appropriate FSM stages.
+during the appropriate stages of the schedule.
 \end{enumerate}
 In addition to fulfilling these three fundamental tasks, high-level
-synthesis aims to optimize the program, during synthesis. In particular,
-they try to maximize concurrency and parallelism (number of concurrent
-operations scheduled during a clock-cycle) in order maximize the throughput
-and minimize the latency of the final implementation. Maximizing concurrency
+synthesis aims to optimize the program. In particular, HLS attempts
+to maximize concurrency and parallelism (number of concurrent operations
+scheduled during a clock-cycle) in order maximize the throughput and
+minimize the latency of the final implementation. Maximizing concurrency
 entails pipelining operations: operations are executed such that they
 overlap in time, subject to available resources. Maximizing parallelism
 entails partitioning the DNN into subsets of operation that can be
 computed independently and simultaneously and whose results are combined
 upon completion. 
 
-Both maximizing for concurrency and parallelism necessitates data-flow
+While HLS aims to optimize various characteristics of a design, there
+are challenges associated with this kind of automated optimization.
+In particular, maximum concurrency and parallelism necessitates data-flow
 analysis in order to identify data dependencies amongst operations,
-which would lead to data hazards in synthesized designs. Such data-flow
-analysis is expensive and grows (in runtime) as higher performance
+both for scheduling and identifying potential data hazards. Such data-flow
+analysis is expensive and grows (in runtime) as better performance
 is pursued. This can be understood in terms of loop-nest representations
 of DNN operations; for example consider a convolution as in Listing
 \ref{lis:Single-filter-convolution}.
@@ -396,17 +400,19 @@ to ($\ensuremath{b},\ensuremath{c_{in}},\ensuremath{h},\ensuremath{w}$)-dimensio
 input} tensor, where $b$ is the batch size, $c_{in}$ is the number
 of channels, and ($h,w$) are the height and width, respectively.\label{lis:Single-filter-convolution}}
 \end{listing}
- A schedule for the arithmetic operations for this loop nest can be
-computed by first unrolling all the loops up to some ``trip-count''
-and then computing the topological sort of the operations (known as
-\emph{list scheduling}). The degree to which the loops are unrolled
-determines how many arithmetic operations can be scheduled in parallel.
-The issue is that the stores and loads on the \texttt{output} array
-prevent reconstruction of explicit relationships between the inputs
-and outputs of the arithmetic operations across loop iterations. The
-standard resolution is to perform \emph{store-load forwarding}: pairs
-of store and load operations to/from the same memory address are eliminated,
-with the operand of the store forwarded to the uses of the load (see
+ A schedule that parallelizes (some of) the arithmetic operations
+for this loop nest can be computed by first unrolling the loops up
+to some ``trip-count'' and then computing the topological sort of
+the operations. Using this scheduling algorithm (known as \emph{list
+scheduling}), the degree to which the loops are unrolled determines
+how many arithmetic operations can be scheduled in parallel. The issue
+is that the \texttt{store}s and \texttt{load}s on the \texttt{output}
+array prevent reconstruction of explicit relationships between the
+inputs and outputs of the arithmetic operations across loop iterations.
+The conventional resolution to this loss of information is to perform
+\emph{store-load forwarding}: pairs of \texttt{store} and \texttt{load}
+operations on the same memory address are eliminated, with the operand
+of the \texttt{store} forwarded to the uses of the \texttt{load} (see
 Listing \ref{lis:Single-filter-convolution-1}).
 \begin{listing}
 \begin{minted}[numbers=left,fontsize={\footnotesize},escapeinside={||},mathescape=true,highlightlines={19,25},autogobble=true,numbersep=3pt]{python}
@@ -449,14 +455,16 @@ can replace uses of ${\setlength{\fboxsep}{1pt}\colorbox{yellow}{\texttt{\_72}}}
 such as in the computation of \texttt{${\setlength{\fboxsep}{1pt}\colorbox{Cyan}{\texttt{\_92}}}$}
 (and potentially many others).\label{lis:Single-filter-convolution-1}}
 \end{listing}
- In order for this transformation to be correct (preserve program
-semantics), for each pair of candidate store and load operations,
-it must be verified that there are no intervening memory operations.
-Note, the number of such checks scales polynomially in the parameters
-of the convolution since the loop nest unrolls into $b\times c_{out}\times h\times w\times c_{in}\times k^{2}$
-store-load pairs. Note also, while in the case of Listing \ref{lis:Single-filter-convolution}
-the verification is straightforward, in general it might involve solving
-a small constraint satisfaction program \cite{rajopadhye2002dependence}.
+ In order for this transformation to be correct (i.e., preserve program
+semantics), for each pair of candidate \texttt{store} and \texttt{load}
+operations, it must be verified that there are no intervening memory
+operations on the same memory address. These verifications are non-trivial
+since the iteration spaces of the loops need not be regular; in general
+it might involve solving a small constraint satisfaction program \cite{rajopadhye2002dependence}.
+Furthermore, the number of such verifications grows polynomially in
+the parameters of the convolution since the loop nest unrolls into
+$b\times c_{out}\times h\times w\times c_{in}\times k^{2}$ \texttt{store}-\texttt{load}
+pairs on the \texttt{output} array.
 
 Finally, note, though greedy solutions to the scheduling problem solved
 by HLS are possible, in principle scheduling is an integer linear
@@ -466,31 +474,31 @@ a RTL description of a high-level representation of a DNN. These phases
 of the HLS process incur ``development time'' costs (i.e., runtime
 of the tools) and impose practical limitations on the amount of design
 space exploration (for the purpose of achieving latency goals) which
-can be performed. \texttt{BraggHLS }addresses these issues by enabling
+can be performed. \texttt{BraggHLS} addresses these issues by enabling
 the user to employ heuristics (during both the parallelization and
 scheduling phases) which, while not guaranteed to be correct, can
 be \emph{behaviorally verified} (see Section \ref{subsec:AST-transformations-and}).
 
 \subsection{FPGA design}
 
-At the register-transfer level of abstraction, there remain two more
-steps prior to being able to actually deploy to an FPGA; one of them
-being a final lowering, so-called logic synthesis, and the other being
-place and route (P\&R). The entire process is carried out, for example,
-by Xilinx's Vivado tool. 
+Broadly, at the register-transfer level of abstraction, there remain
+two more steps prior to being able to actually deploy a design to
+an FPGA; one of them being a final lowering, so-called logic synthesis,
+and the other being place and route (P\&R). The entire process is
+carried out, for example, by Xilinx's Vivado tool. 
 
 Logic synthesis is the process of mapping RTL to actual hardware primitives
 on the FPGA (so-called \emph{technology mapping}), such as lookup
 tables (LUTs), block RAMs (BRAMs), flip-flops (FFs), and digital signal
 processors (DSPs). Logic synthesis produces a network list (\emph{netlist})
 describing the logical connectivity of various parts of the design.
-Logic synthesis effectively determines the implementation of floating
-point operations in terms of DSPs; depending on user parameters and
-other design features, DSP resource consumption for floating point
-multiplication and addition can differ greatly. The number of LUTs
-and DSPs that a high-level representation of a DNN corresponds to
-is relevant to both the performance and feasibility of that DNN when
-deployed to FPGA.
+Logic synthesis effectively determines the implementation of floating-point
+operations in terms of DSPs; depending on user parameters and other
+design features, DSP resource consumption for floating-point multiplication
+and addition can differ greatly. The number of LUTs and DSPs that
+a high-level representation of a DNN corresponds to is relevant to
+both the performance and feasibility of that DNN when deployed to
+FPGA.
 
 After the netlist has been produced, the entire design undergoes P\&R.
 The goal of P\&R is to determine which configurable logic block within
@@ -505,29 +513,26 @@ a proprietary \emph{bitstream}, which is written to the FPGA.
 
 \section{\texttt{BraggHLS} compiler and HLS framework\label{sec:BraggHLS-compiler-and}}
 
-\texttt{BraggHLS} is an extensible (implemented in python) HLS framework
-which employs MLIR for extracting loop-nest representations of DNNs.
-Critically, and distinctly, it handles the DNN transformations as
-well as scheduling, binding, and FSM extraction; there is no dependence
-on any commercial HLS tools. Figure \ref{fig:BraggHLS-framework-overview.-3}
-shows the architecture of \texttt{BraggHLS} 
+\texttt{BraggHLS} is a compiler and HLS framework which employs MLIR
+for extracting loop-nest representations of DNNs. It is implemented
+in python for ease of use and extensibility. Critically, and distinctly,
+it handles the DNN transformations as well as scheduling, binding,
+and FSM extraction; there is no dependence on any commercial HLS tools.
+Figure \ref{fig:BraggHLS-framework-overview.-3} shows the architecture
+of \texttt{BraggHLS} 
 \begin{figure}[tbh]
-\centering{}\includegraphics[width=0.7\columnwidth,bb = 0 0 200 100, draft, type=eps]{../figures/BraggHLS.pdf}\caption{\texttt{BraggHLS} framework overview (placeholder).\label{fig:BraggHLS-framework-overview.-3}}
+\centering{}\includegraphics[width=0.7\columnwidth]{../figures/BraggHLS}\caption{\texttt{BraggHLS} framework overview (placeholder).\label{fig:BraggHLS-framework-overview.-3}}
 \end{figure}
-. 
-
-\texttt{BraggHLS} proceeds by first lowering DNNs from PyTorch to
+. \texttt{BraggHLS} proceeds by first lowering DNNs from PyTorch to
 MLIR through TorchScript and the \texttt{torch} dialect (see Section
 \ref{subsec:MLIR}). They are then further lowered from the \texttt{torch}
 dialect to the \texttt{scf} dialect (through the \texttt{linalg} dialect).
-The \texttt{scf} dialect describes standard control flow primitives,
-such as conditionals and loops, and is mutually compatible with the
-\texttt{arith} and \texttt{memref} dialects. Such a representation
-lends itself to a straightforward translation to python (compare Listing
-\ref{lis:Single-filter-convolution} to Listing \ref{lis:Single-filter-convolution})
-and indeed \texttt{BraggHLS} performs this translation.
+Such a representation lends itself to a straightforward translation
+to python (compare Listing \ref{lis:Single-filter-convolution} to
+Listing \ref{lis:Single-filter-convolution}) and indeed \texttt{BraggHLS}
+performs this translation.
 \begin{listing}
-\begin{minted}[fontsize={\footnotesize},escapeinside={||},mathescape=true]{mupad}
+\begin{minted}[fontsize={\footnotesize},escapeinside={||},mathescape=true]{tex}
 @conv2d(
     %input: memref<|$b \times c_{in} \times h \times w$|>,
     %weight: memref<|$b \times c_{out} \times h \times w$|>,
@@ -568,138 +573,151 @@ and indeed \texttt{BraggHLS} performs this translation.
  The benefits of translating \texttt{scf} dialect to python are manifold
 and discussed in the following (see Section \ref{subsec:Symbolic-execution-for}).
 Ultimately, \texttt{BraggHLS} produces a representation of the DNN
-that can be scheduled efficiently using the scheduling infrastructure
-in CIRCT \cite{oppermann2022eurollvm} (an MLIR adjacent project)
-and then emits corresponding RTL (as Verilog). 
+that is then fully scheduled using the scheduling infrastructure in
+CIRCT \cite{oppermann2022eurollvm} (an MLIR adjacent project). After
+scheduling, \texttt{BraggHLS} emits corresponding RTL (as Verilog). 
 
-\texttt{BraggHLS} delegates to the FloPoCo \cite{8877424} hardware
-the task of generating pipelined implementations of the standard floating
-point arithmetic operations (\texttt{mul}, \texttt{div}, \texttt{add},
-\texttt{sub}, \texttt{sqrt}) at various precisions. In addition, we
-implement a few generic (parameterized by bit width) operators in
-order to support a range of DNN operations: two-operand maximum (\texttt{max});
-negation (\texttt{neg}); rectified linear units (\texttt{relu}). Transcendental
-functions, such as \texttt{exp}, are implemented using a Taylor series
-expansion to $k$-th order (where $k$ is determined on a case by
-case basis). Note, FloPoCo's floating point representation differs
-slightly from IEEE754, foregoing subnormals and differently encoding
-zeroes, infinities and NaNs (for the benefit of reduced complexity)
+\texttt{BraggHLS} delegates to the FloPoCo \cite{8877424} IP generator
+the task of generating pipelined implementations of the standard floating-point
+arithmetic operations (\texttt{mulf}, \texttt{divf}, \texttt{addf},
+\texttt{subf}, \texttt{sqrtf}) at various precisions. In addition,
+we implement a few generic (parameterized by bit width) operators
+in order to support a broad range of DNN operations: two-operand maximum
+(\texttt{max}); negation (\texttt{neg}); rectified linear units (\texttt{relu}).
+Transcendental functions, such as \texttt{exp}, are implemented using
+a Taylor series expansion to $k$-th order (where $k$ is determined
+on a case-by-case basis). Note, FloPoCo's floating-point representation
+differs slightly from IEEE754, foregoing subnormals and differently
+encoding zeroes, infinities and NaNs (for the benefit of reduced complexity)
 and our implementations \texttt{max}, \texttt{neg}, \texttt{relu}
 are adjusted appropriately. 
 
-We now discuss the benefits of translating \texttt{scf} dialect to
-python.
+We now discuss some aspects of \texttt{BraggHLS} in greater detail.
 
 \subsection{Symbolic interpretation for fun and profit\label{subsec:Symbolic-execution-for}}
 
-As discussed in Section \ref{subsec:High-level-synthesis}, a loop-nest
-representation of a DNN enables us to effectively perform data-flow
-analysis and schedule the encompassed arithmetic operations, given
-that we can first unroll the loops. As also discussed in Section \ref{subsec:High-level-synthesis},
-the formally correct approach to unrolling a loop nest is prohibitively
-expensive in terms of runtime. Indeed, for example, in the case of
-\texttt{BraggNN}, repeatedly performing this unrolling was a hindrance
-to effectively searching the design space for a RTL representation
-achieving the target latency, since it often took an enormous amount
-of time (see Figure TODO). Translating \texttt{scf} dialect to python
-enables \texttt{BraggHLS} to overcome this barrier by enabling a \emph{symbolic
-interpreter} for the loop-nest representations. Specifically, after
-the translation, and after applying some transformations on the resulting
-python abstract syntax tree (AST), the python code can be executed,
-with operations on python values determined by class method overloads
-(see Algorithm \ref{alg:scf-dialect-to}). 
+As discussed in Section \ref{subsec:High-level-synthesis}, maximizing
+concurrency and parallelism for a design entails unrolling loop nests
+and analyzing the data-flow of encompassed operations. As also discussed
+in Section \ref{subsec:High-level-synthesis}, the formally correct
+approach to unrolling a loop nest is prohibitively expensive in terms
+of runtime. Indeed, for example, in the case of \texttt{BraggNN},
+repeatedly performing this unrolling was a hindrance to effectively
+searching the design space for a RTL representation achieving the
+target latency, since it often took an enormous amount of time (see
+Figure TODO). Translating \texttt{scf} dialect to python enables \texttt{BraggHLS}
+to overcome this barrier by enabling us to use the python interpreter
+as a \emph{symbolic interpreter}. Interpreting the resulting python
+loop-nests (i.e., running the python program) while treating the arithmetic
+and memory operations on SSA values as operations on symbols (i.e.,
+python classes with overloaded methods) enables us to: 
+\begin{enumerate}
+\item Partially evaluate functions of iteration variables, such as \mintinline{mupad}!%3 = arith.addi %iv3, %iv6!,
+which enables concretely determining array index operands of all stores
+and loads, such as \mintinline{mupad}!memref.load %input[%iv1,%iv5,%iv3,%3,%4]!,
+and thereupon performing memory dependence checks, thus transforming
+the problem of statically verifying memory dependence into a matter
+of checking assertions at runtime;
+\item Unroll loops by recording each floating-point arithmetic operation
+executed while enforcing SSA; e.g., for a loop whose body has repeated
+assignments to the same SSA value (ostensibly violating SSA), we execute
+the loop and instantiate new, uniquely identified, symbols for the
+result of each operation;
+\item Reconstruct all data flow through arithmetic operations and memory
+operations by interpreting \texttt{memref}s as \emph{geometric symbol
+tables} (i.e., symbol tables indexed by array indices rather than
+identifiers/names) and \texttt{store}s and \texttt{load}s as assignments
+and reads on those symbol tables;
+\item Easily swap evaluation rules in order to support various functionality
+modes, e.g., evaluating the floating-point arithmetic operations using
+(python) bindings to FloPoCo's C++ functional models thereby enabling
+behavioral verification.
+\end{enumerate}
+See Table \ref{tab:scf-dialect-to} for the translation rules from
+\texttt{\textcolor{blue}{scf}} dialect to python; with 
 
 {\scriptsize{}}
-\begin{algorithm}[tbh]
-{\scriptsize{}\caption{\texttt{scf} dialect to python translation.\label{alg:scf-dialect-to}}
+\begin{table*}[tbh]
+{\scriptsize{}\caption{\texttt{\textcolor{blue}{scf}} dialect to python translation.\label{tab:scf-dialect-to}}
 }{\scriptsize\par}
+\begin{doublespace}
+\begin{centering}
+{\small{}}%
+\begin{tabular}{lll}
+\toprule 
+\texttt{\textcolor{blue}{\small{}scf}}{\small{} dialect} &  & {\small{}python}\tabularnewline
+\midrule
+{\small{}$\left\llbracket \texttt{\%5}\right\rrbracket $} &  & {\small{}$\texttt{v5 = Val("\%5")}$}\tabularnewline
+{\small{}$\left\llbracket \texttt{memref<}b\times c_{in}\times h\times w\texttt{>}\right\rrbracket $} &  & {\small{}$\texttt{MemRef(}b\times c_{in}\times h\times w\texttt{)}$}\tabularnewline
+{\small{}$\left\llbracket \texttt{\%5 = memref.load input[\%iv1, \%iv5, \%3, \%4]}\right\rrbracket $} &  & {\small{}$\texttt{v5 = input.\_\_getitem\_\_((iv1, iv5, v3, v4))}$}\tabularnewline
+{\small{}$\left\llbracket \texttt{memref.store \%9, output[\%iv1, \%iv5, \%3, \%4]}\right\rrbracket $} &  & {\small{}$\texttt{output.\_\_setitem\_\_((iv1, iv5, v3, v4), v9)}$}\tabularnewline
+{\small{}$\left\llbracket \texttt{scf.for \%iv1 = \%c0 to }b\texttt{ step \%c1}\right\rrbracket $} &  & {\small{}$\texttt{for iv1 in range(c0,}b\texttt{,c1)}$}\tabularnewline
+{\small{}$\left\llbracket \texttt{\%3 = arith.addi \%iv3, \%iv6}\right\rrbracket $} &  & {\small{}$\texttt{\texttt{v3 = iv3 + iv6}}$}\tabularnewline
+{\small{}$\left\llbracket \texttt{\%8 = arith.mulf \%5, \%6}\right\rrbracket $} &  & {\small{}$\texttt{\texttt{v8 = v5.\_\_mul\_\_(v6})}$}\tabularnewline
+{\small{}$\left\llbracket \texttt{\%9 = arith.addf \%7, \%8}\right\rrbracket $} &  & {\small{}$\texttt{\texttt{v9 = v7.\_\_add\_\_(v8)}}$}\tabularnewline
+\vspace{-15pt}
+ &  & \tabularnewline
+{\small{}$\left\llbracket \begin{array}{c}
+\texttt{\%63 = arith.cmpfugt \%10, \%c0}\\
+\texttt{\%64 = arith.select \%63, \%c0\,\,}
+\end{array}\right\rrbracket $} &  & {\small{}$\texttt{\texttt{v64 = v10.relu()}}$}\tabularnewline
+\vspace{-10pt}
+ &  & \tabularnewline
+{\small{}$\left\llbracket \begin{array}{c}
+\texttt{\texttt{\%8 = arith.mulf \%5, \%6}}\\
+\texttt{\%9 = arith.addf \%7, \%8}
+\end{array}\right\rrbracket $} &  & {\small{}$\texttt{\texttt{v9 = fma(v5, v6, v7)}}$}\tabularnewline
+\vspace{-10pt}
+ &  & \tabularnewline
+\bottomrule
+\end{tabular}{\small\par}
+\par\end{centering}
+\end{doublespace}
 \begin{lyxcode}
-{\scriptsize{}
-\begin{multline*}
-\left\llbracket \texttt{\%5}\right\rrbracket \rightarrow\texttt{\texttt{v5 = Val("\%5")}}\\
-\end{multline*}
-\vspace{-30pt}
-\begin{multline*}
-\left\llbracket \texttt{memref<}b\times c_{in}\times h\times w\texttt{>}\right\rrbracket \rightarrow\texttt{MemRef(}b\times c_{in}\times h\times w\texttt{)}
-\end{multline*}
-\vspace{-20pt}
-}{\scriptsize\par}
-
-{\scriptsize{}
-\begin{multline*}
-\left\llbracket \texttt{\%5 = memref.load input[\%iv1,\%iv5,\%3,\%4]}\right\rrbracket \\
-\rightarrow\texttt{v5 = input.\_\_getitem\_\_((iv1,iv5,v3,v4))}
-\end{multline*}
-\vspace{-20pt}
-}{\scriptsize\par}
-
-{\scriptsize{}
-\begin{multline*}
-\left\llbracket \texttt{memref.store \%9, output[\%iv1,\%iv5,\%3,\%4]}\right\rrbracket \\
-\rightarrow\texttt{output.\_\_setitem\_\_((iv1,iv5,v3,v4), v9)}
-\end{multline*}
-}{\scriptsize\par}
-
-{\scriptsize{}\vspace{-20pt}
-}{\scriptsize\par}
-
-{\scriptsize{}
-\begin{multline*}
-\left\llbracket \texttt{scf.for \%iv1 = \%c0 to }b\texttt{ step \%c1}\right\rrbracket \\
-\rightarrow\texttt{for iv1 in range(c0,}b\texttt{,c1)}
-\end{multline*}
-}{\scriptsize\par}
-
-{\scriptsize{}\vspace{-20pt}
-}{\scriptsize\par}
-
-{\scriptsize{}
-\begin{multline*}
-\left\llbracket \texttt{\%3 = arith.addi \%iv3, \%iv6}\right\rrbracket \rightarrow\texttt{\texttt{v3 = iv3 + iv6}}
-\end{multline*}
-\vspace{-20pt}
-}{\scriptsize\par}
-
-{\scriptsize{}
-\begin{multline*}
-\left\llbracket \texttt{\%8 = arith.mulf \%5, \%6}\right\rrbracket \rightarrow\texttt{\texttt{v8 = v5.\_\_mul\_\_(v6})}
-\end{multline*}
-\vspace{-20pt}
-}{\scriptsize\par}
-
-{\scriptsize{}
-\begin{multline*}
-\left\llbracket \texttt{\%9 = arith.addf \%7, \%8}\right\rrbracket \rightarrow\texttt{\texttt{v9 = v7.\_\_add\_\_(v8)}}
-\end{multline*}
-}{\scriptsize\par}
-
 \end{lyxcode}
-\end{algorithm}
+\end{table*}
 {\scriptsize\par}
 
-In executing the python code, the \texttt{BraggHLS} interpreter effectively
-unrolls loops by executing them under a redefined set semantics, while
-enforcing SSA. That is to say, for a loop whose body has repeated
-assignments to the same SSA value (ostensibly violating SSA), we execute
-the loop and instantiate unique identifiers for the result of each
-operation. The interpreter then partially evaluates where possible,
-such as in functions of iteration variables, such as \mintinline{mupad}!%3 = arith.addi %iv3, %iv6!.
-This enables \texttt{BraggHLS} to concretely determine array index
-operands of all stores and loads, such as \mintinline{mupad}!memref.load %input[%iv1,%iv5,%iv3,%3,%4]!. 
+\subsection{AST transformations and behavioral verification\label{subsec:AST-transformations-and-1}}
 
-Note, we do not evaluate values corresponding to floating point arithmetic,
-as they represent true evaluation of the DNN; our interpreter represents
-the operands of such operations as symbols and merely records the
-arithmetic operations performed on them. This enables us to both unroll
-the loop and track data-flow through arithmetic operations (see Section
-\ref{lis:Single-filter-convolution-1}). Finally, the interpreter
-reinterprets \texttt{memref}s as \emph{geometric symbol tables} (i.e.,
-symbol tables indexed by array indices rather than identifiers/names)
-and stores and loads as assignments/reads to/from those symbol tables.
-Such semantics, in combination with fully evaluated array indices,
-enable \texttt{BraggHLS} to track the flow of data through arithmetic
-operations and \texttt{memref}s, and thus perform store-load forwarding
-and efficient scheduling
+Prior to intepretation, \texttt{BraggHLS} performs some simple AST
+transformations on the python generated from \texttt{scf} dialect:
+\begin{enumerate}
+\item \textbf{Hoist globals}: all DNN tensors which are fixed (i.e., weights)
+are moved out of the body of the python \footnote{\texttt{BraggHLS} translates the MLIR \texttt{module} corresponding
+to the DNN into a single python function in order to simplify analysis
+and interpretation.} and into the parameter list, for the purpose of ultimately exposing
+them at the RTL module interface; 
+\item \textbf{Remove }\texttt{\textbf{if}}\textbf{ expressions}: DNN \texttt{relu}
+operations are lowered to the \texttt{scf} dialect as a decomposition
+of \texttt{arith.cmpfugt} and \texttt{arith.select}; this transformation
+recomposes them into a \texttt{relu};
+\item \textbf{Remove MACs}: sequences of \texttt{load}-\texttt{multiply}-\texttt{add}-\texttt{store}
+are very common in DNN implementations, thus we schedule such sequences
+jointly (this transformation coalesces such sequences into a single
+\texttt{FMAC});
+\item \textbf{Reduce }\texttt{\textbf{for}}\textbf{s}: this transformation
+implements the reduction tree structure for non-parallelizable loop-nests
+mentioned in Section \ref{subsec:Symbolic-execution-for}.
+\end{enumerate}
+These transformations on the python AST are simple (implemented with
+procedural pattern matching), extensible, and efficient (marginal
+runtime cost) because they are unverified: no effort is made to verify
+their formal correctness. Thus, \texttt{BraggHLS} trades formal correctness
+for development time performance. This tradeoff enables quick design
+space iteration, which for example, enabled us to achieve very low
+latency implementations for \texttt{BraggNN} (see Section \ref{sec:BraggNN-case-study}).
+As a substitute for formal verification, \texttt{BraggHLS} supports
+behavioral verification. Specifically, \texttt{BraggHLS}, can generate
+testbenches for all synthesized RTL. The test vectors for these testbenches
+are generated by evaluating the generated python representation of
+the DNN on randomly generated inputs but with floating-point operations
+now evaluated using functional models of the corresponding FloPoCo
+operators. The testbenches can then be run using any IEEE 1364 compliant
+simulator. For example, we run a battery of such testbenches (corresponding
+to various DNN operation types), using \texttt{cocotb} \cite{rosser2018cocotb}
+and \texttt{iverilog} \cite{williamsicarus}, as a part of our continuous
+integration process\footnote{\url{https://github.com/makslevental/bragghls/actions}}.
 
 \subsection{Scheduling}
 
@@ -712,19 +730,36 @@ case, due to the precedence relations induced by data-flow, the constraint
 matrix of the associated ILP is \emph{totally unimodular matrix} and
 the feasible region of the problem is an integral polyhedron. Thus,
 in such cases, the scheduling problem can be solved optimally in polynomial
-time with a LP solver \cite{tuprints9272}. 
-
-In the resource constrained case it is possible to transform resource
-constraints into precedence constraints as well, by picking a particular
-(possible heuristic) linear ordering on the resource-constrained operations.
+time with a LP solver \cite{tuprints9272}. In the resource-constrained
+case it is possible to transform resource constraints into precedence
+constraints as well, by picking a particular (possibly heuristic)
+linear ordering on the particularly resource-constrained operations.
 This transformation partitions resource constrained operations into
 distinct clock cycles, thereby guaranteeing sufficient resources are
 available for all operations scheduled within the same clock cycle
-\cite{10.1145/3174243.3174268}. \texttt{BraggHLS} uses the inherent
-parallelism of the loop-nest representation to decide a linear ordering
-on resource constrained operations: for parallelizable loop-nests,
-which are reprepresented as \texttt{scf.parallel} loop-nests (see
-Listing \ref{lis:Single-filter-convolution-2-2}) 
+\cite{10.1145/3174243.3174268}. 
+
+\texttt{BraggHLS} uses the explicit parallelism of the \texttt{scf.parallel}
+loop-nest representation to inform such a linear ordering on resource-constrained
+operations. By assumption, for loop-nests which can be reprepresented
+as \texttt{scf.parallel} loop-nests (see Listing \ref{lis:Single-filter-convolution-2-2}),
+each instance of a floating-point arithmetic operation in the body
+corresponding to unique values of the iteration variables (e.g., \texttt{\%iv1},\texttt{
+\%iv2},\texttt{ \%iv3},\texttt{ \%iv4} for Listing \ref{lis:Single-filter-convolution-2-2})
+is independent of all other such instances\footnote{Data-flow within a loop body must still be respected.}.
+This exactly determines total resource usage per loop-nest; for example,
+the convolution in Listing \ref{lis:Single-filter-convolution-2-2},
+would bind to $2K_{i}$ DSPs (assuming \texttt{mulf}, \texttt{addf}
+bind to one DSP each), where
+\begin{multline*}
+K_{i}:=\left|\left\{ \texttt{\%iv1}=\texttt{\%c0}+\texttt{\%c1}\times\mathbb{N}\,\wedge\,\texttt{\%iv1}<b\right\} \right|\times\\
+\left|\left\{ \texttt{\%iv2}=\texttt{\%c0}+\texttt{\%c1}\times\mathbb{N}\,\wedge\,\texttt{\%iv2}<c_{out}\right\} \right|\times\\
+\left|\left\{ \texttt{\%iv3}=\texttt{\%c0}+\texttt{\%c1}\times\mathbb{N}\,\wedge\,\texttt{\%iv3}<h\right\} \right|\times\\
+\left|\left\{ \texttt{\%iv4}=\texttt{\%c0}+\texttt{\%c1}\times\mathbb{N}\,\wedge\,\texttt{\%iv4}<w\right\} \right|
+\end{multline*}
+where $\texttt{\%c1}\times\mathbb{N}$ represents all multiples of
+$\texttt{\%c1}$. That is to say, $K_{i}$ is the cartesian product
+of the iteration spaces of the parallel iteration variables. 
 \begin{listing}
 \begin{minted}[fontsize={\footnotesize},escapeinside={||},mathescape=true]{mupad}
 @conv2d(
@@ -756,85 +791,26 @@ Listing \ref{lis:Single-filter-convolution-2-2})
 \end{minted}
 \caption{Parallel loop representation of the convolution in Listing \ref{lis:Single-filter-convolution}.\label{lis:Single-filter-convolution-2-2}}
 \end{listing}
- we can partition the DNN across a known set of hardware resources
-in order to maximize parallelism; since for each value of (\texttt{\%iv1},\texttt{
-\%iv2},\texttt{ \%iv3},\texttt{ \%iv4}) the body of the \texttt{scf.parallel}
-is independent of all others, we can bind all the encompassed operations
-to unique hardware resources (DSPs, LUTs, and FFs). Thus, we can infer
-peak resource usage by computing the maximum cardinality of the cartesian
-product of the iteration spaces of the parallel iteration variables
-over all such parallel loops. For example, the convolution in Listing
-\ref{lis:Single-filter-convolution-2} would bind to 
-\begin{multline*}
-K=\left|\left\{ \texttt{\%iv1}=\texttt{\%c0}+\texttt{\%c1}\times\mathbb{N}\,\wedge\,\texttt{\%iv1}<b\right\} \right|\times\\
-\left|\left\{ \texttt{\%iv2}=\texttt{\%c0}+\texttt{\%c1}\times\mathbb{N}\,\wedge\,\texttt{\%iv2}<c_{out}\right\} \right|\times\\
-\left|\left\{ \texttt{\%iv3}=\texttt{\%c0}+\texttt{\%c1}\times\mathbb{N}\,\wedge\,\texttt{\%iv3}<h\right\} \right|\times\\
-\left|\left\{ \texttt{\%iv4}=\texttt{\%c0}+\texttt{\%c1}\times\mathbb{N}\,\wedge\,\texttt{\%iv4}<w\right\} \right|
-\end{multline*}
-collections of resources (i.e., $2K$ DSPs if \texttt{mul}, \texttt{add}
-bind to 1 DSP each), where $\texttt{\%c1}\times\mathbb{N}$ represents
-all multiples of $\texttt{\%c1}$. Note, DNN hyperparameters such
-as striding and padding make this a non-trivial calculation. 
+. Taking the maximum over such $K:=\max_{i}K_{i}$ across all \texttt{scf.parallel}
+loop-nests, we can infer peak usage of any resource. Then, after indexing
+available hardware resources $j=1,\dots,K$, we can bind the operations
+of any particular loop-nest. This leads to a linear ordering on resource-constrained
+operations such that operations bound to the same hardware resource
+index $j$ must be ordered according to their execution order during
+interpretation\footnote{\texttt{BraggHLS} only needs to construct a partial precedence ordering
+$\texttt{op}_{a}<\texttt{op}_{b}$ for operations $\texttt{op}_{a},\texttt{op}_{b}$
+which CIRCT then combines with the delays of the operations to construct
+constraints such as $\texttt{start\_op}_{a}+\texttt{delay}_{a}\leq\texttt{start\_op}_{b}$.}. Note this ordering coincides with the higher-level structure of
+the DNN, since ordering of\texttt{ scf.parallel} loop nests (and thus
+interpretation order during execution of the python program) is determined
+by the higher-level structure of the DNN.
 
-Once peak usage is determined, successive instances \texttt{scf.parallel}
-loop bodies evaluated at the same concrete values of (\texttt{\%iv1,
-\%iv2, \%iv3, \%iv4}) are bound to the same resources. Then since
-successive instances of \texttt{scf.parallel} loop bodies evaluated
-at the same concrete values of the iteration variables are bound to
-the same resources, all resource constrained operations common to
-both instances are ordered. Note, since each loop nest corresponds
-to a DNN operation, ordering of\texttt{ scf.parallel} loop nests is
-determined by the higher-level structure of the DNN. 
-
-Note, For DNN operations that lower to sequential loop nests (e.g.,
-\texttt{sum}, \texttt{max},or \texttt{prod}), we fully unroll the
-loops and transform the resulting, sequential, operations to a reduction
-tree; we use As-Late-As-Possible scheduling \cite{baruch1996scheduling}
-amongst the subtrees of such reduction trees.
-
-\subsection{AST transformations and behavioral verification\label{subsec:AST-transformations-and}}
-
-In addition to unrolling loop-nests, \texttt{BraggHLS} performs some
-simple AST transformations on the python generated from \texttt{scf}
-dialect:
-\begin{enumerate}
-\item \textbf{Hoist globals}: all DNN tensors which are fixed (i.e., weights)
-are moved out of the body of the python \footnote{\texttt{BraggHLS} translates the MLIR \texttt{module} corresponding
-to the DNN into a single python function in order to simplify analysis
-and interpretation.} and into the parameter list, for the purpose of ultimately exposing
-them at the RTL module interface; 
-\item \textbf{Remove }\texttt{\textbf{if}}\textbf{ expressions}: the \texttt{scf}
-dialect represents \texttt{relu} operations as ternary conditionals,
-which translate to python ternaries, thus introducing unnecessary
-control flow;
-\item \textbf{Remove MACs}: sequences of \texttt{load}-\texttt{multiply}-\texttt{add}-\texttt{store}
-are very common in DNN implementations, thus we schedule such sequences
-jointly (this transformation coalesces such sequences into a single
-\texttt{FMAC});
-\item \textbf{Reduce }\texttt{\textbf{for}}\textbf{s}: this transformation
-implements the reduction tree structure for non-parallelizable loop-nests
-mentioned in Section \ref{subsec:Symbolic-execution-for}.
-\end{enumerate}
-These transformations on the python AST are simple (implemented with
-procedural pattern matching), extensible, and efficient (marginal
-runtime cost) because they are unverified: no effort is made to verify
-their formal correctness. Thus, \texttt{BraggHLS} trades formal correctness
-for development time performance. This tradeoff enables quick design
-space iteration, which for example, enabled us to achieve very low
-latency implementations for \texttt{BraggNN} (see Section \ref{sec:BraggNN-case-study}).
-
-As a substitute for formal verification, \texttt{BraggHLS} supports
-behavioral verification. Specifically, \texttt{BraggHLS}, can generate
-testbenches for all synthesized RTL. The test vectors for these testbenches
-are generated by evaluating the transformed representation (i.e.,
-compiling and executing the python AST) on randomly generated inputs
-but with floating point operations now evaluated using functional
-models of the corresponding FloPoCo operators\footnote{FloPoCo provides these functional models as C++ implementations -
-we simply add python bindings to these C++ implementations.}.The testbenches can then be run using any IEEE 1364 compliant simulator.
-For example, we run a battery of such testbenches (corresponding to
-various DNN operation types), using \texttt{cocotb} \cite{rosser2018cocotb}
-and \texttt{iverilog} \cite{williamsicarus}, as a part of our continuous
-integration process\footnote{\url{https://github.com/makslevental/bragghls/actions}}.
+For DNN operations that do not lower \texttt{scf.parallel} loop-nests
+but lower to sequential loop nests (e.g., \texttt{sum}, \texttt{max},
+or \texttt{prod}), we fully unroll the loops and transform the resulting,
+sequential, operations to a reduction tree; we use As-Late-As-Possible
+scheduling \cite{baruch1996scheduling} amongst the subtrees of such
+reduction trees.
 
 \section{Evaluation\label{sec:Evaluation}}
 
@@ -847,7 +823,7 @@ asdasd
 \par\end{centering}
 \medskip{}
 
-\centering{}\label{2dlattice-1-3}\subfloat[\texttt{conv}]{\centering{}\includegraphics[width=1\columnwidth]{../data/conv}\label{2dlattice-1-1-1-1}}\subfloat[\texttt{max\_pool\_2d}]{\centering{}\includegraphics[width=1\columnwidth]{/home/mlevental/dev_projects/hls_paper/data/max_pool_2d}\label{2dlattice-1-2-1-1}}\caption{Resource usage and latency vs. unroll factor of various DNN modules.}
+\centering{}\label{2dlattice-1-3}\subfloat[\texttt{conv}]{\centering{}\includegraphics[width=1\columnwidth]{../data/conv}\label{2dlattice-1-1-1-1}}\subfloat[\texttt{max\_pool\_2d}]{\centering{}\includegraphics[width=1\columnwidth]{../data/max_pool_2d}\label{2dlattice-1-2-1-1}}\caption{Resource usage and latency vs. unroll factor of various DNN modules.}
 \end{figure*}
 \begin{figure*}[tbh]
 \centering{}\includegraphics[width=1\columnwidth]{../data/elapsed_time}\caption{Runtime of Vitis HLS vs. unroll factor.}
@@ -1004,19 +980,19 @@ latency while satisfying compute resource constraints (LUTs, DSPs,
 BRAMs) and meeting routing ``closure'', i.e., not exceeding available
 routing resources and avoiding congestion. Two design choices made
 for the purposes of reducing resource consumption was reducing the
-precision used for the floating point operations. We reduced the precision
+precision used for the floating-point operations. We reduced the precision
 from IEEE half precision (5 bits for the exponent and 11 bits for
 the mantissa) to FloPoCo $\left(5,4\right)$-precision (5 bits for
 the exponent and 4 bits for the mantissa). This was justified by an
 examination of the distribution of the weights of the fully trained
 \texttt{BraggNN} (see figure \ref{fig:BraggHLS-framework-overview.-1}).
 \begin{figure}[tbh]
-\centering{}\includegraphics[width=1\columnwidth,bb = 0 0 200 100, draft, type=eps]{../figures/exp_hist.pdf}\caption{\texttt{BraggHLS} weights exponent distribution (placeholder).\label{fig:BraggHLS-framework-overview.-1}}
+\centering{}\includegraphics[width=1\columnwidth]{../figures/exp_hist}\caption{\texttt{BraggHLS} weights exponent distribution (placeholder).\label{fig:BraggHLS-framework-overview.-1}}
 \end{figure}
  Reducing the precision enabled us to eliminate BRAMs from the design
 as well, since, at the lower precision, all weights could be represented
 as registered constants. The reduced precision also drives the Vivado
-synthesizer to infer implementations of the floating point operations
+synthesizer to infer implementations of the floating-point operations
 that make no use of DSPs; this was not intentional but seemingly cannot
 be altereted. Most likely this is due to the fact that DSP48 hardware
 block includes a 18-bit by 25-bit signed multiplier and a 48-bit adder
