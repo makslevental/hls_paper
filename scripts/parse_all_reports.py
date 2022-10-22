@@ -1,5 +1,6 @@
 import glob
 import json
+import os
 import pathlib
 import re
 from collections import defaultdict
@@ -42,11 +43,19 @@ def parse_utilization_routed(fp):
                 .replace("|", ",")
                 .strip()
             )
-            df = pd.read_csv(test, sep="\s*,\s*")
+            df = pd.read_csv(test, sep="\s*,\s*", engine="python")
             df = df[["Ref Name", "Used", "Functional Category"]]
-            df = df.groupby(by=["Functional Category"]).sum()
+            df = df.groupby(by=["Functional Category"]).sum(numeric_only=True)
 
-            return dict(sorted(df.to_dict()["Used"].items()))
+            d = dict(df.to_dict()["Used"].items())
+            res = {}
+            if "Arithmetic" in d:
+                res["DSP"] = d.pop("Arithmetic")
+            if "CLB" in d:
+                res["LUT"] = d.pop("CLB")
+            if "Register" in d:
+                res["FF"] = d.pop("Register")
+            return res
 
 
 modules = list(
@@ -77,7 +86,7 @@ def parse_using_standard_reports():
     for mod in modules:
         for fp in sorted(
             glob.glob(
-                f"{mod}_16/**/solution1/impl/verilog/report/forward_design_analysis_synth.rpt",
+                f"fully_unrolled_cpps/{mod}_16/**/solution1/impl/verilog/report/forward_design_analysis_synth.rpt",
                 recursive=True,
             )
         ):
@@ -92,7 +101,7 @@ def parse_using_standard_reports():
     for mod in modules:
         for fp in sorted(
             glob.glob(
-                f"{mod}_16/**/solution1/impl/verilog/report/forward_utilization_synth.rpt",
+                f"fully_unrolled_cpps/{mod}_16/**/solution1/impl/verilog/report/forward_utilization_synth.rpt",
                 recursive=True,
             )
         ):
@@ -112,7 +121,9 @@ def parse_using_standard_reports():
 
 def parse_json(all_reports):
     for mod in modules:
-        for fp in sorted(glob.glob(f"{mod}_16/**/*.json", recursive=True)):
+        for fp in sorted(
+            glob.glob(f"fully_unrolled_cpps/{mod}_16/**/*.json", recursive=True)
+        ):
             _mod_name, unroll_factor = name.findall(fp)[0]
             unroll_factor = int(unroll_factor)
             if unroll_factor == 1:
@@ -146,7 +157,7 @@ def parse_using_export_rpts():
     for mod in modules:
         for fp in sorted(
             glob.glob(
-                f"{mod}_16/**/forward_export.rpt",
+                f"fully_unrolled_cpps/{mod}_16/**/forward_export.rpt",
                 recursive=True,
             )
         ):
@@ -168,7 +179,9 @@ def parse_using_export_rpts():
                     elif line.startswith("BRAM:"):
                         all_reports[mod][unroll_factor]["BRAM"] = int(splits[1].strip())
                     elif line.startswith("CP achieved post-synthesis:"):
-                        all_reports[mod][unroll_factor]["clock_period_minus_wns"] = float(splits[1].strip())
+                        all_reports[mod][unroll_factor][
+                            "clock_period_minus_wns"
+                        ] = float(splits[1].strip())
         all_reports[mod] = dict(sorted(all_reports[mod].items()))
 
     return all_reports
@@ -180,7 +193,11 @@ def parse_autopilot_logs(all_reports):
         r"INFO: \[HLS 200-111\] Finished Command csynth_design CPU user time: (.*) seconds. CPU system time: (.*) seconds. Elapsed time: (.*) seconds; current allocated memory: (.*)"
     )
     for mod in modules:
-        for fp in sorted(pathlib.Path(".").glob(f"{mod}_16/**/autopilot.flow.log")):
+        for fp in sorted(
+            pathlib.Path(".").glob(
+                f"fully_unrolled_cpps/{mod}_16/**/autopilot.flow.log"
+            )
+        ):
             fp = str(fp.resolve())
             _mod_name, unroll_factor = name.findall(fp)[0]
             unroll_factor = int(unroll_factor)
@@ -206,31 +223,86 @@ def parse_autopilot_logs(all_reports):
     return all_reports
 
 
+def bragghls():
+    wns_re = re.compile(
+        r"""\s* WNS\(ns\).*
+\s* -------.*
+\s* ([-]?\d+[.]\d+).*
+""",
+        flags=re.MULTILINE,
+    )
+
+    all_reports = {}
+    sched_re = re.compile(r"return \{lpStartTime = (\d+) : i32}")
+    for mod in modules:
+        all_reports[mod] = {}
+        fp = f"bragghls_artifacts/{mod}_16/reports/post_synth/utilization.rpt"
+        if os.path.exists(fp):
+            util = parse_utilization_routed(fp)
+            all_reports[mod].update(util)
+
+        fp = f"bragghls_artifacts/{mod}_16/reports/post_synth/timing_summary.rpt"
+        if os.path.exists(fp):
+            with open(fp) as f:
+                wns = float(wns_re.findall(f.read())[0])
+
+            fp = f"bragghls_artifacts/{mod}_16/{mod}.sched.mlir"
+            if os.path.exists(fp):
+                with open(fp) as f:
+                    sched = int(sched_re.findall(f.read())[0])
+                    all_reports[mod]["LatencyBest"] = sched
+                    all_reports[mod]["clock_period_minus_wns"] = (10 - wns)
+
+        all_reports[mod] = dict(sorted(all_reports[mod].items()))
+    all_reports = dict(sorted(all_reports.items()))
+    return all_reports
+
+
 if __name__ == "__main__":
-
     # all_reports = parse_using_standard_reports()
-    all_reports = parse_using_export_rpts()
-    all_reports = parse_json(all_reports)
-    avails = all_reports.pop("avails")
-    for mod in all_reports:
-        for unroll_factor in all_reports[mod]:
-            for metric_name in all_reports[mod][unroll_factor]:
+    vitis_reports = parse_using_export_rpts()
+    vitis_reports = parse_json(vitis_reports)
+    avails = vitis_reports.pop("avails")
+    for mod in vitis_reports:
+        for unroll_factor in vitis_reports[mod]:
+            for metric_name in vitis_reports[mod][unroll_factor]:
                 if metric_name in avails:
-                    all_reports[mod][unroll_factor][metric_name] /= avails[metric_name]
-                    all_reports[mod][unroll_factor][metric_name] *= 100
+                    vitis_reports[mod][unroll_factor][metric_name] /= avails[metric_name]
+                    vitis_reports[mod][unroll_factor][metric_name] *= 100
+    vitis_reports = parse_autopilot_logs(vitis_reports)
+
+    bragghls_reports = bragghls()
+    for mod in bragghls_reports:
+        for metric_name in bragghls_reports[mod]:
+            if metric_name in avails:
+                bragghls_reports[mod][metric_name] /= avails[metric_name]
+                bragghls_reports[mod][metric_name] *= 100
 
 
-    all_reports = parse_autopilot_logs(all_reports)
+    json.dump(
+        {"vitis": vitis_reports, "bragghls": bragghls_reports},
+        open("all_reports.json", "w"),
+        indent=2,
+    )
 
-    json.dump(all_reports, open("all_reports.json", "w"), indent=2)
-
-    csv = open("all_reports.csv", "w")
+    csv = open("vitis_reports.csv", "w")
     csv.write("module,unroll_factor,metric_name,metric_val\n")
-    for mod in all_reports:
-        if mod == "avails": continue
-        for unroll_factor in all_reports[mod]:
-            for metric_name in all_reports[mod][unroll_factor]:
-                metric_val = all_reports[mod][unroll_factor][metric_name]
+    for mod in vitis_reports:
+        if mod == "avails":
+            continue
+        for unroll_factor in vitis_reports[mod]:
+            for metric_name in vitis_reports[mod][unroll_factor]:
+                metric_val = vitis_reports[mod][unroll_factor][metric_name]
                 print(f"{mod},{unroll_factor},{metric_name},{metric_val}\n")
                 csv.write(f"{mod},{unroll_factor},{metric_name},{metric_val}\n")
                 csv.flush()
+    
+    csv = open("bragghls_reports.csv", "w")
+    csv.write("module,unroll_factor,metric_name,metric_val\n")
+    for mod in bragghls_reports:
+        for metric_name in bragghls_reports[mod]:
+            metric_val = bragghls_reports[mod][metric_name]
+            print(f"{mod},{metric_name},{metric_val}\n")
+            csv.write(f"{mod},2048,{metric_name},{metric_val}\n")
+            csv.flush()
+
