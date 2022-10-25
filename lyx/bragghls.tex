@@ -1,4 +1,4 @@
-%% LyX 2.3.6 created this file.  For more info, see http://www.lyx.org/.
+%% LyX 2.3.6.2 created this file.  For more info, see http://www.lyx.org/.
 %% Do not edit unless you really know what you are doing.
 \documentclass[twocolumn,conference]{IEEEtran}
 \usepackage[T1]{fontenc}
@@ -378,21 +378,21 @@ def conv2d(
   output: MemRef(|$b$|, |$c_{out}$|, |$h$|, |$w$|),
   weight: MemRef(|$c_{out}$|, |$c_{in}$|, |$k$|, |$k$|)
 ):
-  for iv1 in range(0, |$b$|):
-    for iv2 in range(0, |$c_{out}$|):
-      for iv3 in range(0, |$h$|):
-        for iv4 in range(0, |$w$|):
-          for iv5 in range(0, |$c_{in}$|):
-            for iv6 in range(0, |$k$|):
-              for iv7 in range(0, |$k$|):
-                _3 = iv3 + iv6
-                _4 = iv4 + iv7
-                _5 = input[iv1, iv5, _3, _4]
-                _6 = weight[iv2, iv5, iv6, iv7]
-                _7 = output[iv1, iv2, iv3, iv4]
+  for i1 in range(0, |$b$|):
+    for i2 in range(0, |$c_{out}$|):
+      for i3 in range(0, |$h$|):
+        for i4 in range(0, |$w$|):
+          for i5 in range(0, |$c_{in}$|):
+            for i6 in range(0, |$k$|):
+              for i7 in range(0, |$k$|):
+                _3 = i3 + i6
+                _4 = i4 + i7
+                _5 = input[i1, i5, _3, _4]
+                _6 = weight[i2, i5, i6, i7]
+                _7 = output[i1, i2, i3, i4]
                 _8 = _5 * _6
                 _9 = _7 + _8
-                output[iv1, iv2, iv3, iv4] = _9
+                output[i1, i2, i3, i4] = _9
 \end{minted}
 \caption{Python representation of a padding $\left\lfloor k/2\right\rfloor $,
 stride 1, $c_{out}$ filter convolution with $k\times k$ kernel applied
@@ -421,33 +421,33 @@ def conv2d(
   output: MemRef(|$b$|, |$c_{out}$|, |$h$|, |$w$|),
   weight: MemRef(|$c_{out}$|, |$c_{in}$|, |$k$|, |$k$|)
 ):
-  for iv1 in range(0, |$b$|):
-    for iv2 in range(0, |$c_{out}$|):
-      for iv3 in range(0, |$h$|):
-        for iv4 in range(0, |$w$|):
+  for i1 in range(0, |$b$|):
+    for i2 in range(0, |$c_{out}$|):
+      for i3 in range(0, |$h$|):
+        for i4 in range(0, |$w$|):
 	  ...
-	  # e.g., iv5, iv6, iv7 = 2, 3, ${\setlength{\fboxsep}{1pt}\colorbox{Salmon}{\texttt{4}}}$
-	  _31 = iv3 + iv6 
-	  _41 = iv4 + iv7 
-	  _51 = input[iv1, iv5, _31, _41] 
-	  _61 = weight[iv2, iv5, iv6, iv7] 
-	  _71 = output[iv1, iv2, iv3, iv4] 
+	  # e.g., i5, i6, i7 = 2, 3, ${\setlength{\fboxsep}{1pt}\colorbox{Salmon}{\texttt{4}}}$
+	  _31 = i3 + i6 
+	  _41 = i4 + i7 
+	  _51 = input[i1, i5, _31, _41] 
+	  _61 = weight[i2, i5, i6, i7] 
+	  _71 = output[i1, i2, i3, i4] 
 	  _81 = _51 * _61 
 	  |${\setlength{ \fboxsep}{1pt} \colorbox{green}{ \texttt{\_91}}}$| = _71 + _81 
-	  output[iv1, iv2, iv3, iv4] = _91 
-	  # iv5, iv6, iv7 = 2, 3, ${\setlength{\fboxsep}{1pt}\colorbox{Salmon}{\texttt{5}}}$
-	  _32 = iv3 + iv6 
-	  _42 = iv4 + iv7 
-	  _52 = input[iv1, iv5, _32, _42] 
-	  _62 = weight[iv2, iv5, iv6, iv7] 
-	  |${\setlength{\fboxsep}{1pt}\colorbox{yellow}{\texttt{\_72}}}$| = output[iv1, iv2, iv3, iv4] 
+	  output[i1, i2, i3, i4] = _91 
+	  # i5, i6, i7 = 2, 3, ${\setlength{\fboxsep}{1pt}\colorbox{Salmon}{\texttt{5}}}$
+	  _32 = i3 + i6 
+	  _42 = i4 + i7 
+	  _52 = input[i1, i5, _32, _42] 
+	  _62 = weight[i2, i5, i6, i7] 
+	  |${\setlength{\fboxsep}{1pt}\colorbox{yellow}{\texttt{\_72}}}$| = output[i1, i2, i3, i4] 
 	  _82 = _52 * _62 
 	  |${\setlength{\fboxsep}{1pt}\colorbox{Cyan}{\texttt{\_92}}}$| = |${\setlength{\fboxsep}{1pt}\colorbox{yellow}{\texttt{\_72}}}$| + _82 
-	  output[iv1, iv2, iv3, iv4] = _92
+	  output[i1, i2, i3, i4] = _92
 	  ...
 \end{minted}
 \caption{Store-load forwarding across successive iterations (e.g.,\texttt{
-iv7} $={\setlength{\fboxsep}{1pt}\colorbox{Salmon}{\texttt{4}}}, {\setlength{\fboxsep}{1pt}\colorbox{Salmon}{\texttt{5}}}$)
+i7} $={\setlength{\fboxsep}{1pt}\colorbox{Salmon}{\texttt{4}}}, {\setlength{\fboxsep}{1pt}\colorbox{Salmon}{\texttt{5}}}$)
 of the inner loop in Listing \ref{lis:Single-filter-convolution},
 after unrolling. The forwarding opportunity is from the store on line
 19 to the load on line 25; both can be eliminated and ${\setlength{\fboxsep}{1pt}\colorbox{green}{\texttt{\_91}}}$
@@ -521,7 +521,7 @@ and FSM extraction; there is no dependence on any commercial HLS tools.
 Figure \ref{fig:BraggHLS-framework-overview.-3} shows the architecture
 of \texttt{BraggHLS} 
 \begin{figure}[tbh]
-\centering{}\includegraphics[width=0.7\columnwidth,bb = 0 0 200 100, draft, type=eps]{../figures/BraggHLS.pdf}\caption{\texttt{BraggHLS} framework overview (placeholder).\label{fig:BraggHLS-framework-overview.-3}}
+\centering{}\includegraphics[width=0.7\columnwidth]{../figures/BraggHLS}\caption{\texttt{BraggHLS} framework overview (placeholder).\label{fig:BraggHLS-framework-overview.-3}}
 \end{figure}
 . \texttt{BraggHLS} proceeds by first lowering DNNs from PyTorch to
 MLIR through TorchScript and the \texttt{torch} dialect (see Section
@@ -538,25 +538,25 @@ performs this translation.
     %weight: memref<|$b \times c_{out} \times h \times w$|>,
     %output: memref<|$c_{out} \times c_{in} \times k \times k$|>
 ) {
-  scf.for %iv1 = %c0 to |$b$| step %c1 {
-    scf.for %iv2 = %c0 to |$c_{out}$| step %c1 {
-      scf.for %iv3 = %c0 to |$h$| step %c1 {
-        scf.for %iv4 = %c0 to |$w$| step %c1 {
-          scf.for %iv5 = %c0 to |$c_{in}$| step %c1 {
-            scf.for %iv6 = %c0 to |$k$| step %c1 {
-              scf.for %iv7 = %c0 to |$k$| step %c1 {
-                %3 = arith.addi %iv3, %iv6
-                %4 = arith.addi %iv4, %iv7
+  scf.for %i1 = %c0 to |$b$| step %c1 {
+    scf.for %i2 = %c0 to |$c_{out}$| step %c1 {
+      scf.for %i3 = %c0 to |$h$| step %c1 {
+        scf.for %i4 = %c0 to |$w$| step %c1 {
+          scf.for %i5 = %c0 to |$c_{in}$| step %c1 {
+            scf.for %i6 = %c0 to |$k$| step %c1 {
+              scf.for %i7 = %c0 to |$k$| step %c1 {
+                %3 = arith.addi %i3, %i6
+                %4 = arith.addi %i4, %i7
                 %5 = memref.load %input[
-                  %iv1, %iv5, %iv3, %3, %4]
+                  %i1, %i5, %i3, %3, %4]
                 %6 = memref.load %weight[
-                  %iv2, %iv5, %iv6, %iv7]
+                  %i2, %i5, %i6, %i7]
                 %7 = memref.load %output[
-                  %iv1, %iv2, %iv3, %iv4]
+                  %i1, %i2, %i3, %i4]
                 %8 = arith.mulf %5, %6
                 %9 = arith.addf %7, %8
                 memref.store %9, %output[
-                  %iv1, %iv2, %iv3, %iv4]
+                  %i1, %i2, %i3, %i4]
               } 
             }
           }  
@@ -605,16 +605,24 @@ of runtime. Indeed, for example, in the case of \texttt{BraggNN},
 repeatedly performing this unrolling was a hindrance to effectively
 searching the design space for a RTL representation achieving the
 target latency, since it often took an enormous amount of time (see
-Figure TODO). Translating \texttt{scf} dialect to python enables \texttt{BraggHLS}
+Figure \ref{fig:-kernel-convolution-full}). 
+\begin{figure}[tbh]
+\begin{centering}
+\includegraphics[width=1\columnwidth]{/Users/mlevental/dev_projects/hls_paper/data/conv_unroll}
+\par\end{centering}
+\caption{$3\times3$-kernel convolution full unrolling time.\label{fig:-kernel-convolution-full}}
+
+\end{figure}
+Translating \texttt{scf} dialect to python enables \texttt{BraggHLS}
 to overcome this barrier by enabling us to use the python interpreter
 as a \emph{symbolic interpreter}. Interpreting the resulting python
 loop-nests (i.e., running the python program) while treating the arithmetic
 and memory operations on SSA values as operations on symbols (i.e.,
 python classes with overloaded methods) enables us to: 
 \begin{enumerate}
-\item Partially evaluate functions of iteration variables, such as \mintinline{mupad}!%3 = arith.addi %iv3, %iv6!,
+\item Partially evaluate functions of iteration variables, such as \mintinline{mupad}!%3 = arith.addi %i3, %i6!,
 which enables concretely determining array index operands of all stores
-and loads, such as \mintinline{mupad}!memref.load %input[%iv1,%iv5,%iv3,%3,%4]!,
+and loads, such as \mintinline[fontsize={\small}]{mupad}!memref.load %input[%i1,%i5,%i3,%3,%4]!,
 and thereupon performing memory dependence checks, thus transforming
 the problem of statically verifying memory dependence into a matter
 of checking assertions at runtime;
@@ -648,25 +656,25 @@ See Table \ref{tab:scf-dialect-to} for the translation rules from
 \texttt{\textcolor{blue}{\small{}scf}}{\small{} dialect} &  & {\small{}python}\tabularnewline
 \midrule
 {\small{}$\left\llbracket \texttt{\%5}\right\rrbracket $} &  & {\small{}$\texttt{v5 = Val("\%5")}$}\tabularnewline
-{\small{}$\left\llbracket \texttt{memref<}b\times c_{in}\times h\times w\texttt{>}\right\rrbracket $} &  & {\small{}$\texttt{MemRef(}b\times c_{in}\times h\times w\texttt{)}$}\tabularnewline
-{\small{}$\left\llbracket \texttt{\%5 = memref.load input[\%iv1, \%iv5, \%3, \%4]}\right\rrbracket $} &  & {\small{}$\texttt{v5 = input.\_\_getitem\_\_((iv1, iv5, v3, v4))}$}\tabularnewline
-{\small{}$\left\llbracket \texttt{memref.store \%9, output[\%iv1, \%iv5, \%3, \%4]}\right\rrbracket $} &  & {\small{}$\texttt{output.\_\_setitem\_\_((iv1, iv5, v3, v4), v9)}$}\tabularnewline
-{\small{}$\left\llbracket \texttt{scf.for \%iv1 = \%c0 to }b\texttt{ step \%c1}\right\rrbracket $} &  & {\small{}$\texttt{for iv1 in range(c0,}b\texttt{,c1)}$}\tabularnewline
-{\small{}$\left\llbracket \texttt{\%3 = arith.addi \%iv3, \%iv6}\right\rrbracket $} &  & {\small{}$\texttt{\texttt{v3 = iv3 + iv6}}$}\tabularnewline
-{\small{}$\left\llbracket \texttt{\%8 = arith.mulf \%5, \%6}\right\rrbracket $} &  & {\small{}$\texttt{\texttt{v8 = v5.\_\_mul\_\_(v6})}$}\tabularnewline
-{\small{}$\left\llbracket \texttt{\%9 = arith.addf \%7, \%8}\right\rrbracket $} &  & {\small{}$\texttt{\texttt{v9 = v7.\_\_add\_\_(v8)}}$}\tabularnewline
+{\small{}$\left\llbracket \texttt{memref<}b\times c_{in}\times h\times w\texttt{>}\right\rrbracket $} &  & {\small{}$\texttt{MemRef(\ensuremath{b}, \ensuremath{c_{in}}, \ensuremath{h}, \ensuremath{w})}$}\tabularnewline
+{\small{}$\left\llbracket \texttt{\%5 = memref.load \%input[\%i1, \%i5, \%3, \%4]}\right\rrbracket $} &  & {\small{}$\texttt{\ensuremath{\left\llbracket \texttt{\%5}\right\rrbracket }= \ensuremath{\left\llbracket \texttt{\%input}\right\rrbracket }.\_\_getitem\_\_((\ensuremath{\left\llbracket \texttt{\%i1}\right\rrbracket }, \ensuremath{\left\llbracket \texttt{\%i5}\right\rrbracket }, \ensuremath{\left\llbracket \texttt{\%3}\right\rrbracket }, \ensuremath{\left\llbracket \texttt{\%4}\right\rrbracket }))}$}\tabularnewline
+{\small{}$\left\llbracket \texttt{memref.store \%9, \%output[\%i1, \%i5, \%3, \%4]}\right\rrbracket $} &  & {\small{}$\texttt{\ensuremath{\left\llbracket \texttt{\%output}\right\rrbracket }.\_\_setitem\_\_((\ensuremath{\left\llbracket \texttt{\%i1}\right\rrbracket }, \ensuremath{\left\llbracket \texttt{\%i5}\right\rrbracket }, \ensuremath{\left\llbracket \texttt{\%3}\right\rrbracket }, \ensuremath{\left\llbracket \texttt{\%4}\right\rrbracket }), \ensuremath{\left\llbracket \texttt{\%9}\right\rrbracket })}$}\tabularnewline
+{\small{}$\left\llbracket \texttt{scf.for \%i1 = \%c0 to }b\texttt{ step \%c1}\right\rrbracket $} &  & {\small{}$\texttt{for \ensuremath{\left\llbracket \texttt{\%iv1}\right\rrbracket }in range(\ensuremath{\left\llbracket \texttt{\%c0}\right\rrbracket }, }b\texttt{, \ensuremath{\left\llbracket \texttt{\%c1}\right\rrbracket })}$}\tabularnewline
+{\small{}$\left\llbracket \texttt{\%3 = arith.addi \%i3, \%i6}\right\rrbracket $} &  & {\small{}$\texttt{\texttt{\ensuremath{\left\llbracket \texttt{\%3}\right\rrbracket }= \ensuremath{\left\llbracket \texttt{\%i3}\right\rrbracket }+ \ensuremath{\left\llbracket \texttt{\%i6}\right\rrbracket }}}$}\tabularnewline
+{\small{}$\left\llbracket \texttt{\%8 = arith.mulf \%5, \%6}\right\rrbracket $} &  & {\small{}$\texttt{\texttt{\ensuremath{\left\llbracket \texttt{\%8}\right\rrbracket }= \ensuremath{\left\llbracket \texttt{\%5}\right\rrbracket }.\_\_mul\_\_(\ensuremath{\left\llbracket \texttt{\%6}\right\rrbracket }})}$}\tabularnewline
+{\small{}$\left\llbracket \texttt{\%9 = arith.addf \%7, \%8}\right\rrbracket $} &  & {\small{}$\texttt{\texttt{\ensuremath{\left\llbracket \texttt{\%9}\right\rrbracket }= \ensuremath{\left\llbracket \texttt{\%7}\right\rrbracket }.\_\_add\_\_(\ensuremath{\left\llbracket \texttt{\%8}\right\rrbracket })}}$}\tabularnewline
 \vspace{-15pt}
  &  & \tabularnewline
 {\small{}$\left\llbracket \begin{array}{c}
 \texttt{\%63 = arith.cmpfugt \%10, \%c0}\\
 \texttt{\%64 = arith.select \%63, \%c0\,\,}
-\end{array}\right\rrbracket $} &  & {\small{}$\texttt{\texttt{v64 = v10.relu()}}$}\tabularnewline
+\end{array}\right\rrbracket $} &  & {\small{}$\texttt{\texttt{\ensuremath{\left\llbracket \texttt{\%64}\right\rrbracket }= \ensuremath{\left\llbracket \texttt{\%10}\right\rrbracket }.relu()}}$}\tabularnewline
 \vspace{-10pt}
  &  & \tabularnewline
 {\small{}$\left\llbracket \begin{array}{c}
 \texttt{\texttt{\%8 = arith.mulf \%5, \%6}}\\
 \texttt{\%9 = arith.addf \%7, \%8}
-\end{array}\right\rrbracket $} &  & {\small{}$\texttt{\texttt{v9 = fma(v5, v6, v7)}}$}\tabularnewline
+\end{array}\right\rrbracket $} &  & {\small{}$\texttt{\texttt{\ensuremath{\left\llbracket \texttt{\%9}\right\rrbracket }= fma(\ensuremath{\left\llbracket \texttt{\%5}\right\rrbracket }, \ensuremath{\left\llbracket \texttt{\%6}\right\rrbracket }, \ensuremath{\left\llbracket \texttt{\%7}\right\rrbracket })}}$}\tabularnewline
 \vspace{-10pt}
  &  & \tabularnewline
 \bottomrule
@@ -744,8 +752,8 @@ loop-nest representation to inform such a linear ordering on resource-constraine
 operations. By assumption, for loop-nests which can be reprepresented
 as \texttt{scf.parallel} loop-nests (see Listing \ref{lis:Single-filter-convolution-2-2}),
 each instance of a floating-point arithmetic operation in the body
-corresponding to unique values of the iteration variables (e.g., \texttt{\%iv1},\texttt{
-\%iv2},\texttt{ \%iv3},\texttt{ \%iv4} for Listing \ref{lis:Single-filter-convolution-2-2})
+corresponding to unique values of the iteration variables (e.g., \texttt{\%i1},\texttt{
+\%i2},\texttt{ \%i3},\texttt{ \%i4} for Listing \ref{lis:Single-filter-convolution-2-2})
 is independent of all other such instances\footnote{Data-flow within a loop body must still be respected.}.
 This exactly determines total resource usage per loop-nest; for example,
 the convolution in Listing \ref{lis:Single-filter-convolution-2-2},
@@ -767,21 +775,21 @@ of the iteration spaces of the parallel iteration variables.
     %weight: memref<|$b \times c_{out} \times h \times w$|>,
     %output: memref<|$c_{out} \times c_{in} \times k \times k$|>
 ) {
-  scf.parallel (%iv1, %iv2, %iv3, %iv4) =
+  scf.parallel (%i1, %i2, %i3, %i4) =
                (%c0, %c0, %c0, %c0) to
                (|$b$|, |$c_{out}$|, |$h$|, |$w$|) step
                (%c1, %c1, %c1, %c1) {
-    scf.for %iv5 = %c0 to |$c_{in}$| step %c1 {
-      scf.for %iv6 = %c0 to |$k$| step %c1 {
-        scf.for %iv7 = %c0 to |$k$| step %c1 {
-          %3 = arith.addi %iv3, %iv6
-          %4 = arith.addi %iv4, %iv7
-          %5 = memref.load %input[%iv1, %iv5, %iv3, %3, %4]
-          %6 = memref.load %weight[%iv2, %iv5, %iv6, %iv7]
-          %7 = memref.load %output[%iv1, %iv2, %iv3, %iv4]
+    scf.for %i5 = %c0 to |$c_{in}$| step %c1 {
+      scf.for %i6 = %c0 to |$k$| step %c1 {
+        scf.for %i7 = %c0 to |$k$| step %c1 {
+          %3 = arith.addi %i3, %i6
+          %4 = arith.addi %i4, %i7
+          %5 = memref.load %input[%i1, %i5, %i3, %3, %4]
+          %6 = memref.load %weight[%i2, %i5, %i6, %i7]
+          %7 = memref.load %output[%i1, %i2, %i3, %i4]
           %8 = arith.mulf %5, %6
           %9 = arith.addf %7, %8
-          memref.store %9, %output[%iv1, %iv2, %iv3, %iv4]
+          memref.store %9, %output[%i1, %i2, %i3, %i4]
         }
       }
     }
@@ -814,19 +822,22 @@ reduction trees.
 
 \section{Evaluation\label{sec:Evaluation}}
 
+We evaluate \texttt{BraggHLS both} on individual DNN kernels (i.e.,
+layers) and end-to-end, on our use-case \texttt{BraggNN}.
+
 \subsection{DNN layers}
 
 asdasd
 \begin{figure*}[tbh]
 \begin{centering}
-\subfloat[\texttt{addmm}]{\centering{}\includegraphics[width=1\columnwidth]{../data/addmm}\label{2dlattice-1-1-2}}\subfloat[\texttt{braggnn}]{\centering{}\includegraphics[width=1\columnwidth]{../data/batch_norm}\label{2dlattice-1-2-2}}
+\subfloat[\texttt{addmm}]{\centering{}\includegraphics[width=1\columnwidth]{../figures/addmm}\label{2dlattice-1-1-2}}\subfloat[\texttt{braggnn}]{\centering{}\includegraphics[width=1\columnwidth]{../figures/batch_norm}\label{2dlattice-1-2-2}}
 \par\end{centering}
 \medskip{}
 
-\centering{}\label{2dlattice-1-3}\subfloat[\texttt{conv}]{\centering{}\includegraphics[width=1\columnwidth]{../data/conv}\label{2dlattice-1-1-1-1}}\subfloat[\texttt{max\_pool\_2d}]{\centering{}\includegraphics[width=1\columnwidth]{../data/max_pool_2d}\label{2dlattice-1-2-1-1}}\caption{Resource usage and latency vs. unroll factor of various DNN modules.}
+\centering{}\label{2dlattice-1-3}\subfloat[\texttt{conv}]{\centering{}\includegraphics[width=1\columnwidth]{../figures/conv}\label{2dlattice-1-1-1-1}}\subfloat[\texttt{max\_pool\_2d}]{\centering{}\includegraphics[width=1\columnwidth]{../figures/max_pool_2d}\label{2dlattice-1-2-1-1}}\caption{Resource usage and latency vs. unroll factor of various DNN modules.}
 \end{figure*}
 \begin{figure*}[tbh]
-\centering{}\includegraphics[width=1\columnwidth]{../data/elapsed_time}\caption{Runtime of Vitis HLS vs. unroll factor.}
+\centering{}\includegraphics[width=1\columnwidth]{../figures/elapsed_time}\caption{Runtime of Vitis HLS vs. unroll factor.}
 \end{figure*}
 
 
@@ -836,7 +847,7 @@ TODO: put the comparison to both the dataflow pipelined numbers and
 the fully unrolled numbers for braggnn here (save the other eval section
 for just ops).
 \begin{figure}[tbh]
-\centering{}\includegraphics[width=1\columnwidth]{/home/mlevental/dev_projects/hls_paper/data/braggnn}\caption{\texttt{braggnn}}
+\centering{}\includegraphics[width=1\columnwidth]{../figures/braggnn}\caption{\texttt{braggnn}}
 \end{figure}
 
 High-energy diffraction microscopy techniques can provide non-destructive
@@ -990,7 +1001,7 @@ the exponent and 4 bits for the mantissa). This was justified by an
 examination of the distribution of the weights of the fully trained
 \texttt{BraggNN} (see figure \ref{fig:BraggHLS-framework-overview.-1}).
 \begin{figure}[tbh]
-\centering{}\includegraphics[width=1\columnwidth,bb = 0 0 200 100, draft, type=eps]{../figures/exp_hist.pdf}\caption{\texttt{BraggHLS} weights exponent distribution (placeholder).\label{fig:BraggHLS-framework-overview.-1}}
+\centering{}\includegraphics[width=1\columnwidth]{../figures/exp_hist}\caption{\texttt{BraggHLS} weights exponent distribution.\label{fig:BraggHLS-framework-overview.-1}}
 \end{figure}
  Reducing the precision enabled us to eliminate BRAMs from the design
 as well, since, at the lower precision, all weights could be represented

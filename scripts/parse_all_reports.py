@@ -72,7 +72,7 @@ soft_max
     )
 )
 
-name = re.compile(r"/(.*)_(.*)/solution1/")
+name = re.compile(r"/.*?/(\d+)/")
 
 
 # forward_design_analysis_routed.rpt
@@ -86,7 +86,7 @@ def parse_using_standard_reports():
     for mod in modules:
         for fp in sorted(
             glob.glob(
-                f"fully_unrolled_cpps/{mod}_16/**/solution1/impl/verilog/report/forward_design_analysis_synth.rpt",
+                f"{mod}/**/solution1/impl/verilog/report/forward_design_analysis_synth.rpt",
                 recursive=True,
             )
         ):
@@ -101,7 +101,7 @@ def parse_using_standard_reports():
     for mod in modules:
         for fp in sorted(
             glob.glob(
-                f"fully_unrolled_cpps/{mod}_16/**/solution1/impl/verilog/report/forward_utilization_synth.rpt",
+                f"{mod}/**/solution1/impl/verilog/report/forward_utilization_synth.rpt",
                 recursive=True,
             )
         ):
@@ -122,9 +122,9 @@ def parse_using_standard_reports():
 def parse_json(all_reports):
     for mod in modules:
         for fp in sorted(
-            glob.glob(f"fully_unrolled_cpps/{mod}_16/**/*.json", recursive=True)
+            glob.glob(f"reports/{mod}/**/*.json", recursive=True)
         ):
-            _mod_name, unroll_factor = name.findall(fp)[0]
+            unroll_factor = name.findall(fp)[0]
             unroll_factor = int(unroll_factor)
             if unroll_factor == 1:
                 unroll_factor = 0
@@ -157,11 +157,11 @@ def parse_using_export_rpts():
     for mod in modules:
         for fp in sorted(
             glob.glob(
-                f"fully_unrolled_cpps/{mod}_16/**/forward_export.rpt",
+                f"reports/{mod}/**/forward_export.rpt",
                 recursive=True,
             )
         ):
-            _mod_name, unroll_factor = name.findall(fp)[0]
+            unroll_factor = name.findall(fp)[0]
             unroll_factor = int(unroll_factor)
             if unroll_factor == 1:
                 unroll_factor = 0
@@ -195,11 +195,11 @@ def parse_autopilot_logs(all_reports):
     for mod in modules:
         for fp in sorted(
             pathlib.Path(".").glob(
-                f"fully_unrolled_cpps/{mod}_16/**/autopilot.flow.log"
+                f"reports/{mod}/**/autopilot.flow.log"
             )
         ):
             fp = str(fp.resolve())
-            _mod_name, unroll_factor = name.findall(fp)[0]
+            unroll_factor = name.findall(fp)[0]
             unroll_factor = int(unroll_factor)
             if unroll_factor == 1:
                 unroll_factor = 0
@@ -277,7 +277,6 @@ if __name__ == "__main__":
             if metric_name in avails:
                 bragghls_reports[mod][metric_name] /= avails[metric_name]
                 bragghls_reports[mod][metric_name] *= 100
-
 
     json.dump(
         {"vitis": vitis_reports, "bragghls": bragghls_reports},

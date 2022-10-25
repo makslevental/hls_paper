@@ -9,6 +9,11 @@ batch_norm,2048,FF,6.469685812469319
 batch_norm,2048,LUT,15.581967967599411
 batch_norm,2048,LatencyBest,29
 batch_norm,2048,clock_period_minus_wns,2.982
+braggnn,2048,DSP,14.43927304964539
+braggnn,2048,FF,28.507532523318606
+braggnn,2048,LUT,175.16637518409425
+braggnn,2048,LatencyBest,2148
+braggnn,2048,clock_period_minus_wns,9.131
 conv,2048,DSP,6.515957446808511
 conv,2048,FF,7.059938021600392
 conv,2048,LUT,15.457167403043693

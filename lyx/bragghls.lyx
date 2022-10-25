@@ -1237,62 +1237,62 @@ def conv2d(
 
 \begin_layout Plain Layout
 
-  for iv1 in range(0, |$b$|):
+  for i1 in range(0, |$b$|):
 \end_layout
 
 \begin_layout Plain Layout
 
-    for iv2 in range(0, |$c_{out}$|):
+    for i2 in range(0, |$c_{out}$|):
 \end_layout
 
 \begin_layout Plain Layout
 
-      for iv3 in range(0, |$h$|):
+      for i3 in range(0, |$h$|):
 \end_layout
 
 \begin_layout Plain Layout
 
-        for iv4 in range(0, |$w$|):
+        for i4 in range(0, |$w$|):
 \end_layout
 
 \begin_layout Plain Layout
 
-          for iv5 in range(0, |$c_{in}$|):
+          for i5 in range(0, |$c_{in}$|):
 \end_layout
 
 \begin_layout Plain Layout
 
-            for iv6 in range(0, |$k$|):
+            for i6 in range(0, |$k$|):
 \end_layout
 
 \begin_layout Plain Layout
 
-              for iv7 in range(0, |$k$|):
+              for i7 in range(0, |$k$|):
 \end_layout
 
 \begin_layout Plain Layout
 
-                _3 = iv3 + iv6
+                _3 = i3 + i6
 \end_layout
 
 \begin_layout Plain Layout
 
-                _4 = iv4 + iv7
+                _4 = i4 + i7
 \end_layout
 
 \begin_layout Plain Layout
 
-                _5 = input[iv1, iv5, _3, _4]
+                _5 = input[i1, i5, _3, _4]
 \end_layout
 
 \begin_layout Plain Layout
 
-                _6 = weight[iv2, iv5, iv6, iv7]
+                _6 = weight[i2, i5, i6, i7]
 \end_layout
 
 \begin_layout Plain Layout
 
-                _7 = output[iv1, iv2, iv3, iv4]
+                _7 = output[i1, i2, i3, i4]
 \end_layout
 
 \begin_layout Plain Layout
@@ -1307,7 +1307,7 @@ def conv2d(
 
 \begin_layout Plain Layout
 
-                output[iv1, iv2, iv3, iv4] = _9
+                output[i1, i2, i3, i4] = _9
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
@@ -1451,22 +1451,22 @@ def conv2d(
 
 \begin_layout Plain Layout
 
-  for iv1 in range(0, |$b$|):
+  for i1 in range(0, |$b$|):
 \end_layout
 
 \begin_layout Plain Layout
 
-    for iv2 in range(0, |$c_{out}$|):
+    for i2 in range(0, |$c_{out}$|):
 \end_layout
 
 \begin_layout Plain Layout
 
-      for iv3 in range(0, |$h$|):
+      for i3 in range(0, |$h$|):
 \end_layout
 
 \begin_layout Plain Layout
 
-        for iv4 in range(0, |$w$|):
+        for i4 in range(0, |$w$|):
 \end_layout
 
 \begin_layout Plain Layout
@@ -1476,7 +1476,7 @@ def conv2d(
 
 \begin_layout Plain Layout
 
-	  # e.g., iv5, iv6, iv7 = 2, 3, ${
+	  # e.g., i5, i6, i7 = 2, 3, ${
 \backslash
 setlength{
 \backslash
@@ -1489,27 +1489,27 @@ texttt{4}}}$
 
 \begin_layout Plain Layout
 
-	  _31 = iv3 + iv6 
+	  _31 = i3 + i6 
 \end_layout
 
 \begin_layout Plain Layout
 
-	  _41 = iv4 + iv7 
+	  _41 = i4 + i7 
 \end_layout
 
 \begin_layout Plain Layout
 
-	  _51 = input[iv1, iv5, _31, _41] 
+	  _51 = input[i1, i5, _31, _41] 
 \end_layout
 
 \begin_layout Plain Layout
 
-	  _61 = weight[iv2, iv5, iv6, iv7] 
+	  _61 = weight[i2, i5, i6, i7] 
 \end_layout
 
 \begin_layout Plain Layout
 
-	  _71 = output[iv1, iv2, iv3, iv4] 
+	  _71 = output[i1, i2, i3, i4] 
 \end_layout
 
 \begin_layout Plain Layout
@@ -1534,12 +1534,12 @@ _91}}}$| = _71 + _81
 
 \begin_layout Plain Layout
 
-	  output[iv1, iv2, iv3, iv4] = _91 
+	  output[i1, i2, i3, i4] = _91 
 \end_layout
 
 \begin_layout Plain Layout
 
-	  # iv5, iv6, iv7 = 2, 3, ${
+	  # i5, i6, i7 = 2, 3, ${
 \backslash
 setlength{
 \backslash
@@ -1552,22 +1552,22 @@ texttt{5}}}$
 
 \begin_layout Plain Layout
 
-	  _32 = iv3 + iv6 
+	  _32 = i3 + i6 
 \end_layout
 
 \begin_layout Plain Layout
 
-	  _42 = iv4 + iv7 
+	  _42 = i4 + i7 
 \end_layout
 
 \begin_layout Plain Layout
 
-	  _52 = input[iv1, iv5, _32, _42] 
+	  _52 = input[i1, i5, _32, _42] 
 \end_layout
 
 \begin_layout Plain Layout
 
-	  _62 = weight[iv2, iv5, iv6, iv7] 
+	  _62 = weight[i2, i5, i6, i7] 
 \end_layout
 
 \begin_layout Plain Layout
@@ -1582,7 +1582,7 @@ colorbox{yellow}{
 \backslash
 texttt{
 \backslash
-_72}}}$| = output[iv1, iv2, iv3, iv4] 
+_72}}}$| = output[i1, i2, i3, i4] 
 \end_layout
 
 \begin_layout Plain Layout
@@ -1617,7 +1617,7 @@ _72}}}$| + _82
 
 \begin_layout Plain Layout
 
-	  output[iv1, iv2, iv3, iv4] = _92
+	  output[i1, i2, i3, i4] = _92
 \end_layout
 
 \begin_layout Plain Layout
@@ -1632,7 +1632,7 @@ _72}}}$| + _82
 \begin_layout Plain Layout
 Store-load forwarding across successive iterations (e.g.,
 \family typewriter
- iv7
+ i7
 \family default
  
 \begin_inset ERT
@@ -2063,47 +2063,47 @@ times k$|>
 
 \begin_layout Plain Layout
 
-  scf.for %iv1 = %c0 to |$b$| step %c1 {
+  scf.for %i1 = %c0 to |$b$| step %c1 {
 \end_layout
 
 \begin_layout Plain Layout
 
-    scf.for %iv2 = %c0 to |$c_{out}$| step %c1 {
+    scf.for %i2 = %c0 to |$c_{out}$| step %c1 {
 \end_layout
 
 \begin_layout Plain Layout
 
-      scf.for %iv3 = %c0 to |$h$| step %c1 {
+      scf.for %i3 = %c0 to |$h$| step %c1 {
 \end_layout
 
 \begin_layout Plain Layout
 
-        scf.for %iv4 = %c0 to |$w$| step %c1 {
+        scf.for %i4 = %c0 to |$w$| step %c1 {
 \end_layout
 
 \begin_layout Plain Layout
 
-          scf.for %iv5 = %c0 to |$c_{in}$| step %c1 {
+          scf.for %i5 = %c0 to |$c_{in}$| step %c1 {
 \end_layout
 
 \begin_layout Plain Layout
 
-            scf.for %iv6 = %c0 to |$k$| step %c1 {
+            scf.for %i6 = %c0 to |$k$| step %c1 {
 \end_layout
 
 \begin_layout Plain Layout
 
-              scf.for %iv7 = %c0 to |$k$| step %c1 {
+              scf.for %i7 = %c0 to |$k$| step %c1 {
 \end_layout
 
 \begin_layout Plain Layout
 
-                %3 = arith.addi %iv3, %iv6
+                %3 = arith.addi %i3, %i6
 \end_layout
 
 \begin_layout Plain Layout
 
-                %4 = arith.addi %iv4, %iv7
+                %4 = arith.addi %i4, %i7
 \end_layout
 
 \begin_layout Plain Layout
@@ -2113,7 +2113,7 @@ times k$|>
 
 \begin_layout Plain Layout
 
-                  %iv1, %iv5, %iv3, %3, %4]
+                  %i1, %i5, %i3, %3, %4]
 \end_layout
 
 \begin_layout Plain Layout
@@ -2123,7 +2123,7 @@ times k$|>
 
 \begin_layout Plain Layout
 
-                  %iv2, %iv5, %iv6, %iv7]
+                  %i2, %i5, %i6, %i7]
 \end_layout
 
 \begin_layout Plain Layout
@@ -2133,7 +2133,7 @@ times k$|>
 
 \begin_layout Plain Layout
 
-                  %iv1, %iv2, %iv3, %iv4]
+                  %i1, %i2, %i3, %i4]
 \end_layout
 
 \begin_layout Plain Layout
@@ -2153,7 +2153,7 @@ times k$|>
 
 \begin_layout Plain Layout
 
-                  %iv1, %iv2, %iv3, %iv4]
+                  %i1, %i2, %i3, %i4]
 \end_layout
 
 \begin_layout Plain Layout
@@ -2390,8 +2390,60 @@ BraggNN
 \family default
 , repeatedly performing this unrolling was a hindrance to effectively searching
  the design space for a RTL representation achieving the target latency,
- since it often took an enormous amount of time (see Figure TODO).
- Translating 
+ since it often took an enormous amount of time (see Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:-kernel-convolution-full"
+
+\end_inset
+
+).
+ 
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename /Users/mlevental/dev_projects/hls_paper/data/conv_unroll.pdf
+	width 100col%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset Formula $3\times3$
+\end_inset
+
+-kernel convolution full unrolling time.
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:-kernel-convolution-full"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+Translating 
 \family typewriter
 scf
 \family default
@@ -2420,7 +2472,7 @@ status open
 
 \begin_layout Plain Layout
 
-%3 = arith.addi %iv3, %iv6
+%3 = arith.addi %i3, %i6
 \end_layout
 
 \end_inset
@@ -2428,13 +2480,13 @@ status open
 , which enables concretely determining array index operands of all stores
  and loads, such as 
 \begin_inset listings
-lstparams "language=MuPAD"
+lstparams "language=MuPAD,fontsize={\small}"
 inline true
 status open
 
 \begin_layout Plain Layout
 
-memref.load %input[%iv1,%iv5,%iv3,%3,%4]
+memref.load %input[%i1,%i5,%i3,%3,%4]
 \end_layout
 
 \end_inset
@@ -2650,7 +2702,7 @@ python
 \begin_layout Plain Layout
 
 \size small
-\begin_inset Formula $\texttt{MemRef(}b\times c_{in}\times h\times w\texttt{)}$
+\begin_inset Formula $\texttt{MemRef(\ensuremath{b}, c_{in}, \ensuremath{h}, \ensuremath{w})}$
 \end_inset
 
 
@@ -2666,7 +2718,7 @@ python
 \begin_layout Plain Layout
 
 \size small
-\begin_inset Formula $\left\llbracket \texttt{\%5 = memref.load input[\%iv1, \%iv5, \%3, \%4]}\right\rrbracket $
+\begin_inset Formula $\left\llbracket \texttt{\%5 = memref.load \%input[\%i1, \%i5, \%3, \%4]}\right\rrbracket $
 \end_inset
 
 
@@ -2689,7 +2741,7 @@ python
 \begin_layout Plain Layout
 
 \size small
-\begin_inset Formula $\texttt{v5 = input.\_\_getitem\_\_((iv1, iv5, v3, v4))}$
+\begin_inset Formula $\texttt{\left\llbracket \texttt{\%5}\right\rrbracket = \left\llbracket \texttt{\%input}\right\rrbracket .\_\_getitem\_\_((\left\llbracket \texttt{\%i1}\right\rrbracket , \left\llbracket \texttt{\%i5}\right\rrbracket , \left\llbracket \texttt{\%3}\right\rrbracket , \left\llbracket \texttt{\%4}\right\rrbracket ))}$
 \end_inset
 
 
@@ -2705,7 +2757,7 @@ python
 \begin_layout Plain Layout
 
 \size small
-\begin_inset Formula $\left\llbracket \texttt{memref.store \%9, output[\%iv1, \%iv5, \%3, \%4]}\right\rrbracket $
+\begin_inset Formula $\left\llbracket \texttt{memref.store \%9, \%output[\%i1, \%i5, \%3, \%4]}\right\rrbracket $
 \end_inset
 
 
@@ -2728,7 +2780,7 @@ python
 \begin_layout Plain Layout
 
 \size small
-\begin_inset Formula $\texttt{output.\_\_setitem\_\_((iv1, iv5, v3, v4), v9)}$
+\begin_inset Formula $\texttt{\left\llbracket \texttt{\%output}\right\rrbracket .\_\_setitem\_\_((\left\llbracket \texttt{\%i1}\right\rrbracket , \left\llbracket \texttt{\%i5}\right\rrbracket , \left\llbracket \texttt{\%3}\right\rrbracket , \left\llbracket \texttt{\%4}\right\rrbracket ), \left\llbracket \texttt{\%9}\right\rrbracket )}$
 \end_inset
 
 
@@ -2744,7 +2796,7 @@ python
 \begin_layout Plain Layout
 
 \size small
-\begin_inset Formula $\left\llbracket \texttt{scf.for \%iv1 = \%c0 to }b\texttt{ step \%c1}\right\rrbracket $
+\begin_inset Formula $\left\llbracket \texttt{scf.for \%i1 = \%c0 to }b\texttt{ step \%c1}\right\rrbracket $
 \end_inset
 
 
@@ -2767,7 +2819,7 @@ python
 \begin_layout Plain Layout
 
 \size small
-\begin_inset Formula $\texttt{for iv1 in range(c0,}b\texttt{,c1)}$
+\begin_inset Formula $\texttt{for \left\llbracket \texttt{\%iv1}\right\rrbracket in range(\left\llbracket \texttt{\%c0}\right\rrbracket , }b\texttt{, \left\llbracket \texttt{\%c1}\right\rrbracket )}$
 \end_inset
 
 
@@ -2783,7 +2835,7 @@ python
 \begin_layout Plain Layout
 
 \size small
-\begin_inset Formula $\left\llbracket \texttt{\%3 = arith.addi \%iv3, \%iv6}\right\rrbracket $
+\begin_inset Formula $\left\llbracket \texttt{\%3 = arith.addi \%i3, \%i6}\right\rrbracket $
 \end_inset
 
 
@@ -2806,7 +2858,7 @@ python
 \begin_layout Plain Layout
 
 \size small
-\begin_inset Formula $\texttt{\texttt{v3 = iv3 + iv6}}$
+\begin_inset Formula $\texttt{\texttt{\left\llbracket \texttt{\%3}\right\rrbracket = \left\llbracket \texttt{\%i3}\right\rrbracket + \left\llbracket \texttt{\%i6}\right\rrbracket }}$
 \end_inset
 
 
@@ -2845,7 +2897,7 @@ python
 \begin_layout Plain Layout
 
 \size small
-\begin_inset Formula $\texttt{\texttt{v8 = v5.\_\_mul\_\_(v6})}$
+\begin_inset Formula $\texttt{\texttt{\left\llbracket \texttt{\%8}\right\rrbracket = \left\llbracket \texttt{\%5}\right\rrbracket .\_\_mul\_\_(\left\llbracket \texttt{\%6}\right\rrbracket })}$
 \end_inset
 
 
@@ -2884,7 +2936,7 @@ python
 \begin_layout Plain Layout
 
 \size small
-\begin_inset Formula $\texttt{\texttt{v9 = v7.\_\_add\_\_(v8)}}$
+\begin_inset Formula $\texttt{\texttt{\left\llbracket \texttt{\%9}\right\rrbracket = \left\llbracket \texttt{\%7}\right\rrbracket .\_\_add\_\_(\left\llbracket \texttt{\%8}\right\rrbracket )}}$
 \end_inset
 
 
@@ -2958,7 +3010,7 @@ python
 \begin_layout Plain Layout
 
 \size small
-\begin_inset Formula $\texttt{\texttt{v64 = v10.relu()}}$
+\begin_inset Formula $\texttt{\texttt{\left\llbracket \texttt{\%64}\right\rrbracket = \left\llbracket \texttt{\%10}\right\rrbracket .relu()}}$
 \end_inset
 
 
@@ -3032,7 +3084,7 @@ python
 \begin_layout Plain Layout
 
 \size small
-\begin_inset Formula $\texttt{\texttt{v9 = fma(v5, v6, v7)}}$
+\begin_inset Formula $\texttt{\texttt{\left\llbracket \texttt{\%9}\right\rrbracket = fma(\left\llbracket \texttt{\%5}\right\rrbracket , \left\llbracket \texttt{\%6}\right\rrbracket , \left\llbracket \texttt{\%7}\right\rrbracket )}}$
 \end_inset
 
 
@@ -3376,19 +3428,19 @@ reference "lis:Single-filter-convolution-2-2"
 ), each instance of a floating-point arithmetic operation in the body correspond
 ing to unique values of the iteration variables (e.g., 
 \family typewriter
-%iv1
+%i1
 \family default
 ,
 \family typewriter
- %iv2
+ %i2
 \family default
 ,
 \family typewriter
- %iv3
+ %i3
 \family default
 ,
 \family typewriter
- %iv4
+ %i4
 \family default
  for Listing 
 \begin_inset CommandInset ref
@@ -3505,7 +3557,7 @@ times k$|>
 
 \begin_layout Plain Layout
 
-  scf.parallel (%iv1, %iv2, %iv3, %iv4) =
+  scf.parallel (%i1, %i2, %i3, %i4) =
 \end_layout
 
 \begin_layout Plain Layout
@@ -3525,42 +3577,42 @@ times k$|>
 
 \begin_layout Plain Layout
 
-    scf.for %iv5 = %c0 to |$c_{in}$| step %c1 {
+    scf.for %i5 = %c0 to |$c_{in}$| step %c1 {
 \end_layout
 
 \begin_layout Plain Layout
 
-      scf.for %iv6 = %c0 to |$k$| step %c1 {
+      scf.for %i6 = %c0 to |$k$| step %c1 {
 \end_layout
 
 \begin_layout Plain Layout
 
-        scf.for %iv7 = %c0 to |$k$| step %c1 {
+        scf.for %i7 = %c0 to |$k$| step %c1 {
 \end_layout
 
 \begin_layout Plain Layout
 
-          %3 = arith.addi %iv3, %iv6
+          %3 = arith.addi %i3, %i6
 \end_layout
 
 \begin_layout Plain Layout
 
-          %4 = arith.addi %iv4, %iv7
+          %4 = arith.addi %i4, %i7
 \end_layout
 
 \begin_layout Plain Layout
 
-          %5 = memref.load %input[%iv1, %iv5, %iv3, %3, %4]
+          %5 = memref.load %input[%i1, %i5, %i3, %3, %4]
 \end_layout
 
 \begin_layout Plain Layout
 
-          %6 = memref.load %weight[%iv2, %iv5, %iv6, %iv7]
+          %6 = memref.load %weight[%i2, %i5, %i6, %i7]
 \end_layout
 
 \begin_layout Plain Layout
 
-          %7 = memref.load %output[%iv1, %iv2, %iv3, %iv4]
+          %7 = memref.load %output[%i1, %i2, %i3, %i4]
 \end_layout
 
 \begin_layout Plain Layout
@@ -3575,7 +3627,7 @@ times k$|>
 
 \begin_layout Plain Layout
 
-          memref.store %9, %output[%iv1, %iv2, %iv3, %iv4]
+          memref.store %9, %output[%i1, %i2, %i3, %i4]
 \end_layout
 
 \begin_layout Plain Layout
@@ -3730,6 +3782,19 @@ name "sec:Evaluation"
 
 \end_layout
 
+\begin_layout Standard
+We evaluate 
+\family typewriter
+BraggHLS both
+\family default
+ on individual DNN kernels (i.e., layers) and end-to-end, on our use-case
+ 
+\family typewriter
+BraggNN
+\family default
+.
+\end_layout
+
 \begin_layout Subsection
 DNN layers
 \end_layout
@@ -3751,7 +3816,7 @@ status open
 \begin_layout Plain Layout
 \align center
 \begin_inset Graphics
-	filename ../data/addmm.pdf
+	filename ../figures/addmm.pdf
 	lyxscale 50
 	width 100col%
 
@@ -3789,7 +3854,7 @@ status open
 \begin_layout Plain Layout
 \align center
 \begin_inset Graphics
-	filename ../data/batch_norm.pdf
+	filename ../figures/batch_norm.pdf
 	lyxscale 50
 	width 100col%
 
@@ -3845,7 +3910,7 @@ status open
 \begin_layout Plain Layout
 \align center
 \begin_inset Graphics
-	filename ../data/conv.pdf
+	filename ../figures/conv.pdf
 	lyxscale 50
 	width 100col%
 
@@ -3883,7 +3948,7 @@ status open
 \begin_layout Plain Layout
 \align center
 \begin_inset Graphics
-	filename ../data/max_pool_2d.pdf
+	filename ../figures/max_pool_2d.pdf
 	lyxscale 50
 	width 100col%
 
@@ -3936,7 +4001,7 @@ status collapsed
 \begin_layout Plain Layout
 \align center
 \begin_inset Graphics
-	filename ../data/elapsed_time.pdf
+	filename ../figures/elapsed_time.pdf
 	lyxscale 50
 	width 100col%
 
@@ -3987,7 +4052,7 @@ status open
 \begin_layout Plain Layout
 \align center
 \begin_inset Graphics
-	filename /home/mlevental/dev_projects/hls_paper/data/braggnn.pdf
+	filename ../figures/braggnn.pdf
 	lyxscale 50
 	width 100col%
 
@@ -6270,7 +6335,7 @@ status collapsed
 \family typewriter
 BraggHLS
 \family default
- weights exponent distribution (placeholder).
+ weights exponent distribution.
 \begin_inset CommandInset label
 LatexCommand label
 name "fig:BraggHLS-framework-overview.-1"

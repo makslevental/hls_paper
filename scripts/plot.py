@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 from matplotlib import ticker, font_manager
 import matplotlib.patheffects as PathEffects
+from matplotlib.container import BarContainer
 from matplotlib.lines import Line2D
 
 vitis_df = pd.read_csv("vitis_reports.csv", header=0, index_col=[0, 1, 2])
@@ -43,11 +44,15 @@ def plot_metrics(sub_df, ax1, spacing=4, scale=10):
         except:
             continue
         xs = np.array(vals.index.values)
+        bars = [i for i in ax1.containers if isinstance(i, BarContainer)]
+
+        global MAX_REGULAR
         if xs[-1] == 1024:
-            global MAX_REGULAR
             MAX_REGULAR = xs[-2]
             xs[-1] = MAX_REGULAR + spacing
         if xs[-1] == 2048:
+            if MAX_REGULAR is None:
+                MAX_REGULAR = bars[1].patches[-1].xy[0] + 2 * spacing
             xs[-1] = MAX_REGULAR + 2 * spacing
 
         vals = vals.values.flatten()
@@ -83,7 +88,7 @@ def plot_metrics(sub_df, ax1, spacing=4, scale=10):
         # ax1.plot(vals.index.values, vals.values, label=metric)
 
 
-def plot():
+def plot_unrolls():
     for i, mod in enumerate(vitis_df.index.levels[0]):
         global MAX_REGULAR, BAR_CHART_COLORS, PATTERNS
         MAX_REGULAR = None
@@ -234,7 +239,7 @@ def plot():
             red_patch = Line2D([0], [0], color='w', label='BraggHLS',
                               markerfacecolor='r', marker="X", markeredgecolor="k",
                     markersize=15)
-            ax2.legend(handles=lat_legend + [red_patch])
+            ax2.legend(handles=lat_legend + [red_patch], loc="upper right", title="Latency", framealpha=0.8, fontsize=20)
 
 
         # https://github.com/matplotlib/matplotlib/issues/3706#issuecomment-817268918
@@ -288,4 +293,25 @@ def plot():
     fig.savefig(f"elapsed_time.pdf")
 
 
-plot()
+# plot_unrolls()
+
+def plot_unroll_times():
+    bragghls_df = pd.read_csv("unroll_conv.csv", header=0, index_col=[0])
+    fig, ax1 = plt.subplots(figsize=(10, 7))
+    ax1.plot(bragghls_df.index.values, bragghls_df.values)
+    ax1.ticklabel_format(axis="y", style="sci", scilimits=(0, 0))
+    ax1.grid(which="major", linestyle="--")
+    ax1.minorticks_off()  # turns off minor ticks
+    # ax1.set_xscale("log")
+    # ax1.set_yscale("log")
+    ax1.set_ylabel("time (s)", fontdict={"fontsize": 25})
+    ax1.set_xticks(sorted(bragghls_df.index.values))
+    ax1.xaxis.set_major_formatter(ticker.FuncFormatter(myticks))
+    font = font_manager.FontProperties(family="Courier New", style="normal", size=20)
+    # ax1.legend(loc="upper left", framealpha=0.8, fontsize=20, prop=font)
+    ax1.set_xlabel("unroll factor", fontdict={"fontsize": 25})
+    fig.tight_layout()
+    fig.savefig("conv_unroll.pdf")
+
+plot_unroll_times()
+
