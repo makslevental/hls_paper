@@ -45,7 +45,7 @@
 \usepackage{hyperref}
 \hypersetup{colorlinks=true}
 \usepackage[dvipsnames]{xcolor}
-\definecolor{lgray}{rgb}{0.95, 0.95, 0.95}
+\definecolor{lgray}{RGB}{248 248 248}
 \usepackage{mathtools}
 
 \@ifundefined{showcaptionsetup}{}{%
@@ -54,6 +54,12 @@
 \makeatother
 
 \usepackage{minted}
+\renewcommand{\MintedPygmentize}{/Users/mlevental/dev_projects/hls_paper/scripts/pygmentize.py}
+\usemintedstyle{colorful}
+\definecolor{bg}{rgb}{0.95,0.95,0.95}
+\setminted{
+    bgcolor=bg
+}
 \renewcommand{\listingscaption}{Listing}
 
 \begin{document}
@@ -532,7 +538,7 @@ to python (compare Listing \ref{lis:Single-filter-convolution} to
 Listing \ref{lis:Single-filter-convolution}) and indeed \texttt{BraggHLS}
 performs this translation.
 \begin{listing}
-\begin{minted}[fontsize={\footnotesize},escapeinside={||},mathescape=true]{tex}
+\begin{minted}[fontsize={\footnotesize},escapeinside={||},mathescape=true]{mlir}
 @conv2d(
     %input: memref<|$b \times c_{in} \times h \times w$|>,
     %weight: memref<|$b \times c_{out} \times h \times w$|>,
@@ -769,7 +775,7 @@ where $\texttt{\%c1}\times\mathbb{N}$ represents all multiples of
 $\texttt{\%c1}$. That is to say, $K_{i}$ is the cartesian product
 of the iteration spaces of the parallel iteration variables. 
 \begin{listing}
-\begin{minted}[fontsize={\footnotesize},escapeinside={||},mathescape=true]{mupad}
+\begin{minted}[fontsize={\footnotesize},escapeinside={||},mathescape=true]{mlir}
 @conv2d(
     %input: memref<|$b \times c_{in} \times h \times w$|>,
     %weight: memref<|$b \times c_{out} \times h \times w$|>,

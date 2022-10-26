@@ -239,6 +239,55 @@ Fax: (888) 555–5555
 
 \end_layout
 
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+renewcommand{
+\backslash
+MintedPygmentize}{/Users/mlevental/dev_projects/hls_paper/scripts/pygmentize.py}
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+usemintedstyle{colorful}
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+definecolor{bg}{rgb}{0.95,0.95,0.95}
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+setminted{
+\end_layout
+
+\begin_layout Plain Layout
+
+    bgcolor=bg
+\end_layout
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout Abstract
 In many experiment-driven scientific domains, such as high-energy physics,
  material science, and cosmology, very high data rate experiments impose
@@ -2014,7 +2063,7 @@ BraggHLS
 \family default
  performs this translation.
 \begin_inset listings
-lstparams "language=TeX,float,fontsize={\footnotesize},escapeinside={||},mathescape=true"
+lstparams "language=MuPAD,float,fontsize={\footnotesize},escapeinside={||},mathescape=true"
 inline false
 status open
 
@@ -2540,13 +2589,7 @@ reference "tab:scf-dialect-to"
 
 \end_inset
 
- for the translation rules from 
-\family typewriter
-\color blue
-scf
-\family default
-\color inherit
- dialect to python; with 
+ for the translation rules from MLIR dialects to python.
 \end_layout
 
 \begin_layout Standard
@@ -2565,10 +2608,16 @@ status open
 \begin_layout Plain Layout
 
 \family typewriter
-\color blue
 scf
 \family default
-\color inherit
+, 
+\family typewriter
+arith
+\family default
+, and 
+\family typewriter
+memref
+\family default
  dialect to python translation.
 \begin_inset CommandInset label
 LatexCommand label
@@ -2600,14 +2649,7 @@ name "tab:scf-dialect-to"
 \begin_inset Text
 
 \begin_layout Plain Layout
-
-\family typewriter
-\size small
-\color blue
-scf
-\family default
-\color inherit
- dialect
+MLIR
 \end_layout
 
 \end_inset

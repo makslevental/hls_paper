@@ -59,7 +59,6 @@ PATTERNS = {"DSP": "+", "BRAM": "x", "LUT": "o", "FF": "O"}
 
 def plot_metrics(sub_df, ax1, spacing=4, scale=10):
     i = 0
-    patterns = ["/", "\\", "|", "-", "+", "x", "o", "O", ".", "*"]
     for metric in ["DSP", "BRAM", "LUT", "FF"]:
         if metric not in dict(sub_df.index.values):
             continue
