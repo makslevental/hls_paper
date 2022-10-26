@@ -4,3 +4,4 @@ numpy
 Pygments
 pandocfilters
 panflute
+brokenaxes

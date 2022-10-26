@@ -3866,7 +3866,7 @@ status open
 \begin_layout Plain Layout
 
 \family typewriter
-braggnn
+batch_norm
 \end_layout
 
 \end_inset
