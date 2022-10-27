@@ -13,6 +13,8 @@
 \usepackage[dvipsnames]{xcolor}
 \definecolor{lgray}{rgb}{0.95, 0.95, 0.95}
 \usepackage{mathtools}
+\usepackage{supertabular,booktabs}
+\usepackage{longtable}
 \end_preamble
 \options conference
 \use_default_options false
@@ -249,7 +251,7 @@ status open
 \backslash
 renewcommand{
 \backslash
-MintedPygmentize}{/Users/mlevental/dev_projects/hls_paper/scripts/pygmentize.py}
+MintedPygmentize}{/home/mlevental/dev_projects/hls_paper/scripts/pygmentize.py}
 \end_layout
 
 \begin_layout Plain Layout
@@ -275,12 +277,127 @@ setminted{
 
 \begin_layout Plain Layout
 
-    bgcolor=bg
+    bgcolor=bg,
+\end_layout
+
+\begin_layout Plain Layout
+
+    escapeinside={||},
+\end_layout
+
+\begin_layout Plain Layout
+
+    mathescape=true
 \end_layout
 
 \begin_layout Plain Layout
 
 }
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+setmintedinline{breaklines}
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+AtBeginEnvironment{minted}{%
+\end_layout
+
+\begin_layout Plain Layout
+
+  
+\backslash
+catcode`?
+\backslash
+active
+\end_layout
+
+\begin_layout Plain Layout
+
+  
+\backslash
+begingroup
+\backslash
+lccode`~=`
+\backslash
+?
+\backslash
+lowercase{
+\backslash
+endgroup
+\backslash
+def~{
+\backslash
+linebreak}}%
+\end_layout
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+DeclareRobustCommand{
+\backslash
+perc}{{%
+\end_layout
+
+\begin_layout Plain Layout
+
+  
+\backslash
+mbox{%
+\end_layout
+
+\begin_layout Plain Layout
+
+    
+\backslash
+fontencoding{
+\backslash
+encodingdefault}%
+\end_layout
+
+\begin_layout Plain Layout
+
+    
+\backslash
+fontfamily{pcr}%
+\end_layout
+
+\begin_layout Plain Layout
+
+    
+\backslash
+selectfont
+\end_layout
+
+\begin_layout Plain Layout
+
+    
+\backslash
+symbol{`
+\backslash
+%}%
+\end_layout
+
+\begin_layout Plain Layout
+
+  }%
+\end_layout
+
+\begin_layout Plain Layout
+
+}}
 \end_layout
 
 \end_inset
@@ -450,18 +567,6 @@ literal "false"
 
 .
  Here we focus primarily on FPGAs.
-\begin_inset Note Comment
-status collapsed
-
-\begin_layout Plain Layout
-The reason for this is only FPGAs and ASICs are flexible enough to satisfy
- the latency constraints for a wide range of techniques.
- Note, in this work we focus exclusively on FPGAs.
-\end_layout
-
-\end_inset
-
-
 \end_layout
 
 \begin_layout Standard
@@ -725,7 +830,7 @@ literal "false"
  The highly optimized IR is then used to generate code for various target
  hardware platforms.
  Given the successes of these compilers, it's natural to wonder whether
- they can adapted to the task of sufficiently optimizing a DNN such that
+ they can be adapted to the task of sufficiently optimizing a DNN such that
  it might be synthesized to RTL, for deployment to FPGA.
 \end_layout
 
@@ -797,7 +902,7 @@ BraggNN
 \end_layout
 
 \begin_layout Enumerate
-We discuss some of the challanges faced even after successful synthesis
+We discuss some of the challenges faced even after successful synthesis
  of RTL from a high-level representation of a DNN, namely during the place
  and route phases of implementation.
 \end_layout
@@ -919,8 +1024,8 @@ PyTorch and TorchScript
 \end_layout
 
 \begin_layout Standard
-Typically DNN models are represented in terms high-level frameworks, themselves
- implemented within general purpose programming languages.
+Typically DNN models are represented in terms of high-level frameworks,
+ themselves implemented within general purpose programming languages.
  Such frameworks are widely used because of their ease of use and large
  library of example implementations of various DNN model architectures.
  
@@ -981,15 +1086,8 @@ literal "false"
 t (TS) IR and accompanying tracing mechanism (the TS JIT), which produces
  TS IR from conventionally defined PyTorch models.
  Lowering from PyTorch to TS IR enables various useful analyses and transformati
-ons on a DNN at the level of the high-level DFG (such as kernel fusion 
-\begin_inset CommandInset citation
-LatexCommand cite
-key "10.1145/2858788.2688521"
-literal "false"
-
-\end_inset
-
-) but targeting FPGAs requires a broader collection of transformations.
+ons on a DNN at the level of the high-level DFG but targeting FPGAs requires
+ a broader collection of transformations.
  To this end, we turn to a recent addition to the compiler ecosystem.
 \end_layout
 
@@ -1875,7 +1973,7 @@ behaviorally verified
  (see Section 
 \begin_inset CommandInset ref
 LatexCommand ref
-reference "subsec:AST-transformations-and"
+reference "subsec:Symbolic-execution-for"
 
 \end_inset
 
@@ -1981,7 +2079,7 @@ status collapsed
 \begin_layout Plain Layout
 \align center
 \begin_inset Graphics
-	filename ../figures/BraggHLS.pdf
+	filename figures/BraggHLS.pdf
 	width 70col%
 
 \end_inset
@@ -2063,7 +2161,7 @@ BraggHLS
 \family default
  performs this translation.
 \begin_inset listings
-lstparams "language=MuPAD,float,fontsize={\footnotesize},escapeinside={||},mathescape=true"
+lstparams "language=mlir,float,fontsize={\footnotesize},escapeinside={||},mathescape=true"
 inline false
 status open
 
@@ -2456,7 +2554,7 @@ status open
 \begin_layout Plain Layout
 \align center
 \begin_inset Graphics
-	filename /Users/mlevental/dev_projects/hls_paper/data/conv_unroll.pdf
+	filename figures/conv_unroll.pdf
 	width 100col%
 
 \end_inset
@@ -2471,7 +2569,30 @@ status open
 \begin_inset Formula $3\times3$
 \end_inset
 
--kernel convolution full unrolling time.
+-kernel convolution (cf.
+ Listing 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "lis:Single-filter-convolution-2-1"
+
+\end_inset
+
+) full unrolling time vs.
+ input (square) image size, with store-load forwarding using MLIR's 
+\family typewriter
+-affine-scalrep
+\family default
+ pass.
+ Note that the longest time is 
+\begin_inset Formula $577419\div3600\approx160$
+\end_inset
+
+ hours (for a loop nest with a trip count of 
+\begin_inset Formula $128\times128\times3\times3=147,456$
+\end_inset
+
+).
+ 
 \begin_inset CommandInset label
 LatexCommand label
 name "fig:-kernel-convolution-full"
@@ -2515,7 +2636,7 @@ symbolic interpreter
 \begin_layout Enumerate
 Partially evaluate functions of iteration variables, such as 
 \begin_inset listings
-lstparams "language=MuPAD"
+lstparams "language=mlir"
 inline true
 status open
 
@@ -2529,7 +2650,7 @@ status open
 , which enables concretely determining array index operands of all stores
  and loads, such as 
 \begin_inset listings
-lstparams "language=MuPAD,fontsize={\small}"
+lstparams "language=mlir,fontsize={\small}"
 inline true
 status open
 
@@ -2601,6 +2722,7 @@ sideways false
 status open
 
 \begin_layout Plain Layout
+\align center
 
 \size scriptsize
 \begin_inset Caption Standard
@@ -2631,33 +2753,19 @@ name "tab:scf-dialect-to"
 \end_inset
 
 
-\end_layout
-
-\begin_layout Plain Layout
-\paragraph_spacing double
-\align center
-
-\size small
 \begin_inset Tabular
-<lyxtabular version="3" rows="14" columns="3">
+<lyxtabular version="3" rows="11" columns="2">
 <features booktabs="true" tabularvalignment="middle">
-<column alignment="left" valignment="top">
-<column alignment="left" valignment="top">
+<column alignment="left" valignment="top" width="0pt">
 <column alignment="left" valignment="top">
 <row>
 <cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
-MLIR
-\end_layout
-
+\begin_inset Formula $\left\llbracket \texttt{MLIR}\right\rrbracket $
 \end_inset
-</cell>
-<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
-\begin_inset Text
 
-\begin_layout Plain Layout
 
 \end_layout
 
@@ -2675,64 +2783,27 @@ python
 \end_inset
 </cell>
 </row>
-<row>
-<cell alignment="left" valignment="top" leftline="true" usebox="none">
+<row interlinespace="1mm">
+<cell alignment="left" valignment="top" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=mlir"
+inline true
+status open
 
-\size small
-\begin_inset Formula $\left\llbracket \texttt{\%5}\right\rrbracket $
-\end_inset
+\begin_layout Plain Layout
 
-
+|$
+\backslash
+llbracket$|%5|$
+\backslash
+rrbracket$|
 \end_layout
 
 \end_inset
-</cell>
-<cell alignment="left" valignment="top" leftline="true" usebox="none">
-\begin_inset Text
 
-\begin_layout Plain Layout
-
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="left" valignment="top" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-
-\size small
-\begin_inset Formula $\texttt{v5 = Val("\%5")}$
-\end_inset
-
-
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="left" valignment="top" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-
-\size small
-\begin_inset Formula $\left\llbracket \texttt{memref<}b\times c_{in}\times h\times w\texttt{>}\right\rrbracket $
-\end_inset
-
-
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="left" valignment="top" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
 
 \end_layout
 
@@ -2742,9 +2813,16 @@ python
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python"
+inline true
+status open
 
-\size small
-\begin_inset Formula $\texttt{MemRef(\ensuremath{b}, c_{in}, \ensuremath{h}, \ensuremath{w})}$
+\begin_layout Plain Layout
+
+v5 = Val("%5")
+\end_layout
+
 \end_inset
 
 
@@ -2753,25 +2831,33 @@ python
 \end_inset
 </cell>
 </row>
-<row>
-<cell alignment="left" valignment="top" leftline="true" usebox="none">
+<row interlinespace="1mm">
+<cell alignment="left" valignment="top" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=mlir"
+inline true
+status open
 
-\size small
-\begin_inset Formula $\left\llbracket \texttt{\%5 = memref.load \%input[\%i1, \%i5, \%3, \%4]}\right\rrbracket $
-\end_inset
+\begin_layout Plain Layout
 
-
+|$
+\backslash
+llbracket$|memref<|$b
+\backslash
+times c_{in}
+\backslash
+times h
+\backslash
+times w$|>|$
+\backslash
+rrbracket$|
 \end_layout
 
 \end_inset
-</cell>
-<cell alignment="left" valignment="top" leftline="true" usebox="none">
-\begin_inset Text
 
-\begin_layout Plain Layout
 
 \end_layout
 
@@ -2781,9 +2867,16 @@ python
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python"
+inline true
+status open
 
-\size small
-\begin_inset Formula $\texttt{\left\llbracket \texttt{\%5}\right\rrbracket = \left\llbracket \texttt{\%input}\right\rrbracket .\_\_getitem\_\_((\left\llbracket \texttt{\%i1}\right\rrbracket , \left\llbracket \texttt{\%i5}\right\rrbracket , \left\llbracket \texttt{\%3}\right\rrbracket , \left\llbracket \texttt{\%4}\right\rrbracket ))}$
+\begin_layout Plain Layout
+
+MemRef(|$b$|, |$c_{in}$|, |$h$|, |$w$|)
+\end_layout
+
 \end_inset
 
 
@@ -2792,25 +2885,29 @@ python
 \end_inset
 </cell>
 </row>
-<row>
-<cell alignment="left" valignment="top" leftline="true" usebox="none">
+<row interlinespace="1mm">
+<cell alignment="left" valignment="top" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=mlir"
+inline true
+status open
 
-\size small
-\begin_inset Formula $\left\llbracket \texttt{memref.store \%9, \%output[\%i1, \%i5, \%3, \%4]}\right\rrbracket $
-\end_inset
+\begin_layout Plain Layout
 
-
+|$
+\backslash
+llbracket$||$
+\backslash
+perc$|5 = memref.load %input[%i1, %i5, %3, %4]|$
+\backslash
+rrbracket$|
 \end_layout
 
 \end_inset
-</cell>
-<cell alignment="left" valignment="top" leftline="true" usebox="none">
-\begin_inset Text
 
-\begin_layout Plain Layout
 
 \end_layout
 
@@ -2820,9 +2917,40 @@ python
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python"
+inline true
+status open
 
-\size small
-\begin_inset Formula $\texttt{\left\llbracket \texttt{\%output}\right\rrbracket .\_\_setitem\_\_((\left\llbracket \texttt{\%i1}\right\rrbracket , \left\llbracket \texttt{\%i5}\right\rrbracket , \left\llbracket \texttt{\%3}\right\rrbracket , \left\llbracket \texttt{\%4}\right\rrbracket ), \left\llbracket \texttt{\%9}\right\rrbracket )}$
+\begin_layout Plain Layout
+
+|$
+\backslash
+llbracket$|%5|$
+\backslash
+rrbracket$| = |$
+\backslash
+llbracket$|%input|$
+\backslash
+rrbracket$|.__getitem__((|$
+\backslash
+llbracket$|%i1|$
+\backslash
+rrbracket$|, |$
+\backslash
+llbracket$|%i5|$
+\backslash
+rrbracket$|, |$
+\backslash
+llbracket$|%3|$
+\backslash
+rrbracket$|, |$
+\backslash
+llbracket$|%4|$
+\backslash
+rrbracket$|))
+\end_layout
+
 \end_inset
 
 
@@ -2831,25 +2959,27 @@ python
 \end_inset
 </cell>
 </row>
-<row>
-<cell alignment="left" valignment="top" leftline="true" usebox="none">
+<row interlinespace="1mm">
+<cell alignment="left" valignment="top" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=mlir"
+inline true
+status open
 
-\size small
-\begin_inset Formula $\left\llbracket \texttt{scf.for \%i1 = \%c0 to }b\texttt{ step \%c1}\right\rrbracket $
-\end_inset
+\begin_layout Plain Layout
 
-
+|$
+\backslash
+llbracket$| memref.store %9, %output[%i1, %i5, %3, %4]|$
+\backslash
+rrbracket$|
 \end_layout
 
 \end_inset
-</cell>
-<cell alignment="left" valignment="top" leftline="true" usebox="none">
-\begin_inset Text
 
-\begin_layout Plain Layout
 
 \end_layout
 
@@ -2859,9 +2989,40 @@ python
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python"
+inline true
+status open
 
-\size small
-\begin_inset Formula $\texttt{for \left\llbracket \texttt{\%iv1}\right\rrbracket in range(\left\llbracket \texttt{\%c0}\right\rrbracket , }b\texttt{, \left\llbracket \texttt{\%c1}\right\rrbracket )}$
+\begin_layout Plain Layout
+
+|$
+\backslash
+llbracket$|%output|$
+\backslash
+rrbracket$|.__getitem__((|$
+\backslash
+llbracket$|%i1|$
+\backslash
+rrbracket$|, |$
+\backslash
+llbracket$|%i5|$
+\backslash
+rrbracket$|, |$
+\backslash
+llbracket$|%3|$
+\backslash
+rrbracket$|, |$
+\backslash
+llbracket$|%4|$
+\backslash
+rrbracket$|), |$
+\backslash
+llbracket$|%9|$
+\backslash
+rrbracket$|)
+\end_layout
+
 \end_inset
 
 
@@ -2870,25 +3031,27 @@ python
 \end_inset
 </cell>
 </row>
-<row>
-<cell alignment="left" valignment="top" leftline="true" usebox="none">
+<row interlinespace="1mm">
+<cell alignment="left" valignment="top" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=mlir"
+inline true
+status open
 
-\size small
-\begin_inset Formula $\left\llbracket \texttt{\%3 = arith.addi \%i3, \%i6}\right\rrbracket $
-\end_inset
+\begin_layout Plain Layout
 
-
+|$
+\backslash
+llbracket$| scf.for %i1 = %c0 to |$b$| step %c1|$
+\backslash
+rrbracket$|
 \end_layout
 
 \end_inset
-</cell>
-<cell alignment="left" valignment="top" leftline="true" usebox="none">
-\begin_inset Text
 
-\begin_layout Plain Layout
 
 \end_layout
 
@@ -2898,9 +3061,28 @@ python
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python"
+inline true
+status open
 
-\size small
-\begin_inset Formula $\texttt{\texttt{\left\llbracket \texttt{\%3}\right\rrbracket = \left\llbracket \texttt{\%i3}\right\rrbracket + \left\llbracket \texttt{\%i6}\right\rrbracket }}$
+\begin_layout Plain Layout
+
+for |$
+\backslash
+llbracket$|%i1|$
+\backslash
+rrbracket$| in range(|$
+\backslash
+llbracket$|%c0|$
+\backslash
+rrbracket$|, |$b$|, |$
+\backslash
+llbracket$|%c1|$
+\backslash
+rrbracket$|)
+\end_layout
+
 \end_inset
 
 
@@ -2909,25 +3091,29 @@ python
 \end_inset
 </cell>
 </row>
-<row>
-<cell alignment="left" valignment="top" leftline="true" usebox="none">
+<row interlinespace="1mm">
+<cell alignment="left" valignment="top" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=mlir"
+inline true
+status open
 
-\size small
-\begin_inset Formula $\left\llbracket \texttt{\%8 = arith.mulf \%5, \%6}\right\rrbracket $
-\end_inset
+\begin_layout Plain Layout
 
-
+|$
+\backslash
+llbracket$||$
+\backslash
+perc$|3 = arith.addi %i3, %i6|$
+\backslash
+rrbracket$|
 \end_layout
 
 \end_inset
-</cell>
-<cell alignment="left" valignment="top" leftline="true" usebox="none">
-\begin_inset Text
 
-\begin_layout Plain Layout
 
 \end_layout
 
@@ -2937,9 +3123,28 @@ python
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python"
+inline true
+status open
 
-\size small
-\begin_inset Formula $\texttt{\texttt{\left\llbracket \texttt{\%8}\right\rrbracket = \left\llbracket \texttt{\%5}\right\rrbracket .\_\_mul\_\_(\left\llbracket \texttt{\%6}\right\rrbracket })}$
+\begin_layout Plain Layout
+
+|$
+\backslash
+llbracket$|%3|$
+\backslash
+rrbracket$| = |$
+\backslash
+llbracket$|%i3|$
+\backslash
+rrbracket$| + |$
+\backslash
+llbracket$|%i6|$
+\backslash
+rrbracket$|
+\end_layout
+
 \end_inset
 
 
@@ -2948,25 +3153,29 @@ python
 \end_inset
 </cell>
 </row>
-<row>
-<cell alignment="left" valignment="top" leftline="true" usebox="none">
+<row interlinespace="1mm">
+<cell alignment="left" valignment="top" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=mlir"
+inline true
+status open
 
-\size small
-\begin_inset Formula $\left\llbracket \texttt{\%9 = arith.addf \%7, \%8}\right\rrbracket $
-\end_inset
+\begin_layout Plain Layout
 
-
+|$
+\backslash
+llbracket$||$
+\backslash
+perc$|8 = arith.mulf %5, %6|$
+\backslash
+rrbracket$|
 \end_layout
 
 \end_inset
-</cell>
-<cell alignment="left" valignment="top" leftline="true" usebox="none">
-\begin_inset Text
 
-\begin_layout Plain Layout
 
 \end_layout
 
@@ -2976,9 +3185,28 @@ python
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python"
+inline true
+status open
 
-\size small
-\begin_inset Formula $\texttt{\texttt{\left\llbracket \texttt{\%9}\right\rrbracket = \left\llbracket \texttt{\%7}\right\rrbracket .\_\_add\_\_(\left\llbracket \texttt{\%8}\right\rrbracket )}}$
+\begin_layout Plain Layout
+
+|$
+\backslash
+llbracket$|%8|$
+\backslash
+rrbracket$| = |$
+\backslash
+llbracket$|%5|$
+\backslash
+rrbracket$|.__mul__(|$
+\backslash
+llbracket$|%6|$
+\backslash
+rrbracket$|)
+\end_layout
+
 \end_inset
 
 
@@ -2987,12 +3215,27 @@ python
 \end_inset
 </cell>
 </row>
-<row>
-<cell alignment="center" valignment="top" usebox="none">
+<row interlinespace="1mm">
+<cell alignment="left" valignment="top" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
-\begin_inset VSpace -15pt
+\begin_inset listings
+lstparams "language=mlir"
+inline true
+status open
+
+\begin_layout Plain Layout
+
+|$
+\backslash
+llbracket$||$
+\backslash
+perc$|9 = arith.addf %7, %8|$
+\backslash
+rrbracket$|
+\end_layout
+
 \end_inset
 
 
@@ -3000,16 +3243,149 @@ python
 
 \end_inset
 </cell>
-<cell alignment="center" valignment="top" usebox="none">
+<cell alignment="left" valignment="top" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python"
+inline true
+status open
+
+\begin_layout Plain Layout
+
+|$
+\backslash
+llbracket$|%9|$
+\backslash
+rrbracket$| = |$
+\backslash
+llbracket$|%7|$
+\backslash
+rrbracket$|.__add__(|$
+\backslash
+llbracket$|%8|$
+\backslash
+rrbracket$|)
+\end_layout
+
+\end_inset
+
 
 \end_layout
 
 \end_inset
 </cell>
-<cell alignment="center" valignment="top" usebox="none">
+</row>
+<row interlinespace="1mm">
+<cell multicolumn="1" alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Tabular
+<lyxtabular version="3" rows="2" columns="2">
+<features tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<row interlinespace="1mm">
+<cell multicolumn="1" alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=mlir"
+inline true
+status open
+
+\begin_layout Plain Layout
+
+|$
+\backslash
+llbracket$||$
+\backslash
+perc$|63 = arith.cmpfugt |$
+\backslash
+perc$|10, |$
+\backslash
+perc$|c0|$
+\backslash
+rrbracket$|
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell multicolumn="1" alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=mlir"
+inline true
+status open
+
+\begin_layout Plain Layout
+
+|$
+\backslash
+llbracket$||$
+\backslash
+perc$|63 = arith.cmpfugt |$
+\backslash
+perc$|10, |$
+\backslash
+perc$|c0|$
+\backslash
+rrbracket$|
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row topspace="1mm">
+<cell multicolumn="1" alignment="center" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python"
+inline true
+status open
+
+\begin_layout Plain Layout
+
+|$
+\backslash
+llbracket$||$
+\backslash
+perc$|64|$
+\backslash
+rrbracket$|.relu(|$
+\backslash
+llbracket$||$
+\backslash
+perc$|10|$
+\backslash
+rrbracket$|)
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell multicolumn="2" alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
@@ -3019,17 +3395,8 @@ python
 \end_inset
 </cell>
 </row>
-<row>
-<cell alignment="center" valignment="top" usebox="none">
-\begin_inset Text
+</lyxtabular>
 
-\begin_layout Plain Layout
-
-\size small
-\begin_inset Formula $\left\llbracket \begin{array}{c}
-\texttt{\%63 = arith.cmpfugt \%10, \%c0}\\
-\texttt{\%64 = arith.select \%63, \%c0\,\,}
-\end{array}\right\rrbracket $
 \end_inset
 
 
@@ -3037,53 +3404,7 @@ python
 
 \end_inset
 </cell>
-<cell alignment="center" valignment="top" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-
-\size small
-\begin_inset Formula $\texttt{\texttt{\left\llbracket \texttt{\%64}\right\rrbracket = \left\llbracket \texttt{\%10}\right\rrbracket .relu()}}$
-\end_inset
-
-
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-\begin_inset VSpace -10pt
-\end_inset
-
-
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" usebox="none">
+<cell multicolumn="2" alignment="center" valignment="top" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
@@ -3093,17 +3414,41 @@ python
 \end_inset
 </cell>
 </row>
-<row>
-<cell alignment="center" valignment="top" usebox="none">
+<row interlinespace="1mm">
+<cell multicolumn="1" alignment="center" valignment="top" bottomline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset Tabular
+<lyxtabular version="3" rows="2" columns="2">
+<features tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<row interlinespace="1mm">
+<cell multicolumn="1" alignment="center" valignment="top" usebox="none">
+\begin_inset Text
 
-\size small
-\begin_inset Formula $\left\llbracket \begin{array}{c}
-\texttt{\texttt{\%8 = arith.mulf \%5, \%6}}\\
-\texttt{\%9 = arith.addf \%7, \%8}
-\end{array}\right\rrbracket $
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=mlir"
+inline true
+status open
+
+\begin_layout Plain Layout
+
+|$
+\backslash
+llbracket$||$
+\backslash
+perc$|8 = arith.mulf |$
+\backslash
+perc$|5, |$
+\backslash
+perc$|6|$
+\backslash
+rrbracket$|
+\end_layout
+
 \end_inset
 
 
@@ -3111,22 +3456,30 @@ python
 
 \end_inset
 </cell>
-<cell alignment="center" valignment="top" usebox="none">
+<cell multicolumn="1" alignment="center" valignment="top" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=mlir"
+inline true
+status open
 
+\begin_layout Plain Layout
+
+|$
+\backslash
+llbracket$||$
+\backslash
+perc$|9 = arith.addf |$
+\backslash
+perc$|7, |$
+\backslash
+perc$|8|$
+\backslash
+rrbracket$|
 \end_layout
 
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-
-\size small
-\begin_inset Formula $\texttt{\texttt{\left\llbracket \texttt{\%9}\right\rrbracket = fma(\left\llbracket \texttt{\%5}\right\rrbracket , \left\llbracket \texttt{\%6}\right\rrbracket , \left\llbracket \texttt{\%7}\right\rrbracket )}}$
 \end_inset
 
 
@@ -3135,12 +3488,45 @@ python
 \end_inset
 </cell>
 </row>
-<row>
-<cell alignment="center" valignment="top" bottomline="true" usebox="none">
+<row topspace="1mm">
+<cell multicolumn="1" alignment="center" valignment="top" topline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
-\begin_inset VSpace -10pt
+\begin_inset listings
+lstparams "language=Python"
+inline true
+status open
+
+\begin_layout Plain Layout
+
+|$
+\backslash
+llbracket$||$
+\backslash
+perc$|9|$
+\backslash
+rrbracket$| = fma(|$
+\backslash
+llbracket$||$
+\backslash
+perc$|5|$
+\backslash
+rrbracket$|, |$
+\backslash
+llbracket$||$
+\backslash
+perc$|6|$
+\backslash
+rrbracket$|, |$
+\backslash
+llbracket$||$
+\backslash
+perc$|7|$
+\backslash
+rrbracket$|)
+\end_layout
+
 \end_inset
 
 
@@ -3148,7 +3534,7 @@ python
 
 \end_inset
 </cell>
-<cell alignment="center" valignment="top" bottomline="true" usebox="none">
+<cell multicolumn="2" alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
@@ -3157,7 +3543,17 @@ python
 
 \end_inset
 </cell>
-<cell alignment="center" valignment="top" bottomline="true" usebox="none">
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell multicolumn="2" alignment="center" valignment="top" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
@@ -3195,7 +3591,7 @@ name "subsec:AST-transformations-and-1"
 \end_layout
 
 \begin_layout Standard
-Prior to intepretation, 
+Prior to interpretation, 
 \family typewriter
 BraggHLS
 \family default
@@ -3347,7 +3743,7 @@ BraggHLS
 \family typewriter
 BraggHLS
 \family default
-, can generate testbenches for all synthesized RTL.
+ can generate testbenches for all synthesized RTL.
  The test vectors for these testbenches are generated by evaluating the
  generated python representation of the DNN on randomly generated inputs
  but with floating-point operations now evaluated using functional models
@@ -3550,7 +3946,7 @@ where
  variables.
  
 \begin_inset listings
-lstparams "language=MuPAD,float,fontsize={\footnotesize},escapeinside={||},mathescape=true"
+lstparams "language=mlir,float,fontsize={\scriptsize},escapeinside={||},mathescape=true"
 inline false
 status collapsed
 
@@ -3827,14 +4223,136 @@ name "sec:Evaluation"
 \begin_layout Standard
 We evaluate 
 \family typewriter
-BraggHLS both
+BraggHLS
 \family default
- on individual DNN kernels (i.e., layers) and end-to-end, on our use-case
- 
+ both on individual DNN layers, and end-to-end, on our use-case 
 \family typewriter
 BraggNN
 \family default
 .
+ We compare 
+\family typewriter
+BraggHLS
+\family default
+ to Xilinx's Vitis HLS by comparing the latencies and resource usages of
+ the final designs generated by each.
+ We also compare the runtimes of the tools themselves.
+ Both 
+\family typewriter
+BraggHLS
+\family default
+ and Vitis HLS produce Verilog RTL, on which we run a synthesis pass using
+ Xilinx's Vivado.
+ The particular FPGA target is Xilinx Alveo U280.
+ We measure LUT, DSP, BRAM, and FF usage.
+ For the DNN layer evaluations, we use FloPoCo 
+\begin_inset Formula $\left(5,11\right)$
+\end_inset
+
+-floating point representations (5 bits for the exponent and 11 bits for
+ the mantissa) corresponding to Vitis HLS's IEEE half precision IPs.
+ We synthesize all designs for a 10 ns target clock period and report end-to-end
+ latency as a product of the total schedule interval count of the design
+ and achieved clock period (
+\begin_inset Formula $10-WNS$
+\end_inset
+
+, where 
+\begin_inset Formula $WNS$
+\end_inset
+
+ is the worst negative slack reported).
+ Note, in the case of Vitis HLS, which potentially explicitly pipelines
+ the design and therefore implements with an initiation interval strictly
+ less than the total schedule interval count, we report the best possible
+ interval count (
+\family typewriter
+LatencyBest
+\family default
+ from the Vitis HLS reports).
+ All other measurements are collected from Vivado synthesis reports.
+ Note, since Vitis HLS operates on C++ representations, we generate such
+ a representation for our test cases by first lowering each to the 
+\family typewriter
+affine
+\family default
+ dialect and then using the 
+\family typewriter
+scalehls-translate
+\family default
+ tool of the ScaleHLS project 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "yehpca2022scalehls"
+literal "false"
+
+\end_inset
+
+ to emit C++.
+ Note further, we do not make any use of 
+\family typewriter
+scalehls-opt
+\family default
+ tool (of the same project).
+ 
+\end_layout
+
+\begin_layout Standard
+Since our ultimate goal is low latency inference, and since the strategy
+ that 
+\family typewriter
+BraggHLS
+\family default
+ employs in the pursuit of this goal is loop unrolling, in order to produce
+ a like for like comparison, we similarly unroll the representation that's
+ passed to Vitis HLS.
+ Thus, all Vitis HLS measurements are reported in terms of 
+\emph on
+unroll factor
+\emph default
+: an unroll factor of 
+\begin_inset Formula $k$
+\end_inset
+
+ corresponds to a 
+\begin_inset Formula $k$
+\end_inset
+
+-fold increase in the number of statements in the body of a loop and commensurat
+e 
+\begin_inset Formula $k$
+\end_inset
+
+-fold decrease in the trip count of the loop.
+ For loop nests we unroll inside out: if 
+\begin_inset Formula $k$
+\end_inset
+
+ is greater than the trip count 
+\begin_inset Formula $t$
+\end_inset
+
+ of the innermost loop, we unroll the innermost loop completely and then
+ unroll the enclosing loop by a factor of 
+\begin_inset Formula $k-t$
+\end_inset
+
+.
+ We do not perform any store-load forwarding during this preprocessing but
+ we annotate all arrays with the directive 
+\begin_inset listings
+lstparams "language=TeX"
+inline true
+status open
+
+\begin_layout Plain Layout
+
+array_partition complete dim=1
+\end_layout
+
+\end_inset
+
+ in order that Vitis HLS can effectively pipeline.
 \end_layout
 
 \begin_layout Subsection
@@ -3842,8 +4360,457 @@ DNN layers
 \end_layout
 
 \begin_layout Standard
-asdasd
+See Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Resource-usage-and"
+
+\end_inset
+
+; we evaluate 
+\family typewriter
+BraggHLS
+\family default
+ against Xilinx's Vitis HLS by comparing the latency of the final design
+ on the following, individual, DNN layer types:
+\end_layout
+
+\begin_layout Itemize
+\begin_inset listings
+lstparams "language=Python"
+inline true
+status open
+
+\begin_layout Plain Layout
+
+addmm(a, b, c)
+\end_layout
+
+\end_inset
+
+: Matrix multiplication of the matrices 
+\family typewriter
+a
+\family default
+ and 
+\family typewriter
+b
+\family default
+.
+ The matrix 
+\family typewriter
+c
+\family default
+ is added to the final result;
+\end_layout
+
+\begin_layout Itemize
+\begin_inset listings
+lstparams "language=Python"
+inline true
+status open
+
+\begin_layout Plain Layout
+
+batch_norm_2d(num_features)
+\end_layout
+
+\end_inset
+
+: Batch Normalization over a 4D input as described in 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "https://doi.org/10.48550/arxiv.1502.03167"
+literal "false"
+
+\end_inset
+
+;
+\end_layout
+
+\begin_layout Itemize
+\begin_inset listings
+lstparams "language=Python"
+inline true
+status open
+
+\begin_layout Plain Layout
+
+conv_2d(|$c_{in}$|, |$c_{out}$|, |$k$|)
+\end_layout
+
+\end_inset
+
+: 2D convolution with bias, with 
+\begin_inset Formula $k\times k$
+\end_inset
+
+ kernel, over a 
+\begin_inset Formula $b\times c_{in}\times h\times w$
+\end_inset
+
+ input, producing 
+\begin_inset Formula $b\times c_{out}\times h'\times w'$
+\end_inset
+
+ output;
+\end_layout
+
+\begin_layout Itemize
+\begin_inset listings
+lstparams "language=Python"
+inline true
+status open
+
+\begin_layout Plain Layout
+
+max_pool_2d(|$k$|, stride)
+\end_layout
+
+\end_inset
+
+: 2D max pooling, with 
+\begin_inset Formula $k\times k$
+\end_inset
+
+ kernel, and striding;
+\end_layout
+
+\begin_layout Itemize
+\begin_inset listings
+lstparams "language=Python"
+inline true
+status open
+
+\begin_layout Plain Layout
+
+soft_max
+\end_layout
+
+\end_inset
+
+: The Softmax function.
+\end_layout
+
+\begin_layout Standard
+The layers were chosen to cover a range of arithmetic operations and data
+ access patterns, i.e., iteration, accumulation, and reduction.
+ The concrete parameter values and dimensions of inputs used during evaluation
+ are summarized in Table 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "tab:Resource-usage-for-2"
+
+\end_inset
+
+.
+\begin_inset Float table
+wide true
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+DNN layers used for evaluation of 
+\family typewriter
+BraggHLS.
+
+\family default
+ 
+\begin_inset CommandInset label
+LatexCommand label
+name "tab:Resource-usage-for-2"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Tabular
+<lyxtabular version="3" rows="6" columns="3">
+<features booktabs="true" tabularvalignment="middle">
+<column alignment="left" valignment="top">
+<column alignment="left" valignment="top">
+<column alignment="left" valignment="top">
+<row>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Layer
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Parameter values
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Input dimensions
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python"
+inline true
+status open
+
+\begin_layout Plain Layout
+
+addmm
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+N/A
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\dim\left(\texttt{a}\right)=\dim\left(\texttt{b}\right)=\dim\left(\texttt{c}\right)=\left(16,16\right)$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python"
+inline true
+status open
+
+\begin_layout Plain Layout
+
+batch_norm_2d
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\texttt{num\_features}=2$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\dim\left(\texttt{input}\right)=\left(10,2,3,3\right)$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python"
+inline true
+status open
+
+\begin_layout Plain Layout
+
+conv_2d
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $c_{in}=1,c_{out}=3,k=3$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\dim\left(\texttt{input}\right)=\left(1,1,16,16\right)$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python"
+inline true
+status open
+
+\begin_layout Plain Layout
+
+max_pool_2d
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $k=3,\texttt{stride}=2$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\dim\left(\texttt{input}\right)=\left(1,3,16,16\right)$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python"
+inline true
+status open
+
+\begin_layout Plain Layout
+
+soft_max
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+N/A
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\dim\left(\texttt{input}\right)=\left(1,3,16,16\right)$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
 \begin_inset Float figure
+placement !t
 wide true
 sideways false
 status open
@@ -3858,7 +4825,7 @@ status open
 \begin_layout Plain Layout
 \align center
 \begin_inset Graphics
-	filename ../figures/addmm.pdf
+	filename figures/addmm.pdf
 	lyxscale 50
 	width 100col%
 
@@ -3896,7 +4863,7 @@ status open
 \begin_layout Plain Layout
 \align center
 \begin_inset Graphics
-	filename ../figures/batch_norm.pdf
+	filename figures/batch_norm.pdf
 	lyxscale 50
 	width 100col%
 
@@ -3908,7 +4875,7 @@ status open
 \begin_layout Plain Layout
 
 \family typewriter
-batch_norm
+batch_norm_2d
 \end_layout
 
 \end_inset
@@ -3952,7 +4919,7 @@ status open
 \begin_layout Plain Layout
 \align center
 \begin_inset Graphics
-	filename ../figures/conv.pdf
+	filename figures/conv.pdf
 	lyxscale 50
 	width 100col%
 
@@ -3964,7 +4931,7 @@ status open
 \begin_layout Plain Layout
 
 \family typewriter
-conv
+conv_2d
 \end_layout
 
 \end_inset
@@ -3990,7 +4957,7 @@ status open
 \begin_layout Plain Layout
 \align center
 \begin_inset Graphics
-	filename ../figures/max_pool_2d.pdf
+	filename figures/max_pool_2d.pdf
 	lyxscale 50
 	width 100col%
 
@@ -4020,11 +4987,70 @@ name "2dlattice-1-2-1-1"
 \end_inset
 
 
+\begin_inset VSpace defskip
+\end_inset
+
+
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename figures/soft_max.pdf
+	lyxscale 50
+	width 100col%
+
+\end_inset
+
+
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Resource usage and latency vs.
+
+\family typewriter
+soft_max
+\end_layout
+
+\end_inset
+
+
+\begin_inset CommandInset label
+LatexCommand label
+name "2dlattice-1-2-1-1-1"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Vitis HLS vs.
+ 
+\family typewriter
+BraggHLS
+\family default
+ resource usage and latency vs.
  unroll factor of various DNN modules.
+ All 
+\begin_inset Formula $y$
+\end_inset
+
+-scales are log.
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Resource-usage-and"
+
+\end_inset
+
+
 \end_layout
 
 \end_inset
@@ -4038,12 +5064,12 @@ Resource usage and latency vs.
 \begin_inset Float figure
 wide true
 sideways false
-status collapsed
+status open
 
 \begin_layout Plain Layout
 \align center
 \begin_inset Graphics
-	filename ../figures/elapsed_time.pdf
+	filename figures/elapsed_time.pdf
 	lyxscale 50
 	width 100col%
 
@@ -4055,6 +5081,73 @@ status collapsed
 \begin_layout Plain Layout
 Runtime of Vitis HLS vs.
  unroll factor.
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Runtime-of-Vitisa"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+We observe that Vitis HLS indeed approaches lower and lower end-to-end latencies
+ as a function of unroll factor but that for none of the unroll factors
+ is it able to match the end-to-end latency achieved by 
+\family typewriter
+BraggHLS
+\family default
+.
+ Even at unroll factor equal to 1024 (which corresponds to fully unrolled
+ for all of the loop nests comprising these layer types), Vitis HLS is only
+ within 10
+\begin_inset Formula $\times$
+\end_inset
+
+ of 
+\family typewriter
+BraggHLS
+\family default
+.
+ We hypothesize that in general this is due to Vitis HLS's inability to
+ effectively pipeline due to inability to eliminate memory dependencies,
+ either through store-load forwarding or further array partitioning
+\begin_inset Foot
+status collapsed
+
+\begin_layout Plain Layout
+Indeed Vitis HLS can be seen to produce warnings such as 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+colorbox{bg}{
+\backslash
+parbox{
+\backslash
+columnwidth}{
+\backslash
+texttt{WARNING: [HLS 200-885] Unable to schedule 'load' operation ...
+\end_layout
+
+\begin_layout Plain Layout
+
+due to limited memory ports (II = 1).
+ Please consider using a memory core with more ports or partitioning the
+ array ...}}}
 \end_layout
 
 \end_inset
@@ -4064,6 +5157,40 @@ Runtime of Vitis HLS vs.
 
 \end_inset
 
+.
+ Conversely, 
+\family typewriter
+BraggHLS
+\family default
+'s ability to effectively perform store-load forwarding is evident in the
+ complete lack of BRAM usage: all weights are kept on FFs or LUTs.
+ While this is infeasible for larger designs (which would be constrained
+ by the number of available FFs), for our particular use case, this unconstraine
+d usage of FFs is acceptable.
+ Note, the increasing latency (as a function of unroll factor) in the case
+ of 
+\family typewriter
+max_pool_2d
+\family default
+ is due to Vitis HLS's failure to meet timing, i.e., while the interval count
+ is decreased in the clock period is increasing (see Appendix Table 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ref{tab:all_unrolls}
+\end_layout
+
+\end_inset
+
+ for exact values).
+ 
+\end_layout
+
+\begin_layout Standard
 
 \end_layout
 
@@ -4083,9 +5210,6 @@ name "sec:BraggNN-case-study"
 \end_layout
 
 \begin_layout Standard
-TODO: put the comparison to both the dataflow pipelined numbers and the
- fully unrolled numbers for braggnn here (save the other eval section for
- just ops).
 \begin_inset Float figure
 wide false
 sideways false
@@ -4094,7 +5218,7 @@ status open
 \begin_layout Plain Layout
 \align center
 \begin_inset Graphics
-	filename ../figures/braggnn.pdf
+	filename figures/braggnn.pdf
 	lyxscale 50
 	width 100col%
 
@@ -4106,7 +5230,24 @@ status open
 \begin_layout Plain Layout
 
 \family typewriter
-braggnn
+BraggNN
+\family default
+ Vitis HLS vs.
+ 
+\family typewriter
+BraggHLS
+\family default
+ resource usage and latency vs.
+ unroll factor.
+\family typewriter
+
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:braggnn"
+
+\end_inset
+
+
 \end_layout
 
 \end_inset
@@ -4124,8 +5265,8 @@ High-energy diffraction microscopy techniques can provide non-destructive
  characterization for a broad class of single-crystal and polycrystalline
  materials.
  The critical steps in a typical HEDM experiment involve an analysis to
- determine precise Bragg diffraction peak characteristics (and reconstruction
- of material grain information from the peak characteristics).
+ determine precise Bragg diffraction peak characteristics (followed by reconstru
+ction of material grain information from the peak characteristics).
  Peak characteristics are typically computed by fitting the peaks to a probabili
 ty distribution, e.g., Gaussian, Lorentzian, Voigt, or Pseudo-Voigt.
  As already mentioned (in Section 
@@ -4135,25 +5276,26 @@ reference "sec:Introduction"
 
 \end_inset
 
-) the experiments can have collection rates of 80 GB/s.
- The data rates, though more modest than those observed at the LHC, combined
+) these experiments can have collection rates in excess of 80 GB/s.
+ These data rates, though more modest than those observed at the LHC, combined
  with the runtime of the fitting procedure, merit exploring the same low
- latency approach in order to enable experimental modalities that depend
- on measurement-based feedback (i.e., experiment steering).
+ latency approach (as explored employed by LHC experiments) in order to
+ enable experiment modalities that depend on measurement-based feedback
+ (i.e., experiment steering).
  
 \begin_inset listings
-lstparams "language=Python,float,fontsize={\footnotesize},escapeinside={||},mathescape=true"
+lstparams "language=Python,float,fontsize={\scriptsize},escapeinside={||},mathescape=true"
 inline false
-status collapsed
+status open
 
 \begin_layout Plain Layout
 
-BraggNN(
+BraggNN(|$s$|)(
 \end_layout
 
 \begin_layout Plain Layout
 
-  (cnn_layers_1): Conv2d(|$k 
+  (cnn_layers_1): Conv2d(|$s 
 \backslash
 times 16 $|, kernel=3, stride=1)
 \end_layout
@@ -4165,36 +5307,36 @@ times 16 $|, kernel=3, stride=1)
 
 \begin_layout Plain Layout
 
-    (theta_layer): Conv2d(|$k 
+    (theta_layer): Conv2d(|$s 
 \backslash
-times 16 $|, |$k 
-\backslash
-times 8 $|, kernel=1, stride=1)
-\end_layout
-
-\begin_layout Plain Layout
-
-    (phi_layer): Conv2d(|$k 
-\backslash
-times 16 $|, |$k 
+times 16 $|, |$s 
 \backslash
 times 8 $|, kernel=1, stride=1)
 \end_layout
 
 \begin_layout Plain Layout
 
-    (g_layer): Conv2d(|$k 
+    (phi_layer): Conv2d(|$s 
 \backslash
-times 16 $|, |$k 
+times 16 $|, |$s 
 \backslash
 times 8 $|, kernel=1, stride=1)
 \end_layout
 
 \begin_layout Plain Layout
 
-    (out_cnn): Conv2d(|$k 
+    (g_layer): Conv2d(|$s 
 \backslash
-times 8 $|, |$k 
+times 16 $|, |$s 
+\backslash
+times 8 $|, kernel=1, stride=1)
+\end_layout
+
+\begin_layout Plain Layout
+
+    (out_cnn): Conv2d(|$s 
+\backslash
+times 8 $|, |$s 
 \backslash
 times 16 $|, kernel=1, stride=1)
 \end_layout
@@ -4221,9 +5363,9 @@ times 16 $|, kernel=1, stride=1)
 
 \begin_layout Plain Layout
 
-    (1): Conv2d(|$k 
+    (1): Conv2d(|$s 
 \backslash
-times 16 $|, |$k 
+times 16 $|, |$s 
 \backslash
 times 8 $|, kernel=3, stride=1)
 \end_layout
@@ -4235,9 +5377,9 @@ times 8 $|, kernel=3, stride=1)
 
 \begin_layout Plain Layout
 
-    (3): Conv2d(|$k 
+    (3): Conv2d(|$s 
 \backslash
-times 8 $|, |$k 
+times 8 $|, |$s 
 \backslash
 times 2 $|, kernel=3, stride=1)
 \end_layout
@@ -4259,9 +5401,9 @@ times 2 $|, kernel=3, stride=1)
 
 \begin_layout Plain Layout
 
-    (0): Linear(in_features=|$k 
+    (0): Linear(in_features=|$s 
 \backslash
-times 50$|, out_features=|$k 
+times 50$|, out_features=|$s 
 \backslash
 times 16 $|)
 \end_layout
@@ -4273,9 +5415,9 @@ times 16 $|)
 
 \begin_layout Plain Layout
 
-    (2): Linear(in_features=|$k 
+    (2): Linear(in_features=|$s 
 \backslash
-times 16 $|, out_features=|$k 
+times 16 $|, out_features=|$s 
 \backslash
 times 8 $|)
 \end_layout
@@ -4287,9 +5429,9 @@ times 8 $|)
 
 \begin_layout Plain Layout
 
-    (4): Linear(in_features=|$k 
+    (4): Linear(in_features=|$s 
 \backslash
-times 8 $|, out_features=|$k 
+times 8 $|, out_features=|$s 
 \backslash
 times 4 $|)
 \end_layout
@@ -4301,7 +5443,7 @@ times 4 $|)
 
 \begin_layout Plain Layout
 
-    (6): Linear(in_features=|$k 
+    (6): Linear(in_features=|$s 
 \backslash
 times 4 $|, out_features=2)
 \end_layout
@@ -4326,14 +5468,14 @@ times 4 $|, out_features=2)
 \family typewriter
 BraggNN
 \family default
- for 
-\begin_inset Formula $k=1,\dots,4$
+ for scale 
+\begin_inset Formula $s=1,2$
 \end_inset
 
 .
 \begin_inset CommandInset label
 LatexCommand label
-name "lis:Single-filter-convolution-3"
+name "lis:braggnn"
 
 \end_inset
 
@@ -4364,7 +5506,7 @@ literal "false"
 \end_inset
 
 , a DNN aimed at efficiently characterizing Bragg diffraction peaks, achieves
- a batched latency of 22 µs/sample.
+ a batched latency of approximately 22 µs/sample.
  This is a large speedup over the classical pseudo-Voigt peak fitting methods,
  but still falls far short of the 1 µs/sample target for handling the 1
  MHz sampling rates.
@@ -4376,13 +5518,17 @@ BraggNN
  a workstation class GPU such as a NVIDIA RTX 2080Ti, has no practicable
  means to being deployed at the edge, i.e., adjacent or proximal to the high
  energy microscopy equipment.
- We applied 
+ Towards this end, we applied 
 \family typewriter
 BraggHLS
 \family default
  to the PyTorch representation of 
 \family typewriter
-BraggNN
+BraggNN(
+\begin_inset Formula $s=1$
+\end_inset
+
+)
 \family default
 \emph on
  
@@ -4390,14 +5536,14 @@ BraggNN
 (see Listing 
 \begin_inset CommandInset ref
 LatexCommand ref
-reference "lis:Single-filter-convolution-3"
+reference "lis:braggnn"
 
 \end_inset
 
-) and achieve a RTL implementation which synthesizes to a 1,238 interval
+) and achieved a RTL implementation which synthesizes to a 1,238 interval
  design that places, routes, and meets timing closure for a clock period
  of 10 ns (for a Xilinx Alveo U280).
- The design consists of a three stage pipeline with long stage measuring
+ The design consists of a three stage pipeline with the longest stage measuring
  480 intervals.
  Thus, the throughput of the implementation is 4.8 µs/sample.
  See Table 
@@ -4407,11 +5553,467 @@ reference "tab:Resource-usage-for"
 
 \end_inset
 
- for a summary of the resource usage of the implementation.
+ for a summary of the resource usage of the implementation and Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:braggnn"
+
+\end_inset
+
+ for a comparison with designs generated by Vitis HLS.
+\end_layout
+
+\begin_layout Standard
+The most challenging aspect of implementing 
+\family typewriter
+BraggNN
+\family default
+ was minimizing latency while satisfying compute resource constraints (LUTs,
+ DSPs, BRAMs) and meeting routing 
+\begin_inset Quotes eld
+\end_inset
+
+closure
+\begin_inset Quotes erd
+\end_inset
+
+, i.e., not exceeding available routing resources and avoiding congestion.
+ Two design choices were made for the purposes of reducing resource consumption.
+ The first was reducing the precision used for the floating-point operations.
+ We reduced the precision from half precision to FloPoCo 
+\begin_inset Formula $\left(5,4\right)$
+\end_inset
+
+-precision (5 bits for the exponent and 4 bits for the mantissa).
+ This was justified by an examination of the distribution of the weights
+ of the fully trained 
+\family typewriter
+BraggNN
+\family default
+ (see figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:BraggHLS-framework-overview.-1"
+
+\end_inset
+
+).
+ 
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename figures/exp_hist.pdf
+	width 100col%
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+
+\family typewriter
+BraggHLS
+\family default
+ weights exponent distribution.
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:BraggHLS-framework-overview.-1"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+ Reducing the precision enabled the second design choice: we eliminate BRAMs
+ from the design, since, at the lower precision, all weights can be represented
+ as registered constants.
+ The reduced precision also drives the Vivado synthesizer to infer implementatio
+ns of the floating-point operations that make no use of DSPs; this was not
+ intentional but seemingly cannot be altered.
+ Most likely this is due to the fact that the DSP48 hardware block includes
+ a 18-bit by 25-bit signed multiplier and a 48-bit adder 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "guideultrascale"
+literal "false"
+
+\end_inset
+
+, neither of which neatly divide the bit width of FloPoCo 
+\begin_inset Formula $\left(5,4\right)$
+\end_inset
+
+-precision cores
+\begin_inset Foot
+status collapsed
+
+\begin_layout Plain Layout
+The actual bit width for FloPoCo 
+\begin_inset Formula $\left(5,4\right)$
+\end_inset
+
+-precision is 12 bits: 1 extra bit is needed for the sign and 2 bits are
+ needed for FloPoCo's handling of exceptional conditions.
+\end_layout
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Achieving routing closure was very difficult due to the nature of the Xilinx's
+ UltraScale architecture, of which the Alveo U280 is an instance.
+ The UltraScale architecture achieves its scale through 
+\begin_inset Quotes eld
+\end_inset
+
+Stacked Silicon Interconnect
+\begin_inset Quotes erd
+\end_inset
+
+ (SSI) technology 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "leibson2013xilinx"
+literal "false"
+
+\end_inset
+
+, which implies multiple distinct FPGA dies, called Super Logic Regions
+ (SLRs), on the same chip, connected by interposers.
+ Adjacent SLRs communicate with each other using a limited set of Super
+ Long Lines (SLLs).
+ These SLLs determine the maximum bus width that spans two SLRs.
+ On the Alveo U280 there are exactly 23,040 SLLs available between adjacent
+ SLRs and at 
+\begin_inset Formula $\left(5,4\right)$
+\end_inset
+
+-precision 
+\family typewriter
+BraggNN
+\family default
+ needs 23,328 SLLs between SLR2 and SLR1
+\begin_inset Foot
+status collapsed
+
+\begin_layout Plain Layout
+We route the output of 
+\family typewriter
+cnn_layers_1
+\family default
+ (
+\begin_inset Formula $1\times16\times9\times9\times12$
+\end_inset
+
+ wires) as well as the output of 
+\begin_inset Formula $\texttt{soft(theta\_layer}\times\texttt{phi\_layer)}\times\texttt{g\_layer}$
+\end_inset
+
+ (
+\begin_inset Formula $1\times8\times9\times9\times12$
+\end_inset
+
+ wires) from SLR2 to SLR1.
+\end_layout
+
+\end_inset
+
+.
+ Thus, we further reduced the precision to 
+\begin_inset Formula $\left(5,3\right)$
+\end_inset
+
+.
+ Finally, since multiple dies constitute independent clock domains, the
+ SLLs that cross SLRS are sensitive hold time violations due to the higher
+ multi-die variability 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "rapidwright"
+literal "false"
+
+\end_inset
+
+.
+ This multi-die variability leads to high congestion if not addressed.
+ Thus, routing across SLRs needs to be handled manually, using placement
+ and routing constraints for logic in each SLR and the addition of so-called
+ 
+\begin_inset Quotes eld
+\end_inset
+
+launch
+\begin_inset Quotes erd
+\end_inset
+
+ and 
+\begin_inset Quotes eld
+\end_inset
+
+latch
+\begin_inset Quotes erd
+\end_inset
+
+ registers in each SLR.
+ See figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:BraggHLS-framework-overview.-2"
+
+\end_inset
+
+ for an illustration on the effect of using launch and latch registers as
+ well as placement and routing constraints.
+\begin_inset Float figure
+wide true
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename figures/nopblocks.png
+	lyxscale 20
+	width 100col%
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+
+\family typewriter
+BraggNN
+\family default
+ fails to achieve routing closure without placement and routing constraints
+ and launch and latch registers.
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:BraggHLS-framework-overview.-2-1"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset space \hfill{}
+\end_inset
+
+
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename figures/withpblocks.png
+	lyxscale 20
+	width 100col%
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+
+\family typewriter
+BraggNN
+\family default
+ achieves routing closure with use of per SLR placement and routing constraints
+ (
+\family typewriter
+pblock_1
+\family default
+, 
+\family typewriter
+pblock_2
+\family default
+, 
+\family typewriter
+pblock_3
+\family default
+) and launch and latch registers (not highlighted).
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:BraggHLS-framework-overview.-2-1-1"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Congestion maps for 
+\family typewriter
+BraggNN
+\family default
+ on a Xilinx Alveo U280.
+ 
+\color magenta
+Magenta
+\color inherit
+ indicates areas of high congestion.
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:BraggHLS-framework-overview.-2"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Thus, the confluence of the aforementioned design choices (in combination
+ with compiler level optimizations performed by 
+\family typewriter
+BraggHLS
+\family default
+) and careful management of routing constraints enables us to lower, compile,
+ synthesize, place and route 
+\family typewriter
+BraggNN
+\family default
+ to Xilinx's Alveo U280 at a throughput of 4.8 µs/sample.
+ This is ~5
+\begin_inset Formula $\times$
+\end_inset
+
+ higher latency than the target 1 µs/sample but it is a 4
+\begin_inset Formula $\times$
+\end_inset
+
+ improvement over the GPU PyTorch-GPU implementation.
+ In the following we propose some future work that can further improve on
+ this.
+\end_layout
+
+\begin_layout Section
+Conclusion
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:Conclusion"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+Remember though that your final submission is supposed to have all the bibliogra
+phy entries embedded in the \SpecialChar LaTeX
+-file.
+ This means you eventually have to copy the .bbl file into the latex file
+ and remove the bibtex lines.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Separator plain
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset bibtex
+LatexCommand bibtex
+btprint "btPrintCited"
+bibfiles "ref"
+options "IEEEtran"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Appendix
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+onecolumn
+\backslash
+input{data/vitis_unroll.tex}
+\backslash
+twocolumn
+\end_layout
+
+\end_inset
+
+
 \begin_inset Float table
 wide true
 sideways false
-status collapsed
+status open
 
 \begin_layout Plain Layout
 \begin_inset Caption Standard
@@ -6313,411 +7915,6 @@ Total SLLs Used
 
 
 \end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-The most challenging aspect of implementing 
-\family typewriter
-BraggNN
-\family default
- was minimizing latency while satisfying compute resource constraints (LUTs,
- DSPs, BRAMs) and meeting routing 
-\begin_inset Quotes eld
-\end_inset
-
-closure
-\begin_inset Quotes erd
-\end_inset
-
-, i.e., not exceeding available routing resources and avoiding congestion.
- Two design choices made for the purposes of reducing resource consumption
- was reducing the precision used for the floating-point operations.
- We reduced the precision from IEEE half precision (5 bits for the exponent
- and 11 bits for the mantissa) to FloPoCo 
-\begin_inset Formula $\left(5,4\right)$
-\end_inset
-
--precision (5 bits for the exponent and 4 bits for the mantissa).
- This was justified by an examination of the distribution of the weights
- of the fully trained 
-\family typewriter
-BraggNN
-\family default
- (see figure 
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "fig:BraggHLS-framework-overview.-1"
-
-\end_inset
-
-).
- 
-\begin_inset Float figure
-wide false
-sideways false
-status collapsed
-
-\begin_layout Plain Layout
-\align center
-\begin_inset Graphics
-	filename ../figures/exp_hist.pdf
-	width 100col%
-
-\end_inset
-
-
-\begin_inset Caption Standard
-
-\begin_layout Plain Layout
-
-\family typewriter
-BraggHLS
-\family default
- weights exponent distribution.
-\begin_inset CommandInset label
-LatexCommand label
-name "fig:BraggHLS-framework-overview.-1"
-
-\end_inset
-
-
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\end_inset
-
- Reducing the precision enabled us to eliminate BRAMs from the design as
- well, since, at the lower precision, all weights could be represented as
- registered constants.
- The reduced precision also drives the Vivado synthesizer to infer implementatio
-ns of the floating-point operations that make no use of DSPs; this was not
- intentional but seemingly cannot be altereted.
- Most likely this is due to the fact that DSP48 hardware block includes
- a 18-bit by 25-bit signed multiplier and a 48-bit adder 
-\begin_inset CommandInset citation
-LatexCommand cite
-key "guideultrascale"
-literal "false"
-
-\end_inset
-
-, neither of which neatly divide the bit width of FloPoCo 
-\begin_inset Formula $\left(5,4\right)$
-\end_inset
-
--precision cores
-\begin_inset Foot
-status collapsed
-
-\begin_layout Plain Layout
-The actual bit width for FloPoCo 
-\begin_inset Formula $\left(5,4\right)$
-\end_inset
-
--precision is 12 bits: 1 extra bit is needed for the sign and 2 bits are
- needed for FloPoCo's handling of exceptional conditions.
-\end_layout
-
-\end_inset
-
-.
-\end_layout
-
-\begin_layout Standard
-Achieving routing closure was very difficult due to the nature of the Xilinx's
- UltraScale architecture, of which the Alveo U280 is an instance.
- The UltraScale architecture achieves its scale through 
-\begin_inset Quotes eld
-\end_inset
-
-Stacked Silicon Interconnect
-\begin_inset Quotes erd
-\end_inset
-
- (SSI) technology 
-\begin_inset CommandInset citation
-LatexCommand cite
-key "leibson2013xilinx"
-literal "false"
-
-\end_inset
-
-, which amounts to multiple distinct FPGA dies, called Super Logic Regions
- (SLRs), on the same chip, connected by interposers.
- Adjacent SLRs communicate with each other using a limited set of Super
- Long Lines (SLLs).
- These SLLs determine the maximum bus width that span two SLRs.
- On the Alveo U280 there are exactly 23,040 SLLs available between adjacent
- SLRs and at 
-\begin_inset Formula $\left(5,4\right)$
-\end_inset
-
--precision 
-\family typewriter
-BraggNN
-\family default
- needs 23,328 SLLs between SLR2 and SLR1
-\begin_inset Foot
-status collapsed
-
-\begin_layout Plain Layout
-We route the output of 
-\family typewriter
-cnn_layers_1
-\family default
- (
-\begin_inset Formula $1\times16\times9\times9\times12$
-\end_inset
-
- wires) as well as the output of 
-\begin_inset Formula $\texttt{soft(theta\_layer}\times\texttt{phi\_layer)}\times\texttt{g\_layer}$
-\end_inset
-
- (
-\begin_inset Formula $1\times8\times9\times9\times12$
-\end_inset
-
- wires) from SLR2 to SLR1.
-\end_layout
-
-\end_inset
-
-.
- Thus, we further reduce the precision to 
-\begin_inset Formula $\left(5,3\right)$
-\end_inset
-
-.
- Finally, since multiple dies constitute independent clock domains, the
- SLLs that cross SLRS are sensitive hold time violations due to the higher
- multi-die variability 
-\begin_inset CommandInset citation
-LatexCommand cite
-key "rapidwright"
-literal "false"
-
-\end_inset
-
-.
- This multi-die variability leads to high congestion if not addressed.
- Thus, routing across them needs to handled manually using placement and
- routing constraints for logic in each SLR and the addition of so-called
- 
-\begin_inset Quotes eld
-\end_inset
-
-launch
-\begin_inset Quotes erd
-\end_inset
-
- and 
-\begin_inset Quotes eld
-\end_inset
-
-latch
-\begin_inset Quotes erd
-\end_inset
-
- registers in each SLR.
- See figure 
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "fig:BraggHLS-framework-overview.-2"
-
-\end_inset
-
- for an illustration on the effect of using launch and latch registers as
- well as placement and routing constraints.
-\begin_inset Float figure
-wide true
-sideways false
-status collapsed
-
-\begin_layout Plain Layout
-\align center
-\begin_inset Float figure
-wide false
-sideways false
-status open
-
-\begin_layout Plain Layout
-\align center
-\begin_inset Graphics
-	filename nopblocks.png
-	lyxscale 20
-	width 100col%
-
-\end_inset
-
-
-\begin_inset Caption Standard
-
-\begin_layout Plain Layout
-
-\family typewriter
-BraggNN
-\family default
- fails to achieve routing closure without placement and routing constraints
- and launch and latch registers.
-\begin_inset CommandInset label
-LatexCommand label
-name "fig:BraggHLS-framework-overview.-2-1"
-
-\end_inset
-
-
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\end_inset
-
-
-\begin_inset space \hfill{}
-\end_inset
-
-
-\begin_inset Float figure
-wide false
-sideways false
-status open
-
-\begin_layout Plain Layout
-\align center
-\begin_inset Graphics
-	filename withpblocks.png
-	lyxscale 20
-	width 100col%
-
-\end_inset
-
-
-\begin_inset Caption Standard
-
-\begin_layout Plain Layout
-
-\family typewriter
-BraggNN
-\family default
- achieves routing closure with use of per SLR placement and routing constraints
- (
-\family typewriter
-pblock_1
-\family default
-, 
-\family typewriter
-pblock_2
-\family default
-, 
-\family typewriter
-pblock_3
-\family default
-) and launch and latch registers (not highlighted).
-\begin_inset CommandInset label
-LatexCommand label
-name "fig:BraggHLS-framework-overview.-2-1-1"
-
-\end_inset
-
-
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\end_inset
-
-
-\begin_inset Caption Standard
-
-\begin_layout Plain Layout
-Congestion maps for 
-\family typewriter
-BraggNN
-\family default
- on a Xilinx Alveo U280.
- 
-\color magenta
-Magenta
-\color inherit
- indicates area of high congestion.
-\begin_inset CommandInset label
-LatexCommand label
-name "fig:BraggHLS-framework-overview.-2"
-
-\end_inset
-
-
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Section
-Conclusion
-\begin_inset CommandInset label
-LatexCommand label
-name "sec:Conclusion"
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-287 + 471 + 480
-\end_layout
-
-\begin_layout Standard
-\begin_inset Note Note
-status open
-
-\begin_layout Plain Layout
-Remember though that your final submission is supposed to have all the bibliogra
-phy entries embedded in the \SpecialChar LaTeX
--file.
- This means you eventually have to copy the .bbl file into the latex file
- and remove the bibtex lines.
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-\begin_inset Separator plain
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-\begin_inset CommandInset bibtex
-LatexCommand bibtex
-btprint "btPrintCited"
-bibfiles "ref"
-options "IEEEtran"
 
 \end_inset
 

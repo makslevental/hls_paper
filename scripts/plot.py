@@ -20,7 +20,7 @@ def myticks(x, pos):
     if x <= 0:
         return f"${x}$"
     exponent = int(np.log2(x))
-    coeff = x / 2**exponent
+    coeff = x / 2 ** exponent
     # return r"$2^{{ {:2d} }}$".format(exponent)
     return str(x)
 
@@ -37,7 +37,7 @@ def ticks_format(value, index):
         return ""
 
     exp = np.floor(np.log10(value))
-    base = value / 10**exp
+    base = value / 10 ** exp
     if exp == 0 or exp == 1:
         return "${0:d}$".format(int(value))
     if exp == -1:
@@ -89,6 +89,49 @@ def plot_metrics(sub_df, ax1, spacing=4, scale=10):
         i += 1
 
 
+def make_tables():
+    vitis_df = pd.read_csv("vitis_reports.csv", header=0, index_col=[0, 1, 2])
+    bragghls_df = pd.read_csv("bragghls_reports.csv", header=0, index_col=[0, 1, 2])
+    with open("vitis_unroll.tex", "w") as f:
+        piv = vitis_df.reset_index().pivot(
+            index=["module", "unroll_factor"],
+            columns=["metric_name"],
+            values=["metric_val"],
+        )
+        piv = piv.drop(
+            columns=[
+                ("metric_val", "LatencyAvg"),
+                ("metric_val", "LatencyWorst"),
+                ("metric_val", "PipelineII"),
+            ],
+        )
+        piv = piv.astype(
+            {
+                ("metric_val", "LatencyBest"): "int32",
+            }
+        )
+        piv.columns = piv.columns.remove_unused_levels()
+        piv.columns = piv.columns.set_levels(
+            ["BRAM", "DSP", "FF", "LUT", "Latency", "Clock Period", "Runtime"], level=1
+        )
+        f.write(
+            piv.to_latex(
+                longtable=True,
+                float_format="%.2E",
+                caption="Latency, resource usage, and runtimes for all \\texttt{BraggHLS} evaluations.",
+                label="tab:all_unrolls",
+            )
+        )
+    with open("bragghls_unroll.tex", "w") as f:
+        piv = bragghls_df.reset_index().pivot(
+            index=["module", "unroll_factor"],
+            columns=["metric_name"],
+            values=["metric_val"],
+        )
+        # piv.drop(columns=["LatencyAvg", "LatencyWorst"])
+        f.write(piv.to_latex(float_format="%.2E"))
+
+
 def plot_unrolls():
     vitis_df = pd.read_csv("vitis_reports.csv", header=0, index_col=[0, 1, 2])
     bragghls_df = pd.read_csv("bragghls_reports.csv", header=0, index_col=[0, 1, 2])
@@ -117,8 +160,10 @@ def plot_unrolls():
             bragghls_sub_df = bragghls_df.loc[mod].swaplevel(0, 1)
             plot_metrics(bragghls_sub_df, resource_ax_bragghls)
 
-        resource_ax_bragghls.set_ylabel("utilization (%)", fontdict={"fontsize": 25})
-        lat_ax_vitis.set_ylabel("time (μs)", fontdict={"fontsize": 25})
+        if mod in {"addmm", "conv", "soft_max", "braggnn"}:
+            lat_ax_vitis.set_ylabel("time (μs)", fontdict={"fontsize": 25})
+        if mod in {"batch_norm", "max_pool_2d", "soft_max", "braggnn"}:
+            resource_ax_bragghls.set_ylabel("utilization (%)", fontdict={"fontsize": 25})
         lat_ax_vitis.set_xlabel("unroll factor", fontdict={"fontsize": 25})
 
         clock_vals = sub_df.loc["clock_period_minus_wns"].sort_index()
@@ -155,7 +200,7 @@ def plot_unrolls():
             va="bottom",
             color="magenta",
             weight="bold",
-            fontdict={"fontsize": 10},
+            fontdict={"fontsize": 20},
         )
         text.set_path_effects([PathEffects.withStroke(linewidth=2, foreground="black")])
         lat_ax_vitis.plot(
@@ -195,7 +240,7 @@ def plot_unrolls():
             )
 
         lat_ax_vitis.xaxis.set_ticks(common_unroll_factors[:-1] + last_pos)
-        lat_ax_vitis.xaxis.set_ticklabels(common_unroll_factors)
+        lat_ax_vitis.xaxis.set_ticklabels(["base"] + common_unroll_factors[1:])
         resource_ax_bragghls.set_xticks([2048])
         resource_ax_bragghls.set_xticklabels(["BraggHLS"])
 
@@ -255,7 +300,7 @@ def plot_unrolls():
                 va="bottom",
                 color="red",
                 weight="bold",
-                fontdict={"fontsize": 10},
+                fontdict={"fontsize": 20},
             )
             text.set_path_effects(
                 [PathEffects.withStroke(linewidth=2, foreground="black")]
@@ -318,17 +363,20 @@ def plot_elapsed_times():
     # ax1.set_xscale("log")
     ax1.set_ylabel("time (s)", fontdict={"fontsize": 25})
     ax1.set_yscale("log")
-    ax1.set_xticks(sorted(elapsed_time_common))
-    ax1.xaxis.set_major_formatter(ticker.FuncFormatter(myticks))
+    xticks = sorted(elapsed_time_common)
+    ax1.set_xticks(xticks)
+    ax1.xaxis.set_ticklabels(["base"] + xticks[1:-1] + ["1024"])
+    # ax1.xaxis.set_major_formatter(ticker.FuncFormatter(myticks))
     font = font_manager.FontProperties(family="Courier New", style="normal", size=20)
     ax1.legend(loc="upper left", framealpha=0.8, fontsize=20, prop=font)
     ax1.set_xlabel("unroll factor", fontdict={"fontsize": 25})
+    ax1.tick_params(axis="x", rotation=45)
 
     fig.tight_layout()
     fig.savefig(f"elapsed_time.pdf")
 
 
-def plot_unroll_times():
+def plot_conv_unroll_times():
     bragghls_df = pd.read_csv("unroll_conv.csv", header=0, index_col=[0])
     fig, ax1 = plt.subplots(figsize=(10, 7))
     ax1.plot(
@@ -348,12 +396,13 @@ def plot_unroll_times():
     ax1.xaxis.set_major_formatter(ticker.FuncFormatter(myticks))
     font = font_manager.FontProperties(family="Courier New", style="normal", size=20)
     # ax1.legend(loc="upper left", framealpha=0.8, fontsize=20, prop=font)
-    ax1.set_xlabel("unroll factor", fontdict={"fontsize": 25})
+    ax1.set_xlabel("image size", fontdict={"fontsize": 25})
     fig.tight_layout()
     fig.savefig("conv_unroll.pdf")
 
 
 if __name__ == "__main__":
+    # make_tables()
     plot_unrolls()
-    plot_unroll_times()
+    plot_conv_unroll_times()
     plot_elapsed_times()

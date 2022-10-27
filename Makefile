@@ -1,5 +1,5 @@
 SHELL=/bin/bash
-MAIN=main
+MAIN=bragghls
 LATEX=pdflatex
 BIBTEX=bibtex
 DTM=$(shell date +%Y%m%d-%H%M%S)
