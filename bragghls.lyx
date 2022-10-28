@@ -68,9 +68,11 @@
 \use_package stackrel 1
 \use_package stmaryrd 1
 \use_package undertilde 1
-\cite_engine basic
-\cite_engine_type default
+\cite_engine biblatex
+\cite_engine_type numerical
 \biblio_style plain
+\biblatex_bibstyle numeric
+\biblatex_citestyle numeric
 \use_bibtopic false
 \use_indices false
 \paperorientation portrait
@@ -251,7 +253,7 @@ status open
 \backslash
 renewcommand{
 \backslash
-MintedPygmentize}{/home/mlevental/dev_projects/hls_paper/scripts/pygmentize.py}
+MintedPygmentize}{/Users/mlevental/dev_projects/hls_paper/scripts/pygmentize.py}
 \end_layout
 
 \begin_layout Plain Layout
@@ -411,7 +413,7 @@ In many experiment-driven scientific domains, such as high-energy physics,
  hard constraints on the corresponding data acquisition systems: collected
  data must either be indiscriminately stored for post-processing and analysis,
  thereby necessitating large storage capacity, or accurately filtered in
- real-time, thereby necessitating low latency execution.
+ real-time, thereby necessitating low latency processing.
  Deep neural networks, effective in many other filtering tasks, have not
  been widely employed in such data acquisition systems, due to design and
  deployment difficulties.
@@ -480,7 +482,7 @@ literal "false"
  With a packet size of approximately 50 kB (per collision), this implies
  a data rate of approximately 2 TB/s.
  Ultimately, in combination with other detectors, the LHC processes approximatel
-y 100 EB of data a year.
+y 100 EB of data per year.
  In materials science, high-energy diffraction microscopy (HEDM) techniques,
  which provide non-destructive characterization of structure and its evolution
  in a broad class of single-crystal and polycrystalline materials, can have
@@ -532,9 +534,6 @@ interesting
  Note, the tradeoff made in employing filtering should be clear: reduced
  storage at the expense of more stringent latency constraints (on the filtering
  mechanisms).
- In addition, the risk of discarding meaningful data introduces accuracy
- (of the filtering mechanisms) as a critical new dimension of the data acquisiti
-on systems.
  Typically, these filtering mechanisms consist either of physics based models
  
 \begin_inset CommandInset citation
@@ -553,7 +552,7 @@ literal "false"
 \end_inset
 
 ; in either case maximally efficient and effective use of the target hardware
- platform is tantamount to accuracy.
+ platform is important.
  Irrespective of the type of technique employed, almost universally, for
  the ultra-low latency use cases (e.g., sub-microsecond latency constraints),
  the implementation is deployed to either field-programmable gate arrays
@@ -614,11 +613,11 @@ learning rule
 \begin_inset Quotes erd
 \end_inset
 
- periodically updates the parameters (
+ periodically updates the 
 \emph on
 weights
 \emph default
-) that parameterize the DNN.
+ that parameterize the DNN.
  In recent years they have been investigated for near real-time scientific
  use cases 
 \begin_inset CommandInset citation
@@ -628,7 +627,7 @@ literal "false"
 
 \end_inset
 
- but their use for the lowest latency use cases has been very limited 
+ but their use for the lowest latency use cases has been limited 
 \begin_inset CommandInset citation
 LatexCommand cite
 key "Duarte_2018"
@@ -701,7 +700,7 @@ These three barriers demand of a solution that can simultaneously translate
 \emph on
 lowering
 \emph default
- high-level representations of programs to lower-level representations is
+ high-level representations of programs to low-level representations is
  the domain of a compiler.
  Similarly, the task of 
 \emph on
@@ -727,7 +726,7 @@ literal "false"
 
 \end_inset
 
-.
+ tools.
  While several such HLS tools exist 
 \begin_inset CommandInset citation
 LatexCommand cite
@@ -736,16 +735,15 @@ literal "false"
 
 \end_inset
 
- and despite, often, bundling robust optimizing compilers, they struggle
- to effectively perform the necessary optimizations in reasonable amounts
- of time (see Section 
+ they struggle to effectively perform the necessary optimizations in reasonable
+ amounts of time (see Section 
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "subsec:High-level-synthesis"
 
 \end_inset
 
-).
+) despite, often, bundling robust optimizing compilers,.
 \end_layout
 
 \begin_layout Standard
@@ -847,7 +845,7 @@ BraggHLS
 \family default
  uses a combination of compiler and HLS techniques to compile the entire
  DNN into fully scheduled RTL, thereby eliminating all synchronization overheads
- and achieving ultra-low latency.
+ and achieving low latency.
  
 \family typewriter
 BraggHLS
@@ -864,8 +862,7 @@ We describe and implement a compiler framework,
 BraggHLS
 \family default
 , which can effectively transform unoptimized, hardware-agnostic PyTorch
- models into ultra-low latency RTL designs suitable for deployment to Xilinx
- FPGAs.
+ models into low latency RTL designs suitable for deployment to Xilinx FPGAs.
  
 \family typewriter
 BraggHLS
@@ -985,8 +982,8 @@ Compilers: the path from high to low
 
 \begin_layout Standard
 The path from a high-level, abstract, representation of a DNN to a register-tran
-sfer level representation can be neatly formulated as a series of progressive
- lowerings between adjacent levels of abstraction.
+sfer level representation can be formulated as a series of progressive lowerings
+ between adjacent levels of abstraction.
  Each level of abstraction is rendered as a programming language, IR, or
  HDL, and thus we describe each lowering in terms the representations and
  tools 
@@ -1026,20 +1023,19 @@ PyTorch and TorchScript
 \begin_layout Standard
 Typically DNN models are represented in terms of high-level frameworks,
  themselves implemented within general purpose programming languages.
- Such frameworks are widely used because of their ease of use and large
- library of example implementations of various DNN model architectures.
+ Such frameworks are popular because of their ease of use and large library
+ of example implementations of various DNN model architectures.
  
 \family typewriter
 BraggHLS
 \family default
- is targets the PyTorch framework, thus we focus on relevant aspects of
- PyTorch.
+ targets the PyTorch framework, thus we focus on relevant aspects of PyTorch.
  DNNs developed within PyTorch are 
 \emph on
 defined-by-run
 \emph default
 : the author imperatively describes the DNN in terms of high-level operations,
- using python, which when executed materializes the (partial) high-level
+ using python, which, when executed, materializes the (partial) high-level
  data-flow graph (DFG) corresponding to the DNN (e.g., for the purposes of
  reverse-mode automatic differentiation).
  From the perspective of the user, define-by-run enables fast iteration
@@ -1050,7 +1046,7 @@ defined-by-run
 \begin_layout Standard
 On the other hand, from the perspective of compilation, define-by-run precludes
  efficient extraction of the high-level DFG; since the DFG is materialized
- only at runtime, it cannot be inferred from the textual representation
+ only at runtime, it cannot easily be inferred from the textual representation
  (i.e., the python source) of the DNN.
  Furthermore, a priori, the runtime-materialized DFG is only partially materiali
 zed
@@ -1083,7 +1079,7 @@ literal "false"
  Thus, framework support is necessary for efficiently extracting the full
  DFG.
  Indeed, PyTorch supports a Single Static Assignment (SSA) IR, called TorchScrip
-t (TS) IR and accompanying tracing mechanism (the TS JIT), which produces
+t (TS) IR and accompanying tracing mechanism (the TS JIT), which generates
  TS IR from conventionally defined PyTorch models.
  Lowering from PyTorch to TS IR enables various useful analyses and transformati
 ons on a DNN at the level of the high-level DFG but targeting FPGAs requires
@@ -1117,7 +1113,7 @@ ture.
 \emph on
 dialect
 \emph default
- IRs, subsets of which are mutually compatible, either outright or by way
+ IRs, subsets of which are mutually compatible, either directly or by way
  of translation/legalization.
  The various dialects aim to capture and formalize the semantics of compute
  intensive programs at varying levels of abstraction, as well as namespace
@@ -1170,13 +1166,13 @@ affine
 \family typewriter
 scf
 \family default
- (structured control flow) dialects.
+ dialects.
  The 
 \family typewriter
 scf
 \family default
- dialect describes standard control flow primitives, such as conditionals
- and loops, and is mutually compatible with the 
+ (structured control flow) dialect describes standard control flow primitives,
+ such as conditionals and loops, and is mutually compatible with the 
 \family typewriter
 arith
 \family default
@@ -1208,8 +1204,8 @@ literal "false"
 
 \end_inset
 
- because they directly inform the concurrency and parallelism of the final
- RTL design.
+ because loop nests directly inform the concurrency and parallelism of the
+ final RTL design.
 \end_layout
 
 \begin_layout Subsection
@@ -1281,7 +1277,7 @@ The topological ordering of the DFG/CFG of the procedural representation
 \end_layout
 
 \begin_layout Enumerate
-The completion time for each operation;
+The delay for each operation;
 \end_layout
 
 \begin_layout Enumerate
@@ -1294,10 +1290,10 @@ HLS associates (called
 \emph on
 binding
 \emph default
-) operations to particular RTL instantiations of intellectual property (IP)
- for those operations; for example whether to associate an addition operation
- followed by a multiply operation to IPs for each, or whether to associate
- them both with a single IP, designed to perform a 
+) floating point operations to RTL instantiations of intellectual property
+ (IP) for those operations; for example whether to associate an addition
+ operation followed by a multiply operation to IPs for each, or whether
+ to associate them both with a single IP, designed to perform a 
 \begin_inset Quotes eld
 \end_inset
 
@@ -1328,23 +1324,23 @@ In addition to fulfilling these three fundamental tasks, high-level synthesis
  of concurrent operations scheduled during a clock-cycle) in order maximize
  the throughput and minimize the latency of the final implementation.
  Maximizing concurrency entails pipelining operations: operations are executed
- such that they overlap in time, subject to available resources.
+ such that they overlap in time when possible, subject to available resources.
  Maximizing parallelism entails partitioning the DNN into subsets of operation
  that can be computed independently and simultaneously and whose results
- are combined upon completion.
+ are aggregated upon completion.
  
 \end_layout
 
 \begin_layout Standard
-While HLS aims to optimize various characteristics of a design, there are
- challenges associated with this kind of automated optimization.
+While HLS aims to automatically optimize various characteristics of a design,
+ there are challenges associated with this kind of automated optimization.
  In particular, maximum concurrency and parallelism necessitates data-flow
  analysis in order to identify data dependencies amongst operations, both
  for scheduling and identifying potential data hazards.
  Such data-flow analysis is expensive and grows (in runtime) as better performan
 ce is pursued.
  This can be understood in terms of loop-nest representations of DNN operations;
- for example consider a convolution as in Listing 
+ for example consider the convolution in Listing 
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "lis:Single-filter-convolution"
@@ -1945,8 +1941,8 @@ output
 
 \begin_layout Standard
 Finally, note, though greedy solutions to the scheduling problem solved
- by HLS are possible, in principle scheduling is an integer linear programming
- problem (ILP), instances of which are NP-hard.
+ by HLS are possible, in principle, the scheduling problem is formulated
+ as an integer linear program (ILP), instances of which are NP-hard.
  In summary, HLS tools solve computationally intensive problems in order
  to produce a RTL description of a high-level representation of a DNN.
  These phases of the HLS process incur 
@@ -1964,13 +1960,13 @@ development time
 \family typewriter
 BraggHLS
 \family default
- addresses these issues by enabling the user to employ heuristics (during
- both the parallelization and scheduling phases) which, while not guaranteed
- to be correct, can be 
+ addresses these issues by enabling the user to employ heuristics during
+ both the parallelization and scheduling phases which, while not guaranteed
+ to be correct (but can be 
 \emph on
 behaviorally verified
 \emph default
- (see Section 
+) and have much lower runtimes (see Section 
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "subsec:Symbolic-execution-for"
@@ -2006,13 +2002,13 @@ technology mapping
 netlist
 \emph default
 ) describing the logical connectivity of various parts of the design.
- Logic synthesis effectively determines the implementation of floating-point
+ Logic synthesis, for example, determines the implementation of floating-point
  operations in terms of DSPs; depending on user parameters and other design
  features, DSP resource consumption for floating-point multiplication and
  addition can differ greatly.
- The number of LUTs and DSPs that a high-level representation of a DNN correspon
-ds to is relevant to both the performance and feasibility of that DNN when
- deployed to FPGA.
+ Logic synthesis also determines the number of LUTs and DSPs that a high-level
+ representation of a DNN corresponds to, which is relevant to both the performan
+ce and feasibility of that DNN when deployed to FPGA.
 \end_layout
 
 \begin_layout Standard
@@ -2030,7 +2026,7 @@ y (in order to minimize wire delay), balance wire density across the entire
 \emph on
 bitstream
 \emph default
-, which is written to the FPGA.
+, which configures the FPGA.
 \end_layout
 
 \begin_layout Section
@@ -2453,11 +2449,11 @@ sqrtf
 \family typewriter
 max
 \family default
-); negation (
+), unary negation (
 \family typewriter
 neg
 \family default
-); rectified linear units (
+), and the rectified linear unit (
 \family typewriter
 relu
 \family default
@@ -2530,21 +2526,21 @@ reference "subsec:High-level-synthesis"
 \end_inset
 
 , the formally correct approach to unrolling a loop nest is prohibitively
- expensive in terms of runtime.
- Indeed, for example, in the case of 
-\family typewriter
-BraggNN
-\family default
-, repeatedly performing this unrolling was a hindrance to effectively searching
- the design space for a RTL representation achieving the target latency,
- since it often took an enormous amount of time (see Figure 
+ expensive in terms of runtime; see Figure 
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "fig:-kernel-convolution-full"
 
 \end_inset
 
-).
+ for an illustration in terms of convolution.
+ Indeed, for example, in the case of 
+\family typewriter
+BraggNN
+\family default
+, repeatedly performing this unrolling was a hindrance to effectively searching
+ the design space for a RTL representation achieving the target latency,
+ since it often took an enormous amount of time.
  
 \begin_inset Float figure
 wide false
@@ -2578,7 +2574,15 @@ reference "lis:Single-filter-convolution-2-1"
 \end_inset
 
 ) full unrolling time vs.
- input (square) image size, with store-load forwarding using MLIR's 
+ input (square) image size, with 
+\family typewriter
+store
+\family default
+-
+\family typewriter
+load
+\family default
+ forwarding using MLIR's 
 \family typewriter
 -affine-scalrep
 \family default
@@ -2692,14 +2696,14 @@ s and
 \family typewriter
 load
 \family default
-s as assignments and reads on those symbol tables;
+s as reads and writes on those symbol tables;
 \end_layout
 
 \begin_layout Enumerate
-Easily swap evaluation rules in order to support various functionality modes,
+Easily swap evaluation rules in order to support various functional modes,
  e.g., evaluating the floating-point arithmetic operations using (python)
  bindings to FloPoCo's C++ functional models thereby enabling behavioral
- verification.
+ verification of our designs.
 \end_layout
 
 \begin_layout Standard
@@ -3608,7 +3612,7 @@ scf
 Hoist globals
 \series default
 : all DNN tensors which are fixed (i.e., weights) are moved out of the body
- of the python 
+ of the generated python function
 \begin_inset Foot
 status collapsed
 
@@ -3648,7 +3652,7 @@ relu
 \family typewriter
 scf
 \family default
- dialect as a decomposition of 
+ dialect as a decomposition into 
 \family typewriter
 arith.cmpfugt
 \family default
@@ -3687,9 +3691,9 @@ store
  are very common in DNN implementations, thus we schedule such sequences
  jointly (this transformation coalesces such sequences into a single 
 \family typewriter
-FMAC
+fmac
 \family default
-);
+ operation);
 \end_layout
 
 \begin_layout Enumerate
@@ -3705,7 +3709,7 @@ s
 able loop-nests mentioned in Section 
 \begin_inset CommandInset ref
 LatexCommand ref
-reference "subsec:Symbolic-execution-for"
+reference "subsec:Scheduling"
 
 \end_inset
 
@@ -3774,31 +3778,18 @@ literal "false"
 
 \end_inset
 
-, as a part of our continuous integration process
-\begin_inset Foot
-status collapsed
-
-\begin_layout Plain Layout
-\begin_inset Flex URL
-status open
-
-\begin_layout Plain Layout
-
-https://github.com/makslevental/bragghls/actions
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\end_inset
-
-.
+, as a part of our continuous integration process.
 \end_layout
 
 \begin_layout Subsection
 Scheduling
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:Scheduling"
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -3809,7 +3800,7 @@ Recall that one of the critical functions which HLS fulfills is the scheduling
  As already mentioned, scheduling arbitrary DNNs involves formulating and
  solving an ILP.
  In the resource-unconstrained case, due to the precedence relations induced
- by data-flow, the constraint matrix of the associated ILP is 
+ by data-flow, the constraint matrix of the associated ILP is a 
 \emph on
 totally unimodular matrix
 \emph default
@@ -3826,7 +3817,7 @@ literal "false"
 .
  In the resource-constrained case it is possible to transform resource constrain
 ts into precedence constraints as well, by picking a particular (possibly
- heuristic) linear ordering on the particularly resource-constrained operations.
+ heuristic) linear ordering on the resource-constrained operations.
  This transformation partitions resource constrained operations into distinct
  clock cycles, thereby guaranteeing sufficient resources are available for
  all operations scheduled within the same clock cycle 
@@ -3942,8 +3933,8 @@ where
 \begin_inset Formula $K_{i}$
 \end_inset
 
- is the cartesian product of the iteration spaces of the parallel iteration
- variables.
+ is the cardinality of the cartesian product of the iteration spaces of
+ the parallel iteration variables.
  
 \begin_inset listings
 lstparams "language=mlir,float,fontsize={\scriptsize},escapeinside={||},mathescape=true"
@@ -4143,7 +4134,8 @@ scf.parallel
 \begin_inset Formula $j$
 \end_inset
 
- must be ordered according to their execution order during interpretation
+ must be ordered according to their execution order during symbolic interpretati
+on
 \begin_inset Foot
 status collapsed
 
@@ -4171,7 +4163,7 @@ BraggHLS
 \end_inset
 
 .
- Note this ordering coincides with the higher-level structure of the DNN,
+ Note, this ordering coincides with the higher-level structure of the DNN,
  since ordering of
 \family typewriter
  scf.parallel
@@ -4181,11 +4173,11 @@ BraggHLS
 \end_layout
 
 \begin_layout Standard
-For DNN operations that do not lower 
+For DNN operations that do not lower to 
 \family typewriter
 scf.parallel
 \family default
- loop-nests but lower to sequential loop nests (e.g., 
+ loop-nests but do lower to sequential loop nests (e.g., 
 \family typewriter
 sum
 \family default
@@ -4198,7 +4190,7 @@ max
 prod
 \family default
 ), we fully unroll the loops and transform the resulting, sequential, operations
- to a reduction tree; we use As-Late-As-Possible scheduling 
+ into a reduction tree; we use As-Late-As-Possible scheduling 
 \begin_inset CommandInset citation
 LatexCommand cite
 key "baruch1996scheduling"
@@ -4264,15 +4256,16 @@ BraggHLS
  is the worst negative slack reported).
  Note, in the case of Vitis HLS, which potentially explicitly pipelines
  the design and therefore implements with an initiation interval strictly
- less than the total schedule interval count, we report the best possible
- interval count (
+ less than the total schedule interval count, we report in terms of the
+ best possible interval count (
 \family typewriter
 LatencyBest
 \family default
  from the Vitis HLS reports).
  All other measurements are collected from Vivado synthesis reports.
  Note, since Vitis HLS operates on C++ representations, we generate such
- a representation for our test cases by first lowering each to the 
+ a representation for our test cases by first lowering each DNN layer to
+ the 
 \family typewriter
 affine
 \family default
@@ -4289,11 +4282,11 @@ literal "false"
 \end_inset
 
  to emit C++.
- Note further, we do not make any use of 
+ Importantly, we do not make any use of 
 \family typewriter
 scalehls-opt
 \family default
- tool (of the same project).
+ optimization tool (of the same project).
  
 \end_layout
 
@@ -4304,8 +4297,8 @@ Since our ultimate goal is low latency inference, and since the strategy
 BraggHLS
 \family default
  employs in the pursuit of this goal is loop unrolling, in order to produce
- a like for like comparison, we similarly unroll the representation that's
- passed to Vitis HLS.
+ a like for like comparison, we similarly unroll the representation that
+ is passed to Vitis HLS.
  Thus, all Vitis HLS measurements are reported in terms of 
 \emph on
 unroll factor
@@ -4353,6 +4346,11 @@ array_partition complete dim=1
 \end_inset
 
  in order that Vitis HLS can effectively pipeline.
+ All representations generated by 
+\family typewriter
+BraggHLS
+\family default
+ correspond to full unrolling of the loop nests.
 \end_layout
 
 \begin_layout Subsection
@@ -4489,12 +4487,39 @@ soft_max
 
 \end_inset
 
-: The Softmax function.
+: The softmax function 
+\begin_inset Formula 
+\[
+\text{softmax}\left(\boldsymbol{x}\right):=\left[\frac{\exp\left(x_{i}\right)}{\sum_{j}\exp\left(x_{j}\right)}\right]
+\]
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
-The layers were chosen to cover a range of arithmetic operations and data
- access patterns, i.e., iteration, accumulation, and reduction.
+The layers were chosen to cover a range of arithmetic operations (
+\family typewriter
+mulf
+\family default
+, 
+\family typewriter
+divf
+\family default
+, 
+\family typewriter
+addf
+\family default
+, 
+\family typewriter
+subf
+\family default
+, 
+\family typewriter
+sqrtf
+\family default
+) and data access patterns (iteration, accumulation, and reduction).
  The concrete parameter values and dimensions of inputs used during evaluation
  are summarized in Table 
 \begin_inset CommandInset ref
@@ -5101,9 +5126,30 @@ name "fig:Runtime-of-Vitisa"
 \end_layout
 
 \begin_layout Standard
-We observe that Vitis HLS indeed approaches lower and lower end-to-end latencies
- as a function of unroll factor but that for none of the unroll factors
- is it able to match the end-to-end latency achieved by 
+See Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Resource-usage-and"
+
+\end_inset
+
+ for Vitis HLS vs.
+ 
+\family typewriter
+BraggHLS
+\family default
+ resource usage and latency vs.
+ unroll factor and Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Runtime-of-Vitisa"
+
+\end_inset
+
+ for the runtimes of Vitis HLS as function of increasing unroll factor.
+ We observe that Vitis HLS indeed approaches lower and lower end-to-end
+ latencies as a function of unroll factor but that for none of the unroll
+ factors is it able to match the end-to-end latency achieved by 
 \family typewriter
 BraggHLS
 \family default
@@ -5121,7 +5167,15 @@ BraggHLS
 .
  We hypothesize that in general this is due to Vitis HLS's inability to
  effectively pipeline due to inability to eliminate memory dependencies,
- either through store-load forwarding or further array partitioning
+ either through 
+\family typewriter
+store
+\family default
+-
+\family typewriter
+load
+\family default
+ forwarding or further array partitioning
 \begin_inset Foot
 status collapsed
 
@@ -5162,8 +5216,16 @@ due to limited memory ports (II = 1).
 \family typewriter
 BraggHLS
 \family default
-'s ability to effectively perform store-load forwarding is evident in the
- complete lack of BRAM usage: all weights are kept on FFs or LUTs.
+'s ability to effectively perform 
+\family typewriter
+store
+\family default
+-
+\family typewriter
+load
+\family default
+ forwarding is evident in the complete lack of BRAM usage: all weights are
+ kept on FFs or LUTs.
  While this is infeasible for larger designs (which would be constrained
  by the number of available FFs), for our particular use case, this unconstraine
 d usage of FFs is acceptable.
@@ -5173,7 +5235,8 @@ d usage of FFs is acceptable.
 max_pool_2d
 \family default
  is due to Vitis HLS's failure to meet timing, i.e., while the interval count
- is decreased in the clock period is increasing (see Appendix Table 
+ decreases as a function of unroll factor, the clock period increases (see
+ Appendix Table 
 \begin_inset ERT
 status open
 
@@ -5506,7 +5569,7 @@ literal "false"
 \end_inset
 
 , a DNN aimed at efficiently characterizing Bragg diffraction peaks, achieves
- a batched latency of approximately 22 µs/sample.
+ a throughput of approximately 22 µs/sample (via batch inference).
  This is a large speedup over the classical pseudo-Voigt peak fitting methods,
  but still falls far short of the 1 µs/sample target for handling the 1
  MHz sampling rates.
@@ -5541,8 +5604,8 @@ reference "lis:braggnn"
 \end_inset
 
 ) and achieved a RTL implementation which synthesizes to a 1,238 interval
- design that places, routes, and meets timing closure for a clock period
- of 10 ns (for a Xilinx Alveo U280).
+ count design that places, routes, and meets timing closure for a clock
+ period of 10 ns (for a Xilinx Alveo U280).
  The design consists of a three stage pipeline with the longest stage measuring
  480 intervals.
  Thus, the throughput of the implementation is 4.8 µs/sample.
@@ -5705,7 +5768,11 @@ literal "false"
 
 -precision 
 \family typewriter
-BraggNN
+BraggNN(
+\begin_inset Formula $s=1$
+\end_inset
+
+)
 \family default
  needs 23,328 SLLs between SLR2 and SLR1
 \begin_inset Foot
@@ -5740,7 +5807,7 @@ cnn_layers_1
 
 .
  Finally, since multiple dies constitute independent clock domains, the
- SLLs that cross SLRS are sensitive hold time violations due to the higher
+ SLLs that cross SLRS are sensitive to hold time violations due to the higher
  multi-die variability 
 \begin_inset CommandInset citation
 LatexCommand cite
@@ -5925,7 +5992,11 @@ BraggHLS
 ) and careful management of routing constraints enables us to lower, compile,
  synthesize, place and route 
 \family typewriter
-BraggNN
+BraggNN(
+\begin_inset Formula $s=1$
+\end_inset
+
+)
 \family default
  to Xilinx's Alveo U280 at a throughput of 4.8 µs/sample.
  This is ~5
@@ -5946,23 +6017,6 @@ Conclusion
 \begin_inset CommandInset label
 LatexCommand label
 name "sec:Conclusion"
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-\begin_inset Note Note
-status open
-
-\begin_layout Plain Layout
-Remember though that your final submission is supposed to have all the bibliogra
-phy entries embedded in the \SpecialChar LaTeX
--file.
- This means you eventually have to copy the .bbl file into the latex file
- and remove the bibtex lines.
-\end_layout
 
 \end_inset
 
@@ -6021,12 +6075,12 @@ status open
 \begin_layout Plain Layout
 Resource usage for 
 \family typewriter
-BraggNN
-\family default
- with 
-\begin_inset Formula $k=1$
+BraggNN(
+\begin_inset Formula $s=1$
 \end_inset
 
+)
+\family default
  and 
 \begin_inset Formula $\left(5,3\right)$
 \end_inset
