@@ -449,14 +449,14 @@ def conv2d(
 	  _61 = weight[i2, i5, i6, i7] 
 	  _71 = output[i1, i2, i3, i4] 
 	  _81 = _51 * _61 
-	  |${\setlength{ \fboxsep}{1pt} \colorbox{green}{ \texttt{\_91}}}$| = _71 + _81 
-	  output[i1, i2, i3, i4] = _91 
+	  |${\setlength{\fboxsep}{1pt} \colorbox{green}{\texttt{\_91}}}$| = _71 + _81 
+          |${\setlength{\fboxsep}{1pt}          \colorbox{green}{\texttt{output[i1, i2, i3, i4]}}}$| = |${\setlength{ \fboxsep}{1pt} \colorbox{green}{\texttt{\_91}}}$| 
 	  # i5, i6, i7 = 2, 3, ${\setlength{\fboxsep}{1pt}\colorbox{Salmon}{\texttt{5}}}$
 	  _32 = i3 + i6 
 	  _42 = i4 + i7 
 	  _52 = input[i1, i5, _32, _42] 
 	  _62 = weight[i2, i5, i6, i7] 
-	  |${\setlength{\fboxsep}{1pt}\colorbox{yellow}{\texttt{\_72}}}$| = output[i1, i2, i3, i4] 
+	  |${\setlength{\fboxsep}{1pt}\colorbox{yellow}{\texttt{\_72}}}$| = |${\setlength{\fboxsep}{1pt}          \colorbox{green}{\texttt{output[i1, i2, i3, i4]}}}$| 
 	  _82 = _52 * _62 
 	  |${\setlength{\fboxsep}{1pt}\colorbox{Cyan}{\texttt{\_92}}}$| = |${\setlength{\fboxsep}{1pt}\colorbox{yellow}{\texttt{\_72}}}$| + _82 
 	  output[i1, i2, i3, i4] = _92
@@ -1116,7 +1116,7 @@ with compiler level optimizations performed by \texttt{BraggHLS})
 and careful management of routing constraints enables us to lower,
 compile, synthesize, place and route \texttt{BraggNN($s=1$)} to Xilinx's
 Alveo U280 at a throughput of 4.8 \textmu s/sample. This is \textasciitilde 5$\times$
-higher latency than the target 1 \textmu s/sample but it is a 4$\times$
+higher latency than the target 1 \textmu s/sample but it is a \textasciitilde 4$\times$
 improvement over the GPU PyTorch-GPU implementation. In the following
 we propose some future work that can further improve on this.
 

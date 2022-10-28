@@ -424,6 +424,18 @@
         "LatencyWorst": 9032,
         "PipelineII": 9033,
         "elapsed_time": 61840.6
+      },
+      "1024": {
+        "LUT": 94.79519513991164,
+        "FF": 8.269092108492881,
+        "DSP": 34.61879432624114,
+        "BRAM": 0.3224206349206349,
+        "clock_period_minus_wns": 6.142,
+        "LatencyBest": 6789,
+        "LatencyAvg": 6789,
+        "LatencyWorst": 6789,
+        "PipelineII": 6790,
+        "elapsed_time": 46671.8
       }
     },
     "conv": {

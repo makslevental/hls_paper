@@ -1351,7 +1351,7 @@ reference "lis:Single-filter-convolution"
 \begin_inset listings
 lstparams "language=Python,float,fontsize={\footnotesize},escapeinside={||},mathescape=true"
 inline false
-status collapsed
+status open
 
 \begin_layout Plain Layout
 
@@ -1565,7 +1565,7 @@ reference "lis:Single-filter-convolution-1"
 \begin_inset listings
 lstparams "language=Python,float,numbers=left,fontsize={\footnotesize},escapeinside={||},mathescape=true,highlightlines={19,25},autogobble=true,numbersep=3pt"
 inline false
-status collapsed
+status open
 
 \begin_layout Plain Layout
 
@@ -1664,11 +1664,11 @@ texttt{4}}}$
 
 	  |${
 \backslash
-setlength{ 
+setlength{
 \backslash
 fboxsep}{1pt} 
 \backslash
-colorbox{green}{ 
+colorbox{green}{
 \backslash
 texttt{
 \backslash
@@ -1677,7 +1677,25 @@ _91}}}$| = _71 + _81
 
 \begin_layout Plain Layout
 
-	  output[i1, i2, i3, i4] = _91 
+          |${
+\backslash
+setlength{
+\backslash
+fboxsep}{1pt}          
+\backslash
+colorbox{green}{
+\backslash
+texttt{output[i1, i2, i3, i4]}}}$| = |${
+\backslash
+setlength{ 
+\backslash
+fboxsep}{1pt} 
+\backslash
+colorbox{green}{
+\backslash
+texttt{
+\backslash
+_91}}}$| 
 \end_layout
 
 \begin_layout Plain Layout
@@ -1725,7 +1743,15 @@ colorbox{yellow}{
 \backslash
 texttt{
 \backslash
-_72}}}$| = output[i1, i2, i3, i4] 
+_72}}}$| = |${
+\backslash
+setlength{
+\backslash
+fboxsep}{1pt}          
+\backslash
+colorbox{green}{
+\backslash
+texttt{output[i1, i2, i3, i4]}}}$| 
 \end_layout
 
 \begin_layout Plain Layout
@@ -6003,7 +6029,7 @@ BraggNN(
 \begin_inset Formula $\times$
 \end_inset
 
- higher latency than the target 1 µs/sample but it is a 4
+ higher latency than the target 1 µs/sample but it is a ~4
 \begin_inset Formula $\times$
 \end_inset
 

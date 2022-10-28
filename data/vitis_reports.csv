@@ -349,6 +349,16 @@ braggnn,40,LatencyAvg,9032
 braggnn,40,LatencyWorst,9032
 braggnn,40,PipelineII,9033
 braggnn,40,elapsed_time,61840.6
+braggnn,1024,LUT,94.79519513991164
+braggnn,1024,FF,8.269092108492881
+braggnn,1024,DSP,34.61879432624114
+braggnn,1024,BRAM,0.3224206349206349
+braggnn,1024,clock_period_minus_wns,6.142
+braggnn,1024,LatencyBest,6789
+braggnn,1024,LatencyAvg,6789
+braggnn,1024,LatencyWorst,6789
+braggnn,1024,PipelineII,6790
+braggnn,1024,elapsed_time,46671.8
 conv,0,LUT,0.04395250368188513
 conv,0,FF,0.022973429062346586
 conv,0,DSP,0.044326241134751775
