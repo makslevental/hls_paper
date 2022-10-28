@@ -1,0 +1,3 @@
+\begin{Verbatim}[commandchars=\\\{\},codes={\catcode`\$=3\catcode`\^=7\catcode`\_=8\relax}]
+\PYG{esc}{$\llbracket$}\PYG{esc}{$\perc$}\PYG{n+nv}{8} = \PYG{k}{arith.mulf} \PYG{n+nv}{\PYGZpc{}5}, \PYG{n+nv}{\PYGZpc{}6}\PYG{esc}{$\rrbracket$}
+\end{Verbatim}

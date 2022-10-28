@@ -1,0 +1,3 @@
+\begin{Verbatim}[commandchars=\\\{\},codes={\catcode`\$=3\catcode`\^=7\catcode`\_=8\relax}]
+\PYG{esc}{$\llbracket$}\PYG{o}{\PYGZpc{}}\PYG{l+m+mi}{3}\PYG{esc}{$\rrbracket$} \PYG{o}{=} \PYG{esc}{$\llbracket$}\PYG{o}{\PYGZpc{}}\PYG{n}{i3}\PYG{esc}{$\rrbracket$} \PYG{o}{+} \PYG{esc}{$\llbracket$}\PYG{o}{\PYGZpc{}}\PYG{n}{i6}\PYG{esc}{$\rrbracket$}
+\end{Verbatim}

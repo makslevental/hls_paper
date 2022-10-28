@@ -52,7 +52,7 @@
 \usepackage{subfig}
 \makeatother
 
-\usepackage{minted}
+\usepackage[frozencache]{minted}
 \usepackage[style=numeric,backend=bibtex]{biblatex}
 \renewcommand{\listingscaption}{Listing}
 
@@ -75,7 +75,7 @@ Fax: (888) 555\textendash 5555}}
 \setminted{
     bgcolor=bg,
     escapeinside={||},
-    mathescape=true
+    mathescape=true,
 }
 \setmintedinline{breaklines}
 \AtBeginEnvironment{minted}{%

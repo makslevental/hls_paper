@@ -1,0 +1,3 @@
+\begin{Verbatim}[commandchars=\\\{\},codes={\catcode`\$=3\catcode`\^=7\catcode`\_=8\relax}]
+\PYG{n}{MemRef}\PYG{p}{(}\PYG{esc}{$b$}\PYG{p}{,} \PYG{esc}{$c_{in}$}\PYG{p}{,} \PYG{esc}{$h$}\PYG{p}{,} \PYG{esc}{$w$}\PYG{p}{)}
+\end{Verbatim}

@@ -1,0 +1,22 @@
+\begin{Verbatim}[commandchars=\\\{\},codes={\catcode`\$=3\catcode`\^=7\catcode`\_=8\relax}]
+\PYG{k}{def} \PYG{n+nf}{conv2d}\PYG{p}{(}
+  \PYG{n+nb}{input}\PYG{p}{:} \PYG{n}{MemRef}\PYG{p}{(}\PYG{esc}{$b$}\PYG{p}{,} \PYG{esc}{$c_{in}$}\PYG{p}{,} \PYG{esc}{$h$}\PYG{p}{,} \PYG{esc}{$w$}\PYG{p}{)}\PYG{p}{,}
+  \PYG{n}{output}\PYG{p}{:} \PYG{n}{MemRef}\PYG{p}{(}\PYG{esc}{$b$}\PYG{p}{,} \PYG{esc}{$c_{out}$}\PYG{p}{,} \PYG{esc}{$h$}\PYG{p}{,} \PYG{esc}{$w$}\PYG{p}{)}\PYG{p}{,}
+  \PYG{n}{weight}\PYG{p}{:} \PYG{n}{MemRef}\PYG{p}{(}\PYG{esc}{$c_{out}$}\PYG{p}{,} \PYG{esc}{$c_{in}$}\PYG{p}{,} \PYG{esc}{$k$}\PYG{p}{,} \PYG{esc}{$k$}\PYG{p}{)}
+\PYG{p}{)}\PYG{p}{:}
+  \PYG{k}{for} \PYG{n}{i1} \PYG{o+ow}{in} \PYG{n+nb}{range}\PYG{p}{(}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{esc}{$b$}\PYG{p}{)}\PYG{p}{:}
+    \PYG{k}{for} \PYG{n}{i2} \PYG{o+ow}{in} \PYG{n+nb}{range}\PYG{p}{(}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{esc}{$c_{out}$}\PYG{p}{)}\PYG{p}{:}
+      \PYG{k}{for} \PYG{n}{i3} \PYG{o+ow}{in} \PYG{n+nb}{range}\PYG{p}{(}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{esc}{$h$}\PYG{p}{)}\PYG{p}{:}
+        \PYG{k}{for} \PYG{n}{i4} \PYG{o+ow}{in} \PYG{n+nb}{range}\PYG{p}{(}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{esc}{$w$}\PYG{p}{)}\PYG{p}{:}
+          \PYG{k}{for} \PYG{n}{i5} \PYG{o+ow}{in} \PYG{n+nb}{range}\PYG{p}{(}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{esc}{$c_{in}$}\PYG{p}{)}\PYG{p}{:}
+            \PYG{k}{for} \PYG{n}{i6} \PYG{o+ow}{in} \PYG{n+nb}{range}\PYG{p}{(}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{esc}{$k$}\PYG{p}{)}\PYG{p}{:}
+              \PYG{k}{for} \PYG{n}{i7} \PYG{o+ow}{in} \PYG{n+nb}{range}\PYG{p}{(}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{esc}{$k$}\PYG{p}{)}\PYG{p}{:}
+                \PYG{n}{\PYGZus{}3} \PYG{o}{=} \PYG{n}{i3} \PYG{o}{+} \PYG{n}{i6}
+                \PYG{n}{\PYGZus{}4} \PYG{o}{=} \PYG{n}{i4} \PYG{o}{+} \PYG{n}{i7}
+                \PYG{n}{\PYGZus{}5} \PYG{o}{=} \PYG{n+nb}{input}\PYG{p}{[}\PYG{n}{i1}\PYG{p}{,} \PYG{n}{i5}\PYG{p}{,} \PYG{n}{\PYGZus{}3}\PYG{p}{,} \PYG{n}{\PYGZus{}4}\PYG{p}{]}
+                \PYG{n}{\PYGZus{}6} \PYG{o}{=} \PYG{n}{weight}\PYG{p}{[}\PYG{n}{i2}\PYG{p}{,} \PYG{n}{i5}\PYG{p}{,} \PYG{n}{i6}\PYG{p}{,} \PYG{n}{i7}\PYG{p}{]}
+                \PYG{n}{\PYGZus{}7} \PYG{o}{=} \PYG{n}{output}\PYG{p}{[}\PYG{n}{i1}\PYG{p}{,} \PYG{n}{i2}\PYG{p}{,} \PYG{n}{i3}\PYG{p}{,} \PYG{n}{i4}\PYG{p}{]}
+                \PYG{n}{\PYGZus{}8} \PYG{o}{=} \PYG{n}{\PYGZus{}5} \PYG{o}{*} \PYG{n}{\PYGZus{}6}
+                \PYG{n}{\PYGZus{}9} \PYG{o}{=} \PYG{n}{\PYGZus{}7} \PYG{o}{+} \PYG{n}{\PYGZus{}8}
+                \PYG{n}{output}\PYG{p}{[}\PYG{n}{i1}\PYG{p}{,} \PYG{n}{i2}\PYG{p}{,} \PYG{n}{i3}\PYG{p}{,} \PYG{n}{i4}\PYG{p}{]} \PYG{o}{=} \PYG{n}{\PYGZus{}9}
+\end{Verbatim}

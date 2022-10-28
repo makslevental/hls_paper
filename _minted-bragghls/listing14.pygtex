@@ -1,0 +1,3 @@
+\begin{Verbatim}[commandchars=\\\{\},codes={\catcode`\$=3\catcode`\^=7\catcode`\_=8\relax}]
+\PYG{esc}{$\llbracket$} \PYG{k}{scf.for} \PYG{n+nv}{\PYGZpc{}i1} = \PYG{n+nv}{\PYGZpc{}c0} \PYG{k}{to} \PYG{esc}{$b$} \PYG{k}{step} \PYG{n+nv}{\PYGZpc{}c1}\PYG{esc}{$\rrbracket$}
+\end{Verbatim}

@@ -289,7 +289,7 @@ setminted{
 
 \begin_layout Plain Layout
 
-    mathescape=true
+    mathescape=true,
 \end_layout
 
 \begin_layout Plain Layout
