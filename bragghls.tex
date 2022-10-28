@@ -52,15 +52,37 @@
 \usepackage{subfig}
 \makeatother
 
-\usepackage[frozencache]{minted}
+\usepackage[frozencache,cachedir=_minted-bragghls]{minted}
 \usepackage[style=numeric,backend=bibtex]{biblatex}
 \renewcommand{\listingscaption}{Listing}
+
+\newif\iffinal
+% Un-comment this line to see proposal without comments
+%\finaltrue
+
+\iffinal
+  \newcommand\maxx[1]{}
+  \newcommand\ian[1]{}
+  \newcommand\ryan[1]{}
+  \newcommand\kyle[1]{}
+  \newcommand\kaz[1]{}
+  \newcommand\arham[1]{}
+\else
+  \newcommand\maxx[1]{{\color{red}[Max: #1]}}
+  \newcommand\ian[1]{{\color{blue}[Ian: #1]}}
+  \newcommand\ryan[1]{{\color{magenta}[Ryan: #1]}}
+  \newcommand\kyle[1]{{\color{yellow}[Kyle: #1]}}
+  \newcommand\kaz[1]{{\color{purple}[Kaz: #1]}}
+  \newcommand\arham[1]{{\color{green}[Arham: #1]}}
+\fi
 
 \addbibresource{ref.bib}
 \begin{document}
 \title{\texttt{BraggHLS}}
-\author{\IEEEauthorblockN{Maksim~Levental}\IEEEauthorblockA{University of Chicago\\
-Email: test@test.tes}\and \IEEEauthorblockN{Ryan~Chard}\IEEEauthorblockA{Ecole Superieure\\
+\author{\IEEEauthorblockN{Maksim~Levental\\
+and Arham~Khan}\IEEEauthorblockA{University of Chicago\\
+Email: test@test.tes}\and \IEEEauthorblockN{Ryan~Chard\\
+and Kazutomo~Yoshi}\IEEEauthorblockA{Argonne National Laboratory\\
 Nantes, France\\
 Email: second@second.fr}\and \IEEEauthorblockN{Kyle~Chard\\
 and Ian~Foster}\IEEEauthorblockA{Star Academy\\
@@ -123,18 +145,18 @@ such as high-energy physics, material science, and cosmology. For
 example, in high-energy physics, the LHCb detector, at the CERN Large
 Hadron Collider, is tasked with observing the trajectories of particles
 produced in proton-proton collisions at a rate of 40 million per second
-(i.e., 40 MHz) \cite{pmlr-v42-glig14}. With a packet size of approximately
+(i.e., 40 MHz)~\cite{pmlr-v42-glig14}. With a packet size of approximately
 50 kB (per collision), this implies a data rate of approximately 2
 TB/s. Ultimately, in combination with other detectors, the LHC processes
 approximately 100 EB of data per year. In materials science, high-energy
 diffraction microscopy (HEDM) techniques, which provide non-destructive
 characterization of structure and its evolution in a broad class of
 single-crystal and polycrystalline materials, can have collection
-rates approaching 1 MHz \cite{Hammer_2021}, with a corresponding
+rates approaching 1 MHz~\cite{Hammer_2021}, with a corresponding
 packet size of 80 kB. In cosmology, the Square Kilometer Array, a
 radio telescope projected to be completed in 2024 and to be operational
-by 2027 \cite{mcmullin2022square}, will sustain data rates in excess
-of 10 TB/s \cite{grainge2017square}.
+by 2027~\cite{mcmullin2022square}, will sustain data rates in excess
+of 10 TB/s~\cite{grainge2017square}.
 
 Naturally, for high data rate experiments, directly storing and distributing
 such large quantities of data to the associated research communities
@@ -146,38 +168,38 @@ discarded. In this work we focus on the filtering approach. Note,
 the tradeoff made in employing filtering should be clear: reduced
 storage at the expense of more stringent latency constraints (on the
 filtering mechanisms). Typically, these filtering mechanisms consist
-either of physics based models \cite{LHCB-FIGURE-2020-018} or machine
-learning models \cite{Gligorov_2013}; in either case maximally efficient
+either of physics based models~\cite{LHCB-FIGURE-2020-018} or machine
+learning models~\cite{Gligorov_2013}; in either case maximally efficient
 and effective use of the target hardware platform is important. Irrespective
 of the type of technique employed, almost universally, for the ultra-low
 latency use cases (e.g., sub-microsecond latency constraints), the
 implementation is deployed to either field-programmable gate arrays
-(FPGAs) or application-specific integrated circuits (ASICs) \cite{Duarte_2018}.
+(FPGAs) or application-specific integrated circuits (ASICs)~\cite{Duarte_2018}.
 Here we focus primarily on FPGAs.
 
 Deep neural networks (DNNs), a particular type of machine learning
 model, have been shown to be effective in many scientific and commercial
 domains due to their ``representational capacity'', i.e., they demonstrate
-a capacity to (approximately) represent diverse sets of mappings \cite{alzubaidi2021review}.
+a capacity to (approximately) represent diverse sets of mappings~\cite{alzubaidi2021review}.
 DNNs ``learn'' to represent a mapping over the course of ``training'',
 wherein they are iteratively evaluated on sample data while a ``learning
 rule'' periodically updates the \emph{weights} that parameterize
 the DNN. In recent years they have been investigated for near real-time
-scientific use cases \cite{liu2019deep,patton2018167,liu2022exploring}
-but their use for the lowest latency use cases has been limited \cite{Duarte_2018}.
-The reasons for this are threefold: 
+scientific use cases~\cite{liu2019deep,patton2018167,liu2022exploring}
+but their use for the lowest latency use cases has been limited~\cite{Duarte_2018}.
+The reasons for this are threefold:
 \begin{enumerate}
 \item Graphics Processing Units (GPUs), the conventional hardware target
 for DNNs, until very recently, have not been performant enough for
 these very high data rate, very low latency, use cases (due to their
-low clock speeds and low peripheral bandwidth \cite{aaij2020allen});
+low clock speeds and low peripheral bandwidth~\cite{aaij2020allen});
 \item DNNs, by virtue of their depth, are resource intensive, in terms of
 both memory (for the weights) and compute (floating-point arithmetic),
 thereby preventing their deployment to FPGAs, which, in particular,
 have limited static RAM available;
 \item DNNs are (typically) defined, trained, and distributed using high-level
-frameworks (such as PyTorch \cite{paszke2017automatic}, TensorFlow
-\cite{https://doi.org/10.48550/arxiv.1603.04467}, MXNet \cite{https://doi.org/10.48550/arxiv.1512.01274}),
+frameworks (such as PyTorch~\cite{paszke2017automatic}, TensorFlow
+\cite{https://doi.org/10.48550/arxiv.1603.04467}, MXNet~\cite{https://doi.org/10.48550/arxiv.1512.01274}),
 which abstract all implementation details from the user, thereby making
 portability of existing model architectures (to e.g., FPGA) nigh impossible.
 \end{enumerate}
@@ -189,22 +211,22 @@ representations of programs to low-level representations is the domain
 of a compiler. Similarly, the task of \emph{synthesizing} a\emph{
 register-transfer level} (RTL) \emph{design}, rendered in a \emph{hardware
 description language} (HDL), from a program, is the domain of high-level
-synthesis (HLS) \cite{7368920} tools. While several such HLS tools
-exist \cite{10.1145/2514740,Zhang2008,ferrandi2021bambu} they struggle
+synthesis (HLS)~\cite{7368920} tools. While several such HLS tools
+exist~\cite{10.1145/2514740,Zhang2008,ferrandi2021bambu} they struggle
 to effectively perform the necessary optimizations in reasonable amounts
-of time (see Section \ref{subsec:High-level-synthesis}) despite,
+of time (see Section~\ref{subsec:High-level-synthesis}) despite,
 often, bundling robust optimizing compilers,.
 
-Recently, deep learning compilers (such as TVM \cite{chen2018tvm},
-MLIR \cite{https://doi.org/10.48550/arxiv.2002.11054}, and Glow \cite{https://doi.org/10.48550/arxiv.1805.00907})
+Recently, deep learning compilers (such as TVM~\cite{chen2018tvm},
+MLIR~\cite{https://doi.org/10.48550/arxiv.2002.11054}, and Glow~\cite{https://doi.org/10.48550/arxiv.1805.00907})
 have demonstrated the ability to dramatically reduce inference latencies
 \cite{https://doi.org/10.48550/arxiv.1809.02697}, training times
-\cite{9664259}, and memory usage \cite{https://doi.org/10.48550/arxiv.1604.06174}
+\cite{9664259}, and memory usage~\cite{https://doi.org/10.48550/arxiv.1604.06174}
 of DNNs. These compilers function by extracting intermediate-level
 representations (IRs) of the DNNs, from the representations produced
 by the frameworks, and performing various optimizations on those IRs
-(such as kernel fusion \cite{10.1145/2858788.2688521}, vectorization
-\cite{maleki2011evaluation}, and memory planning \cite{https://doi.org/10.48550/arxiv.1604.06174}).
+(such as kernel fusion~\cite{10.1145/2858788.2688521}, vectorization
+\cite{maleki2011evaluation}, and memory planning~\cite{https://doi.org/10.48550/arxiv.1604.06174}).
 The highly optimized IR is then used to generate code for various
 target hardware platforms. Given the successes of these compilers,
 it's natural to wonder whether they can be adapted to the task of
@@ -237,16 +259,16 @@ for identifying Bragg diffraction peaks;
 of RTL from a high-level representation of a DNN, namely during the
 place and route phases of implementation.
 \end{enumerate}
-The rest of this paper is organized as follows: Section \ref{sec:Background}
+The rest of this paper is organized as follows: Section~\ref{sec:Background}
 reviews key concepts from compilers, high-level synthesis, and RTL
-design for FPGA. Section \ref{sec:BraggHLS-compiler-and} describes
+design for FPGA. Section~\ref{sec:BraggHLS-compiler-and} describes
 the \texttt{BraggHLS} compiler and HLS framework in detail. Section
 \ref{sec:Evaluation} evaluates \texttt{BraggHLS}\textquoteright s
 performance, scalability, and competitiveness with designs generated
-by Vitis HLS. Section \ref{sec:BraggNN-case-study} describes our
+by Vitis HLS. Section~\ref{sec:BraggNN-case-study} describes our
 case study, i.e., \texttt{BraggHLS} applied to \texttt{BraggNN}, a
 Bragg peak detection DNN with a target latency of 1 \textmu s/sample.
-Finally, Section \ref{sec:Conclusion} concludes with a summary, and
+Finally, Section~\ref{sec:Conclusion} concludes with a summary, and
 related and future work.
 
 \section{Background\label{sec:Background}}
@@ -279,14 +301,14 @@ using python, which, when executed, materializes the (partial) high-level
 data-flow graph (DFG) corresponding to the DNN (e.g., for the purposes
 of reverse-mode automatic differentiation). From the perspective of
 the user, define-by-run enables fast iteration at development time,
-possibly at the cost of some runtime performance. 
+possibly at the cost of some runtime performance.
 
 On the other hand, from the perspective of compilation, define-by-run
 precludes efficient extraction of the high-level DFG; since the DFG
 is materialized only at runtime, it cannot easily be inferred from
 the textual representation (i.e., the python source) of the DNN. Furthermore,
 a priori, the runtime-materialized DFG is only partially materialized\footnote{``...instead, every intermediate result records only the subset of
-the computation graph that was relevant to their computation.'' \cite{paszke2017automatic}}, and only as an in-memory data structure. Thus, framework support
+the computation graph that was relevant to their computation.''~\cite{paszke2017automatic}}, and only as an in-memory data structure. Thus, framework support
 is necessary for efficiently extracting the full DFG. Indeed, PyTorch
 supports a Single Static Assignment (SSA) IR, called TorchScript (TS)
 IR and accompanying tracing mechanism (the TS JIT), which generates
@@ -298,7 +320,7 @@ recent addition to the compiler ecosystem.
 
 \subsubsection{MLIR\label{subsec:MLIR}}
 
-Multi-level Intermediate Representation \cite{https://doi.org/10.48550/arxiv.2002.11054}
+Multi-level Intermediate Representation~\cite{https://doi.org/10.48550/arxiv.2002.11054}
 presents a new approach to building reusable and extensible compiler
 infrastructure. MLIR is composed of a set of \emph{dialect} IRs, subsets
 of which are mutually compatible, either directly or by way of translation/legalization.
@@ -311,7 +333,7 @@ IR, which, in addition to performing the translation to MLIR, fully
 refines all shapes of intermediate tensors in the DNN (i.e., computes
 concrete values for all dimensions of each tensor); this is necessary
 for downstream optimizations and eliminating inconsistencies in the
-DNN \cite{https://doi.org/10.48550/arxiv.2203.08402}.
+DNN~\cite{https://doi.org/10.48550/arxiv.2203.08402}.
 
 While the \texttt{torch} dialect is necessary for lowering to MLIR
 and shape refinement, it is a representation of a DNN at the same
@@ -324,10 +346,10 @@ standard control flow primitives, such as conditionals and loops,
 and is mutually compatible with the \texttt{arith} (arithmetic operations)
 and \texttt{memref} (memory buffers) dialects. The \texttt{affine}
 dialect, on the other hand, provides a formalization of semantics
-that lend themselves to polyhedral compilation techniques \cite{polyhedral-mlir},
+that lend themselves to polyhedral compilation techniques~\cite{polyhedral-mlir},
 i.e., techniques that enable loop dependence analysis and loop transformations.
 Such loop transformations, particularly loop unrolling, are crucial
-for achieving lowest possible latencies \cite{yehpca2022scalehls}
+for achieving lowest possible latencies~\cite{yehpca2022scalehls}
 because loop nests directly inform the concurrency and parallelism
 of the final RTL design.
 
@@ -336,7 +358,7 @@ of the final RTL design.
 \subsubsection{High-level synthesis\label{subsec:High-level-synthesis}}
 
 High-level synthesis tools produce RTL descriptions of designs from
-high-level representations, such as C or C++ \cite{10.1145/2514740,ferrandi2021bambu}.
+high-level representations, such as C or C++~\cite{10.1145/2514740,ferrandi2021bambu}.
 In particular, Xilinx's Vitis HLS, based on the Autopilot project
 \cite{Zhang2008}, is a state-of-the-art HLS tool. Given a high-level,
 procedural, representation, HLS carries out three fundamental tasks,
@@ -376,7 +398,7 @@ entails pipelining operations: operations are executed such that they
 overlap in time when possible, subject to available resources. Maximizing
 parallelism entails partitioning the DNN into subsets of operation
 that can be computed independently and simultaneously and whose results
-are aggregated upon completion. 
+are aggregated upon completion.
 
 While HLS aims to automatically optimize various characteristics of
 a design, there are challenges associated with this kind of automated
@@ -386,7 +408,7 @@ operations, both for scheduling and identifying potential data hazards.
 Such data-flow analysis is expensive and grows (in runtime) as better
 performance is pursued. This can be understood in terms of loop-nest
 representations of DNN operations; for example consider the convolution
-in Listing \ref{lis:Single-filter-convolution}.
+in Listing~\ref{lis:Single-filter-convolution}.
 \begin{listing}
 \begin{minted}[fontsize={\footnotesize},escapeinside={||},mathescape=true]{python}
 def conv2d(
@@ -429,7 +451,7 @@ The conventional resolution to this loss of information is to perform
 \emph{store-load forwarding}: pairs of \texttt{store} and \texttt{load}
 operations on the same memory address are eliminated, with the operand
 of the \texttt{store} forwarded to the uses of the \texttt{load} (see
-Listing \ref{lis:Single-filter-convolution-1}).
+Listing~\ref{lis:Single-filter-convolution-1}).
 \begin{listing}
 \begin{minted}[numbers=left,fontsize={\footnotesize},escapeinside={||},mathescape=true,highlightlines={19,25},autogobble=true,numbersep=3pt]{python}
 def conv2d(
@@ -443,28 +465,28 @@ def conv2d(
         for i4 in range(0, |$w$|):
 	  ...
 	  # e.g., i5, i6, i7 = 2, 3, ${\setlength{\fboxsep}{1pt}\colorbox{Salmon}{\texttt{4}}}$
-	  _31 = i3 + i6 
-	  _41 = i4 + i7 
-	  _51 = input[i1, i5, _31, _41] 
-	  _61 = weight[i2, i5, i6, i7] 
-	  _71 = output[i1, i2, i3, i4] 
-	  _81 = _51 * _61 
-	  |${\setlength{\fboxsep}{1pt} \colorbox{green}{\texttt{\_91}}}$| = _71 + _81 
-          |${\setlength{\fboxsep}{1pt}          \colorbox{green}{\texttt{output[i1, i2, i3, i4]}}}$| = |${\setlength{ \fboxsep}{1pt} \colorbox{green}{\texttt{\_91}}}$| 
+	  _31 = i3 + i6
+	  _41 = i4 + i7
+	  _51 = input[i1, i5, _31, _41]
+	  _61 = weight[i2, i5, i6, i7]
+	  _71 = output[i1, i2, i3, i4]
+	  _81 = _51 * _61
+	  |${\setlength{\fboxsep}{1pt} \colorbox{green}{\texttt{\_91}}}$| = _71 + _81
+          |${\setlength{\fboxsep}{1pt}          \colorbox{green}{\texttt{output[i1, i2, i3, i4]}}}$| = |${\setlength{ \fboxsep}{1pt} \colorbox{green}{\texttt{\_91}}}$|
 	  # i5, i6, i7 = 2, 3, ${\setlength{\fboxsep}{1pt}\colorbox{Salmon}{\texttt{5}}}$
-	  _32 = i3 + i6 
-	  _42 = i4 + i7 
-	  _52 = input[i1, i5, _32, _42] 
-	  _62 = weight[i2, i5, i6, i7] 
-	  |${\setlength{\fboxsep}{1pt}\colorbox{yellow}{\texttt{\_72}}}$| = |${\setlength{\fboxsep}{1pt}          \colorbox{green}{\texttt{output[i1, i2, i3, i4]}}}$| 
-	  _82 = _52 * _62 
-	  |${\setlength{\fboxsep}{1pt}\colorbox{Cyan}{\texttt{\_92}}}$| = |${\setlength{\fboxsep}{1pt}\colorbox{yellow}{\texttt{\_72}}}$| + _82 
+	  _32 = i3 + i6
+	  _42 = i4 + i7
+	  _52 = input[i1, i5, _32, _42]
+	  _62 = weight[i2, i5, i6, i7]
+	  |${\setlength{\fboxsep}{1pt}\colorbox{yellow}{\texttt{\_72}}}$| = |${\setlength{\fboxsep}{1pt}          \colorbox{green}{\texttt{output[i1, i2, i3, i4]}}}$|
+	  _82 = _52 * _62
+	  |${\setlength{\fboxsep}{1pt}\colorbox{Cyan}{\texttt{\_92}}}$| = |${\setlength{\fboxsep}{1pt}\colorbox{yellow}{\texttt{\_72}}}$| + _82
 	  output[i1, i2, i3, i4] = _92
 	  ...
 \end{minted}
 \caption{Store-load forwarding across successive iterations (e.g.,\texttt{
 i7} $={\setlength{\fboxsep}{1pt}\colorbox{Salmon}{\texttt{4}}}, {\setlength{\fboxsep}{1pt}\colorbox{Salmon}{\texttt{5}}}$)
-of the inner loop in Listing \ref{lis:Single-filter-convolution},
+of the inner loop in Listing~\ref{lis:Single-filter-convolution},
 after unrolling. The forwarding opportunity is from the store on line
 19 to the load on line 25; both can be eliminated and ${\setlength{\fboxsep}{1pt}\colorbox{green}{\texttt{\_91}}}$
 can replace uses of ${\setlength{\fboxsep}{1pt}\colorbox{yellow}{\texttt{\_72}}}$,
@@ -476,7 +498,7 @@ semantics), for each pair of candidate \texttt{store} and \texttt{load}
 operations, it must be verified that there are no intervening memory
 operations on the same memory address. These verifications are non-trivial
 since the iteration spaces of the loops need not be regular; in general
-it might involve solving a small constraint satisfaction program \cite{rajopadhye2002dependence}.
+it might involve solving a small constraint satisfaction program~\cite{rajopadhye2002dependence}.
 Furthermore, the number of such verifications grows polynomially in
 the parameters of the convolution since the loop nest unrolls into
 $b\times c_{out}\times h\times w\times c_{in}\times k^{2}$ \texttt{store}-\texttt{load}
@@ -494,7 +516,7 @@ latency goals) which can be performed. \texttt{BraggHLS} addresses
 these issues by enabling the user to employ heuristics during both
 the parallelization and scheduling phases which, while not guaranteed
 to be correct (but can be \emph{behaviorally verified}) and have much
-lower runtimes (see Section \ref{subsec:Symbolic-execution-for}).
+lower runtimes (see Section~\ref{subsec:Symbolic-execution-for}).
 
 \subsection{FPGA design}
 
@@ -502,7 +524,7 @@ Broadly, at the register-transfer level of abstraction, there remain
 two more steps prior to being able to actually deploy a design to
 an FPGA; one of them being a final lowering, so-called logic synthesis,
 and the other being place and route (P\&R). The entire process is
-carried out, for example, by Xilinx's Vivado tool. 
+carried out, for example, by Xilinx's Vivado tool.
 
 Logic synthesis is the process of mapping RTL to actual hardware primitives
 on the FPGA (so-called \emph{technology mapping}), such as lookup
@@ -535,8 +557,8 @@ for extracting loop-nest representations of DNNs. It is implemented
 in python for ease of use and extensibility. Critically, and distinctly,
 it handles the DNN transformations as well as scheduling, binding,
 and FSM extraction; there is no dependence on any commercial HLS tools.
-Figure \ref{fig:BraggHLS-framework-overview.-3} shows the architecture
-of \texttt{BraggHLS} 
+Figure~\ref{fig:BraggHLS-framework-overview.-3} shows the architecture
+of \texttt{BraggHLS}
 \begin{figure}[tbh]
 \centering{}\includegraphics[width=0.7\columnwidth]{figures/BraggHLS}\caption{\texttt{BraggHLS} framework overview (placeholder).\label{fig:BraggHLS-framework-overview.-3}}
 \end{figure}
@@ -545,8 +567,8 @@ MLIR through TorchScript and the \texttt{torch} dialect (see Section
 \ref{subsec:MLIR}). They are then further lowered from the \texttt{torch}
 dialect to the \texttt{scf} dialect (through the \texttt{linalg} dialect).
 Such a representation lends itself to a straightforward translation
-to python (compare Listing \ref{lis:Single-filter-convolution} to
-Listing \ref{lis:Single-filter-convolution}) and indeed \texttt{BraggHLS}
+to python (compare Listing~\ref{lis:Single-filter-convolution} to
+Listing~\ref{lis:Single-filter-convolution}) and indeed \texttt{BraggHLS}
 performs this translation.
 \begin{listing}
 \begin{minted}[fontsize={\footnotesize},escapeinside={||},mathescape=true]{mlir}
@@ -574,9 +596,9 @@ performs this translation.
                 %9 = arith.addf %7, %8
                 memref.store %9, %output[
                   %i1, %i2, %i3, %i4]
-              } 
+              }
             }
-          }  
+          }
         }
       }
     }
@@ -588,13 +610,13 @@ performs this translation.
 \ref{lis:Single-filter-convolution}.\label{lis:Single-filter-convolution-2-1}}
 \end{listing}
  The benefits of translating \texttt{scf} dialect to python are manifold
-and discussed in the following (see Section \ref{subsec:Symbolic-execution-for}).
+and discussed in the following (see Section~\ref{subsec:Symbolic-execution-for}).
 Ultimately, \texttt{BraggHLS} produces a representation of the DNN
 that is then fully scheduled using the scheduling infrastructure in
-CIRCT \cite{oppermann2022eurollvm} (an MLIR adjacent project). After
-scheduling, \texttt{BraggHLS} emits corresponding RTL (as Verilog). 
+CIRCT~\cite{oppermann2022eurollvm} (an MLIR adjacent project). After
+scheduling, \texttt{BraggHLS} emits corresponding RTL (as Verilog).
 
-\texttt{BraggHLS} delegates to the FloPoCo \cite{8877424} IP generator
+\texttt{BraggHLS} delegates to the FloPoCo~\cite{8877424} IP generator
 the task of generating pipelined implementations of the standard floating-point
 arithmetic operations (\texttt{mulf}, \texttt{divf}, \texttt{addf},
 \texttt{subf}, \texttt{sqrtf}) at various precisions. In addition,
@@ -607,28 +629,28 @@ $k$ is determined on a case-by-case basis). Note, FloPoCo's floating-point
 representation differs slightly from IEEE754, foregoing subnormals
 and differently encoding zeroes, infinities and NaNs (for the benefit
 of reduced complexity) and our implementations \texttt{max}, \texttt{neg},
-\texttt{relu} are adjusted appropriately. 
+\texttt{relu} are adjusted appropriately.
 
 We now discuss some aspects of \texttt{BraggHLS} in greater detail.
 
 \subsection{Symbolic interpretation for fun and profit\label{subsec:Symbolic-execution-for}}
 
-As discussed in Section \ref{subsec:High-level-synthesis}, maximizing
+As discussed in Section~\ref{subsec:High-level-synthesis}, maximizing
 concurrency and parallelism for a design entails unrolling loop nests
 and analyzing the data-flow of encompassed operations. As also discussed
-in Section \ref{subsec:High-level-synthesis}, the formally correct
+in Section~\ref{subsec:High-level-synthesis}, the formally correct
 approach to unrolling a loop nest is prohibitively expensive in terms
-of runtime; see Figure \ref{fig:-kernel-convolution-full} for an
+of runtime; see Figure~\ref{fig:-kernel-convolution-full} for an
 illustration in terms of convolution. Indeed, for example, in the
 case of \texttt{BraggNN}, repeatedly performing this unrolling was
 a hindrance to effectively searching the design space for a RTL representation
 achieving the target latency, since it often took an enormous amount
-of time. 
+of time.
 \begin{figure}[tbh]
 \begin{centering}
 \includegraphics[width=1\columnwidth]{figures/conv_unroll}
 \par\end{centering}
-\caption{$3\times3$-kernel convolution (cf. Listing \ref{lis:Single-filter-convolution-2-1})
+\caption{$3\times3$-kernel convolution (cf. Listing~\ref{lis:Single-filter-convolution-2-1})
 full unrolling time vs. input (square) image size, with \texttt{store}-\texttt{load}
 forwarding using MLIR's \texttt{-affine-scalrep} pass. Note that the
 longest time is $577419\div3600\approx160$ hours (for a loop nest
@@ -640,7 +662,7 @@ to overcome this barrier by enabling us to use the python interpreter
 as a \emph{symbolic interpreter}. Interpreting the resulting python
 loop-nests (i.e., running the python program) while treating the arithmetic
 and memory operations on SSA values as operations on symbols (i.e.,
-python classes with overloaded methods) enables us to: 
+python classes with overloaded methods) enables us to:
 \begin{enumerate}
 \item Partially evaluate functions of iteration variables, such as \mintinline{mlir}!%3 = arith.addi %i3, %i6!,
 which enables concretely determining array index operands of all stores
@@ -663,7 +685,7 @@ modes, e.g., evaluating the floating-point arithmetic operations using
 (python) bindings to FloPoCo's C++ functional models thereby enabling
 behavioral verification of our designs.
 \end{enumerate}
-See Table \ref{tab:scf-dialect-to} for the translation rules from
+See Table~\ref{tab:scf-dialect-to} for the translation rules from
 MLIR dialects to python.
 
 {\scriptsize{}}
@@ -673,7 +695,7 @@ MLIR dialects to python.
 translation.\label{tab:scf-dialect-to}}
 }%
 \begin{tabular}{ll}
-\toprule 
+\toprule
 $\left\llbracket \texttt{MLIR}\right\rrbracket $ & {\small{}python}\tabularnewline
 \midrule
 \mintinline{mlir}!|$\llbracket$|%5|$\rrbracket$|! & \mintinline{python}!v5 = Val("%5")!\tabularnewline
@@ -693,21 +715,21 @@ $\left\llbracket \texttt{MLIR}\right\rrbracket $ & {\small{}python}\tabularnewli
 \mintinline{mlir}!|$\llbracket$||$\perc$|9 = arith.addf %7, %8|$\rrbracket$|! & \mintinline{python}!|$\llbracket$|%9|$\rrbracket$| = |$\llbracket$|%7|$\rrbracket$|.__add__(|$\llbracket$|%8|$\rrbracket$|)!\tabularnewline
 \addlinespace[1mm]
 \multicolumn{2}{c}{%
-\begin{tabular}{cc}
-\multicolumn{1}{c}{\mintinline{mlir}!|$\llbracket$||$\perc$|63 = arith.cmpfugt |$\perc$|10, |$\perc$|c0|$\rrbracket$|!} & \multicolumn{1}{c}{\mintinline{mlir}!|$\llbracket$||$\perc$|63 = arith.cmpfugt |$\perc$|10, |$\perc$|c0|$\rrbracket$|!}\tabularnewline
+\begin{tabular}{ccc}
+\multicolumn{1}{c}{\mintinline{mlir}!|$\llbracket$||$\perc$|63 = arith.cmpfugt |$\perc$|10, |$\perc$|c0|$\rrbracket$|!} & $\wedge$ & \multicolumn{1}{c}{\mintinline{mlir}!|$\llbracket$||$\perc$|63 = arith.cmpfugt |$\perc$|10, |$\perc$|c0|$\rrbracket$|!}\tabularnewline
 \noalign{\vskip1mm}
-\hline 
+\hline
 \noalign{\vskip1mm}
-\multicolumn{2}{c}{\mintinline{python}!|$\llbracket$||$\perc$|64|$\rrbracket$|.relu(|$\llbracket$||$\perc$|10|$\rrbracket$|)!}\tabularnewline
+\multicolumn{3}{c}{\mintinline{python}!|$\llbracket$||$\perc$|64|$\rrbracket$|.relu(|$\llbracket$||$\perc$|10|$\rrbracket$|)!}\tabularnewline
 \end{tabular}}\tabularnewline
 \addlinespace[1mm]
 \multicolumn{2}{c}{%
-\begin{tabular}{cc}
-\multicolumn{1}{c}{\mintinline{mlir}!|$\llbracket$||$\perc$|8 = arith.mulf |$\perc$|5, |$\perc$|6|$\rrbracket$|!} & \multicolumn{1}{c}{\mintinline{mlir}!|$\llbracket$||$\perc$|9 = arith.addf |$\perc$|7, |$\perc$|8|$\rrbracket$|!}\tabularnewline
+\begin{tabular}{ccc}
+\multicolumn{1}{c}{\mintinline{mlir}!|$\llbracket$||$\perc$|8 = arith.mulf |$\perc$|5, |$\perc$|6|$\rrbracket$|!} & $\wedge$ & \multicolumn{1}{c}{\mintinline{mlir}!|$\llbracket$||$\perc$|9 = arith.addf |$\perc$|7, |$\perc$|8|$\rrbracket$|!}\tabularnewline
 \noalign{\vskip1mm}
-\hline 
+\hline
 \noalign{\vskip1mm}
-\multicolumn{2}{c}{\mintinline{python}!|$\llbracket$||$\perc$|9|$\rrbracket$| = fma(|$\llbracket$||$\perc$|5|$\rrbracket$|, |$\llbracket$||$\perc$|6|$\rrbracket$|, |$\llbracket$||$\perc$|7|$\rrbracket$|)!}\tabularnewline
+\multicolumn{3}{c}{\mintinline{python}!|$\llbracket$||$\perc$|9|$\rrbracket$| = fma(|$\llbracket$||$\perc$|5|$\rrbracket$|, |$\llbracket$||$\perc$|6|$\rrbracket$|, |$\llbracket$||$\perc$|7|$\rrbracket$|)!}\tabularnewline
 \end{tabular}}\tabularnewline
 \bottomrule
 \addlinespace[1mm]
@@ -727,7 +749,7 @@ transformations on the python generated from \texttt{scf} dialect:
 are moved out of the body of the generated python function\footnote{\texttt{BraggHLS} translates the MLIR \texttt{module} corresponding
 to the DNN into a single python function in order to simplify analysis
 and interpretation.} and into the parameter list, for the purpose of ultimately exposing
-them at the RTL module interface; 
+them at the RTL module interface;
 \item \textbf{Remove }\texttt{\textbf{if}}\textbf{ expressions}: DNN \texttt{relu}
 operations are lowered to the \texttt{scf} dialect as a decomposition
 into \texttt{arith.cmpfugt} and \texttt{arith.select}; this transformation
@@ -738,7 +760,7 @@ jointly (this transformation coalesces such sequences into a single
 \texttt{fmac} operation);
 \item \textbf{Reduce }\texttt{\textbf{for}}\textbf{s}: this transformation
 implements the reduction tree structure for non-parallelizable loop-nests
-mentioned in Section \ref{subsec:Scheduling}.
+mentioned in Section~\ref{subsec:Scheduling}.
 \end{enumerate}
 These transformations on the python AST are simple (implemented with
 procedural pattern matching), extensible, and efficient (marginal
@@ -746,7 +768,7 @@ runtime cost) because they are unverified: no effort is made to verify
 their formal correctness. Thus, \texttt{BraggHLS} trades formal correctness
 for development time performance. This tradeoff enables quick design
 space iteration, which for example, enabled us to achieve very low
-latency implementations for \texttt{BraggNN} (see Section \ref{sec:BraggNN-case-study}).
+latency implementations for \texttt{BraggNN} (see Section~\ref{sec:BraggNN-case-study}).
 As a substitute for formal verification, \texttt{BraggHLS} supports
 behavioral verification. Specifically, \texttt{BraggHLS} can generate
 testbenches for all synthesized RTL. The test vectors for these testbenches
@@ -755,8 +777,8 @@ the DNN on randomly generated inputs but with floating-point operations
 now evaluated using functional models of the corresponding FloPoCo
 operators. The testbenches can then be run using any IEEE 1364 compliant
 simulator. For example, we run a battery of such testbenches (corresponding
-to various DNN operation types), using \texttt{cocotb} \cite{rosser2018cocotb}
-and \texttt{iverilog} \cite{williamsicarus}, as a part of our continuous
+to various DNN operation types), using \texttt{cocotb}~\cite{rosser2018cocotb}
+and \texttt{iverilog}~\cite{williamsicarus}, as a part of our continuous
 integration process.
 
 \subsection{Scheduling\label{subsec:Scheduling}}
@@ -770,36 +792,36 @@ case, due to the precedence relations induced by data-flow, the constraint
 matrix of the associated ILP is a \emph{totally unimodular matrix}
 and the feasible region of the problem is an integral polyhedron.
 Thus, in such cases, the scheduling problem can be solved optimally
-in polynomial time with a LP solver \cite{tuprints9272}. In the resource-constrained
+in polynomial time with a LP solver~\cite{tuprints9272}. In the resource-constrained
 case it is possible to transform resource constraints into precedence
 constraints as well, by picking a particular (possibly heuristic)
 linear ordering on the resource-constrained operations. This transformation
 partitions resource constrained operations into distinct clock cycles,
 thereby guaranteeing sufficient resources are available for all operations
-scheduled within the same clock cycle \cite{10.1145/3174243.3174268}. 
+scheduled within the same clock cycle~\cite{10.1145/3174243.3174268}.
 
 \texttt{BraggHLS} uses the explicit parallelism of the \texttt{scf.parallel}
 loop-nest representation to inform such a linear ordering on resource-constrained
 operations. By assumption, for loop-nests which can be reprepresented
-as \texttt{scf.parallel} loop-nests (see Listing \ref{lis:Single-filter-convolution-2-2}),
+as \texttt{scf.parallel} loop-nests (see Listing~\ref{lis:Single-filter-convolution-2-2}),
 each instance of a floating-point arithmetic operation in the body
 corresponding to unique values of the iteration variables (e.g., \texttt{\%i1},\texttt{
-\%i2},\texttt{ \%i3},\texttt{ \%i4} for Listing \ref{lis:Single-filter-convolution-2-2})
+\%i2},\texttt{ \%i3},\texttt{ \%i4} for Listing~\ref{lis:Single-filter-convolution-2-2})
 is independent of all other such instances\footnote{Data-flow within a loop body must still be respected.}.
 This exactly determines total resource usage per loop-nest; for example,
-the convolution in Listing \ref{lis:Single-filter-convolution-2-2},
+the convolution in Listing~\ref{lis:Single-filter-convolution-2-2},
 would bind to $2K_{i}$ DSPs (assuming \texttt{mulf}, \texttt{addf}
 bind to one DSP each), where
 \begin{multline*}
-K_{i}:=\left|\left\{ \texttt{\%iv1}=\texttt{\%c0}+\texttt{\%c1}\times\mathbb{N}\,\wedge\,\texttt{\%iv1}<b\right\} \right|\times\\
-\left|\left\{ \texttt{\%iv2}=\texttt{\%c0}+\texttt{\%c1}\times\mathbb{N}\,\wedge\,\texttt{\%iv2}<c_{out}\right\} \right|\times\\
-\left|\left\{ \texttt{\%iv3}=\texttt{\%c0}+\texttt{\%c1}\times\mathbb{N}\,\wedge\,\texttt{\%iv3}<h\right\} \right|\times\\
-\left|\left\{ \texttt{\%iv4}=\texttt{\%c0}+\texttt{\%c1}\times\mathbb{N}\,\wedge\,\texttt{\%iv4}<w\right\} \right|
+K_{i}\coloneqq\left|\left\{ \texttt{\%i1}=\texttt{\%c0}+\texttt{\%c1}\times\mathbb{N}\,\wedge\,\texttt{\%i1}<b\right\} \right|\times\\
+\left|\left\{ \texttt{\%i2}=\texttt{\%c0}+\texttt{\%c1}\times\mathbb{N}\,\wedge\,\texttt{\%i2}<c_{out}\right\} \right|\times\\
+\left|\left\{ \texttt{\%i3}=\texttt{\%c0}+\texttt{\%c1}\times\mathbb{N}\,\wedge\,\texttt{\%i3}<h\right\} \right|\times\\
+\left|\left\{ \texttt{\%i4}=\texttt{\%c0}+\texttt{\%c1}\times\mathbb{N}\,\wedge\,\texttt{\%i4}<w\right\} \right|
 \end{multline*}
 where $\texttt{\%c1}\times\mathbb{N}$ represents all multiples of
 $\texttt{\%c1}$. That is to say, $K_{i}$ is the cardinality of the
 cartesian product of the iteration spaces of the parallel iteration
-variables. 
+variables.
 \begin{listing}
 \begin{minted}[fontsize={\scriptsize},escapeinside={||},mathescape=true]{mlir}
 @conv2d(
@@ -829,9 +851,9 @@ variables.
   return %2
 }
 \end{minted}
-\caption{Parallel loop representation of the convolution in Listing \ref{lis:Single-filter-convolution}.\label{lis:Single-filter-convolution-2-2}}
+\caption{Parallel loop representation of the convolution in Listing~\ref{lis:Single-filter-convolution}.\label{lis:Single-filter-convolution-2-2}}
 \end{listing}
-. Taking the maximum over such $K:=\max_{i}K_{i}$ across all \texttt{scf.parallel}
+. Taking the maximum over such $K\coloneqq\max_{i}K_{i}$ across all \texttt{scf.parallel}
 loop-nests, we can infer peak usage of any resource. Then, after indexing
 available hardware resources $j=1,\dots,K$, we can bind the operations
 of any particular loop-nest. This leads to a linear ordering on resource-constrained
@@ -849,7 +871,7 @@ For DNN operations that do not lower to \texttt{scf.parallel} loop-nests
 but do lower to sequential loop nests (e.g., \texttt{sum}, \texttt{max},
 or \texttt{prod}), we fully unroll the loops and transform the resulting,
 sequential, operations into a reduction tree; we use As-Late-As-Possible
-scheduling \cite{baruch1996scheduling} amongst the subtrees of such
+scheduling~\cite{baruch1996scheduling} amongst the subtrees of such
 reduction trees.
 
 \section{Evaluation\label{sec:Evaluation}}
@@ -876,9 +898,9 @@ All other measurements are collected from Vivado synthesis reports.
 Note, since Vitis HLS operates on C++ representations, we generate
 such a representation for our test cases by first lowering each DNN
 layer to the \texttt{affine} dialect and then using the \texttt{scalehls-translate}
-tool of the ScaleHLS project \cite{yehpca2022scalehls} to emit C++.
+tool of the ScaleHLS project~\cite{yehpca2022scalehls} to emit C++.
 Importantly, we do not make any use of \texttt{scalehls-opt} optimization
-tool (of the same project). 
+tool (of the same project).
 
 Since our ultimate goal is low latency inference, and since the strategy
 that \texttt{BraggHLS} employs in the pursuit of this goal is loop
@@ -898,7 +920,7 @@ correspond to full unrolling of the loop nests.
 
 \subsection{DNN layers}
 
-See Figure \ref{fig:Resource-usage-and}; we evaluate \texttt{BraggHLS}
+See Figure~\ref{fig:Resource-usage-and}; we evaluate \texttt{BraggHLS}
 against Xilinx's Vitis HLS by comparing the latency of the final design
 on the following, individual, DNN layer types:
 \begin{itemize}
@@ -906,38 +928,38 @@ on the following, individual, DNN layer types:
 matrices \texttt{a} and \texttt{b}. The matrix \texttt{c} is added
 to the final result;
 \item \mintinline{python}!batch_norm_2d(num_features)!: Batch Normalization
-over a 4D input as described in \cite{https://doi.org/10.48550/arxiv.1502.03167};
+over a 4D input as described in~\cite{https://doi.org/10.48550/arxiv.1502.03167};
 \item \mintinline{python}!conv_2d(|$c_{in}$|, |$c_{out}$|, |$k$|)!: 2D
 convolution with bias, with $k\times k$ kernel, over a $b\times c_{in}\times h\times w$
 input, producing $b\times c_{out}\times h'\times w'$ output;
 \item \mintinline{python}!max_pool_2d(|$k$|, stride)!: 2D max pooling,
 with $k\times k$ kernel, and striding;
-\item \mintinline{python}!soft_max!: The softmax function 
+\item \mintinline{python}!soft_max!: The softmax function
 \[
-\text{softmax}\left(\boldsymbol{x}\right):=\left[\frac{\exp\left(x_{i}\right)}{\sum_{j}\exp\left(x_{j}\right)}\right]
+\text{softmax}\left(\boldsymbol{x}\right)\coloneqq\left[\frac{\exp\left(x_{i}\right)}{\sum_{j}\exp\left(x_{j}\right)}\right]
 \]
 \end{itemize}
 The layers were chosen to cover a range of arithmetic operations (\texttt{mulf},
 \texttt{divf}, \texttt{addf}, \texttt{subf}, \texttt{sqrtf}) and data
 access patterns (iteration, accumulation, and reduction). The concrete
 parameter values and dimensions of inputs used during evaluation are
-summarized in Table \ref{tab:Resource-usage-for-2}.
+summarized in Table~\ref{tab:Resource-usage-for-2}.
 \begin{table*}[tbh]
 \caption{DNN layers used for evaluation of \texttt{BraggHLS.} \label{tab:Resource-usage-for-2}}
 
 \centering{}%
 \begin{tabular}{lll}
-\toprule 
+\toprule
 Layer & Parameter values & Input dimensions\tabularnewline
-\midrule 
+\midrule
 \mintinline{python}!addmm! & N/A & $\dim\left(\texttt{a}\right)=\dim\left(\texttt{b}\right)=\dim\left(\texttt{c}\right)=\left(16,16\right)$\tabularnewline
-\midrule 
+\midrule
 \mintinline{python}!batch_norm_2d! & $\texttt{num\_features}=2$ & $\dim\left(\texttt{input}\right)=\left(10,2,3,3\right)$\tabularnewline
-\midrule 
+\midrule
 \mintinline{python}!conv_2d! & $c_{in}=1,c_{out}=3,k=3$ & $\dim\left(\texttt{input}\right)=\left(1,1,16,16\right)$\tabularnewline
-\midrule 
+\midrule
 \mintinline{python}!max_pool_2d! & $k=3,\texttt{stride}=2$ & $\dim\left(\texttt{input}\right)=\left(1,3,16,16\right)$\tabularnewline
-\midrule 
+\midrule
 \mintinline{python}!soft_max! & N/A & $\dim\left(\texttt{input}\right)=\left(1,3,16,16\right)$\tabularnewline
 \bottomrule
 \end{tabular}
@@ -956,8 +978,8 @@ factor of various DNN modules. All $y$-scales are log.\label{fig:Resource-usage-
 \centering{}\includegraphics[width=1\columnwidth]{figures/elapsed_time}\caption{Runtime of Vitis HLS vs. unroll factor.\label{fig:Runtime-of-Vitisa}}
 \end{figure*}
 
-See Figure \ref{fig:Resource-usage-and} for Vitis HLS vs. \texttt{BraggHLS}
-resource usage and latency vs. unroll factor and Figure \ref{fig:Runtime-of-Vitisa}
+See Figure~\ref{fig:Resource-usage-and} for Vitis HLS vs. \texttt{BraggHLS}
+resource usage and latency vs. unroll factor and Figure~\ref{fig:Runtime-of-Vitisa}
 for the runtimes of Vitis HLS as function of increasing unroll factor.
 We observe that Vitis HLS indeed approaches lower and lower end-to-end
 latencies as a function of unroll factor but that for none of the
@@ -977,8 +999,8 @@ particular use case, this unconstrained usage of FFs is acceptable.
 Note, the increasing latency (as a function of unroll factor) in the
 case of \texttt{max\_pool\_2d} is due to Vitis HLS's failure to meet
 timing, i.e., while the interval count decreases as a function of
-unroll factor, the clock period increases (see Appendix Table \ref{tab:all_unrolls}
-for exact values). 
+unroll factor, the clock period increases (see Appendix Table~\ref{tab:all_unrolls}
+for exact values).
 
 
 \subsection{\texttt{BraggNN} case study\label{sec:BraggNN-case-study}}
@@ -1035,7 +1057,7 @@ BraggNN(|$s$|)(
 \caption{\texttt{BraggNN} for scale $s=1,2$.\label{lis:braggnn}}
 \end{listing}
 
-\texttt{BraggNN} \cite{Liu:fs5198}, a DNN aimed at efficiently characterizing
+\texttt{BraggNN}~\cite{Liu:fs5198}, a DNN aimed at efficiently characterizing
 Bragg diffraction peaks, achieves a throughput of approximately 22
 \textmu s/sample (via batch inference). This is a large speedup over
 the classical pseudo-Voigt peak fitting methods, but still falls far
@@ -1046,12 +1068,12 @@ or even a workstation class GPU such as a NVIDIA RTX 2080Ti, has no
 practicable means to being deployed at the edge, i.e., adjacent or
 proximal to the high energy microscopy equipment. Towards this end,
 we applied \texttt{BraggHLS} to the PyTorch representation of \texttt{BraggNN($s=1$)}\emph{
-}(see Listing \ref{lis:braggnn}) and achieved a RTL implementation
+}(see Listing~\ref{lis:braggnn}) and achieved a RTL implementation
 which synthesizes to a 1,238 interval count design that places, routes,
 and meets timing closure for a clock period of 10 ns (for a Xilinx
 Alveo U280). The design consists of a three stage pipeline with the
 longest stage measuring 480 intervals. Thus, the throughput of the
-implementation is 4.8 \textmu s/sample. See Table \ref{tab:Resource-usage-for}
+implementation is 4.8 \textmu s/sample. See Table~\ref{tab:Resource-usage-for}
 for a summary of the resource usage of the implementation and Figure
 \ref{fig:braggnn} for a comparison with designs generated by Vitis
 HLS.
@@ -1065,7 +1087,7 @@ was reducing the precision used for the floating-point operations.
 We reduced the precision from half precision to FloPoCo $\left(5,4\right)$-precision
 (5 bits for the exponent and 4 bits for the mantissa). This was justified
 by an examination of the distribution of the weights of the fully
-trained \texttt{BraggNN} (see figure \ref{fig:BraggHLS-framework-overview.-1}).
+trained \texttt{BraggNN} (see figure~\ref{fig:BraggHLS-framework-overview.-1}).
 \begin{figure}[tbh]
 \centering{}\includegraphics[width=1\columnwidth]{figures/exp_hist}\caption{\texttt{BraggHLS} weights exponent distribution.\label{fig:BraggHLS-framework-overview.-1}}
 \end{figure}
@@ -1076,7 +1098,7 @@ also drives the Vivado synthesizer to infer implementations of the
 floating-point operations that make no use of DSPs; this was not intentional
 but seemingly cannot be altered. Most likely this is due to the fact
 that the DSP48 hardware block includes a 18-bit by 25-bit signed multiplier
-and a 48-bit adder \cite{guideultrascale}, neither of which neatly
+and a 48-bit adder~\cite{guideultrascale}, neither of which neatly
 divide the bit width of FloPoCo $\left(5,4\right)$-precision cores\footnote{The actual bit width for FloPoCo $\left(5,4\right)$-precision is
 12 bits: 1 extra bit is needed for the sign and 2 bits are needed
 for FloPoCo's handling of exceptional conditions.}.
@@ -1084,7 +1106,7 @@ for FloPoCo's handling of exceptional conditions.}.
 Achieving routing closure was very difficult due to the nature of
 the Xilinx's UltraScale architecture, of which the Alveo U280 is an
 instance. The UltraScale architecture achieves its scale through ``Stacked
-Silicon Interconnect'' (SSI) technology \cite{leibson2013xilinx},
+Silicon Interconnect'' (SSI) technology~\cite{leibson2013xilinx},
 which implies multiple distinct FPGA dies, called Super Logic Regions
 (SLRs), on the same chip, connected by interposers. Adjacent SLRs
 communicate with each other using a limited set of Super Long Lines
@@ -1096,11 +1118,11 @@ wires) as well as the output of $\texttt{soft(theta\_layer}\times\texttt{phi\_la
 ($1\times8\times9\times9\times12$ wires) from SLR2 to SLR1.}. Thus, we further reduced the precision to $\left(5,3\right)$. Finally,
 since multiple dies constitute independent clock domains, the SLLs
 that cross SLRS are sensitive to hold time violations due to the higher
-multi-die variability \cite{rapidwright}. This multi-die variability
+multi-die variability~\cite{rapidwright}. This multi-die variability
 leads to high congestion if not addressed. Thus, routing across SLRs
 needs to be handled manually, using placement and routing constraints
 for logic in each SLR and the addition of so-called ``launch'' and
-``latch'' registers in each SLR. See figure \ref{fig:BraggHLS-framework-overview.-2}
+``latch'' registers in each SLR. See figure~\ref{fig:BraggHLS-framework-overview.-2}
 for an illustration on the effect of using launch and latch registers
 as well as placement and routing constraints.
 \begin{figure*}[tbh]
@@ -1134,45 +1156,45 @@ FloPoCo \label{tab:Resource-usage-for}}
 
 \begin{centering}
 \begin{tabular}{lllllll}
-\toprule 
+\toprule
 Site Type & SLR0 & SLR1 & SLR2 & SLR0 \% & SLR1 \% & SLR2 \%\tabularnewline
-\midrule 
+\midrule
 CLB & 5047 & 52648 & 53900 & 9.18 & 97.50 & 99.81\tabularnewline
-\midrule 
+\midrule
 \quad{}CLBL & 2773 & 28613 & 29227 & 9.47 & 97.72 & 99.82\tabularnewline
-\midrule 
+\midrule
 \quad{}CLBM & 2274 & 24035 & 24673 & 8.86 & 97.23 & 99.81\tabularnewline
-\midrule 
+\midrule
 CLB LUTs & 19797 & 263733 & 311794 & 4.50 & 61.05 & 72.17\tabularnewline
-\midrule 
+\midrule
 \quad{}LUT as Logic & 19797 & 263733 & 311794 & 4.50 & 61.05 & 72.17\tabularnewline
-\midrule 
+\midrule
 \quad{}\quad{}using O5 output only & 277 & 3944 & 4304 & 0.06 & 0.91 & 1.00\tabularnewline
-\midrule 
+\midrule
 \quad{}\quad{}using O6 output only & 17176 & 202564 & 266733 & 3.91 & 46.89 & 61.74\tabularnewline
-\midrule 
+\midrule
 \quad{}\quad{}using O5 and O6 & 2344 & 57225 & 40757 & 0.53 & 13.25 & 9.43\tabularnewline
-\midrule 
+\midrule
 \quad{}LUT as Memory & 0 & 0 & 0 & 0.00 & 0.00 & 0.00\tabularnewline
-\midrule 
+\midrule
 \quad{}\quad{}LUT as Distributed RAM & 0 & 0 & 0 & 0.00 & 0.00 & 0.00\tabularnewline
-\midrule 
+\midrule
 \quad{}\quad{}LUT as Shift Register & 0 & 0 & 0 & 0.00 & 0.00 & 0.00\tabularnewline
-\midrule 
+\midrule
 CLB Registers & 12527 & 286226 & 339820 & 1.42 & 33.13 & 39.33\tabularnewline
-\midrule 
+\midrule
 CARRY8 & 244 & 5184 & 5184 & 0.44 & 9.60 & 9.60\tabularnewline
-\midrule 
+\midrule
 Block RAM Tile & 0 & 0 & 0 & 0.00 & 0.00 & 0.00\tabularnewline
-\midrule 
+\midrule
 \quad{}\quad{}RAMB36/FIFO & 0 & 0 & 0 & 0.00 & 0.00 & 0.00\tabularnewline
-\midrule 
+\midrule
 \quad{}\quad{}RAMB18 & 0 & 0 & 0 & 0.00 & 0.00 & 0.00\tabularnewline
-\midrule 
+\midrule
 URAM & 0 & 0 & 0 & 0.00 & 0.00 & 0.00\tabularnewline
-\midrule 
+\midrule
 DSPs & 0 & 0 & 0 & 0.00 & 0.00 & 0.00\tabularnewline
-\midrule 
+\midrule
 Unique Control Sets & 189 & 2641 & 3179 & 0.17 & 2.45 & 2.94\tabularnewline
 \bottomrule
 \end{tabular}
@@ -1184,21 +1206,21 @@ Unique Control Sets & 189 & 2641 & 3179 & 0.17 & 2.45 & 2.94\tabularnewline
 \par\end{centering}
 \centering{}%
 \begin{tabular}{lllll}
-\toprule 
+\toprule
 ~ & Used & Fixed & Available & Util \%\tabularnewline
-\midrule 
+\midrule
 SLR2 $\leftrightarrow$ SLR1 & 21366 & ~ & 23040 & 92.73\tabularnewline
-\midrule 
+\midrule
 SLR1 $\rightarrow$ SLR2 & 2 & ~ & ~ & < 0.01\tabularnewline
-\midrule 
+\midrule
 SLR2 $\rightarrow$ SLR1 & 21364 & ~ & ~ & 92.73\tabularnewline
-\midrule 
+\midrule
 SLR1 $\leftrightarrow$ SLR0 & 3904 & ~ & 23040 & 16.94\tabularnewline
-\midrule 
+\midrule
 SLR0 $\rightarrow$ SLR1 & 2 & ~ & ~ & < 0.01\tabularnewline
-\midrule 
+\midrule
 SLR1 $\rightarrow$ SLR0 & 3902 & ~ & ~ & 16.94\tabularnewline
-\midrule 
+\midrule
 Total SLLs Used & 25270 & ~ & ~ & ~\tabularnewline
 \bottomrule
 \end{tabular}
