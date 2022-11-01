@@ -1,0 +1,7 @@
+mod,time
+addmm,1.344
+batch_norm,1.074
+conv,2.205
+max_pool_2d,1.081
+soft_max,3.007
+braggnn,152.920
