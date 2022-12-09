@@ -54,10 +54,10 @@ BAR_CHART_COLORS = {
     "LUT": (0.17254901960784313, 0.6274509803921569, 0.17254901960784313, 1.0),
     "FF": (0.8392156862745098, 0.15294117647058825, 0.1568627450980392, 1.0),
 }
-PATTERNS = {"DSP": "+", "BRAM": "x", "LUT": "o", "FF": "O"}
+PATTERNS = {"DSP": "/", "BRAM": "\\", "LUT": "*", "FF": "O"}
 
 
-def plot_metrics(sub_df, ax1, spacing=4, scale=10):
+def plot_metrics(sub_df, ax1, spacing=4, scale=5):
     i = 0
     for metric in ["DSP", "BRAM", "LUT", "FF"]:
         if metric not in dict(sub_df.index.values):
@@ -79,7 +79,7 @@ def plot_metrics(sub_df, ax1, spacing=4, scale=10):
         ax1.bar(
             xs + diffs * (-1 + i),
             vals,
-            width=diffs,
+            width=diffs * 0.75,
             log=False,
             ec="k",
             label=metric,
@@ -87,6 +87,11 @@ def plot_metrics(sub_df, ax1, spacing=4, scale=10):
             hatch=PATTERNS[metric],
         )
         i += 1
+
+    ax1.axhline(1.0, linestyle='dashed', zorder=-1, color="grey", alpha=0.5, linewidth=1)
+    ax1.axhline(0.1, linestyle='dashed', zorder=-1, color="grey", alpha=0.5, linewidth=1)
+    if vals[-1] >= 10:
+        ax1.axhline(10, linestyle='dashed', zorder=-1, color="grey", alpha=0.5, linewidth=1)
 
 
 def make_tables():
@@ -148,7 +153,7 @@ def plot_unrolls():
     bragghls_df = pd.read_csv("bragghls_reports.csv", header=0, index_col=[0, 1, 2])
     for i, mod in enumerate(vitis_df.index.levels[0]):
         fig, (lat_ax_vitis, resource_ax_bragghls) = plt.subplots(
-            1, 2, figsize=(10, 7), gridspec_kw={"width_ratios": [10, 1]}
+            1, 2, figsize=(10, 7), gridspec_kw={"width_ratios": [10, 1]},
         )
         resource_ax_vitis = lat_ax_vitis.twinx()
         for ax in [
@@ -172,9 +177,9 @@ def plot_unrolls():
             plot_metrics(bragghls_sub_df, resource_ax_bragghls)
 
         if mod in {"addmm", "conv", "soft_max", "braggnn"}:
-            lat_ax_vitis.set_ylabel("time (μs)", fontdict={"fontsize": 25})
+            lat_ax_vitis.set_ylabel("Latency (μs)", fontdict={"fontsize": 25})
         if mod in {"batch_norm", "max_pool_2d", "soft_max", "braggnn"}:
-            resource_ax_bragghls.set_ylabel("utilization (%)", fontdict={"fontsize": 25})
+            resource_ax_bragghls.set_ylabel("Resource utilization (%)", fontdict={"fontsize": 25})
         lat_ax_vitis.set_xlabel("unroll factor", fontdict={"fontsize": 25})
 
         clock_vals = sub_df.loc["clock_period_minus_wns"].sort_index()
@@ -206,7 +211,7 @@ def plot_unrolls():
         text = lat_ax_vitis.text(
             last_pos[0],
             times[-1],
-            f"{times[-1]:02f} μs",
+            f"{times[-1]:.3f} μs",
             ha="right",
             va="bottom",
             color="magenta",
@@ -218,7 +223,7 @@ def plot_unrolls():
             last_pos,
             [times[-1]],
             marker="X",
-            markersize=7,
+            markersize=10,
             color="magenta",
             markeredgecolor="k",
         )
@@ -306,12 +311,13 @@ def plot_unrolls():
             text = resource_ax_bragghls.text(
                 2048,
                 min_y,
-                f"{bragghls_lat:02f} μs",
+                f"{bragghls_lat:.3f} μs",
                 ha="center",
                 va="bottom",
                 color="red",
                 weight="bold",
                 fontdict={"fontsize": 20},
+                zorder=20
             )
             text.set_path_effects(
                 [PathEffects.withStroke(linewidth=2, foreground="black")]
@@ -320,9 +326,10 @@ def plot_unrolls():
                 [2048],
                 [min_y],
                 marker="X",
-                markersize=7,
+                markersize=10,
                 color="red",
                 markeredgecolor="k",
+                clip_on=False, zorder=10
             )
 
         # https://stackoverflow.com/a/59395256
@@ -428,6 +435,6 @@ def plot_conv_unroll_times():
 
 if __name__ == "__main__":
     # make_tables()
-    # plot_unrolls()
+    plot_unrolls()
     # plot_conv_unroll_times()
-    plot_elapsed_times()
+    # plot_elapsed_times()

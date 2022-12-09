@@ -1,4 +1,4 @@
-#! /usr/bin/env /Users/mlevental/dev_projects/hls_paper/venv/bin/python
+#! /usr/bin/env /Users/Max/dev_projects/hls_paper/venv/bin/python
 # \renewcommand{\MintedPygmentize}{/Users/mlevental/dev_projects/hls_paper/scripts/pygmentize.py}
 import argparse
 import re
