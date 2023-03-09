@@ -54,10 +54,10 @@ BAR_CHART_COLORS = {
     "LUT": (0.17254901960784313, 0.6274509803921569, 0.17254901960784313, 1.0),
     "FF": (0.8392156862745098, 0.15294117647058825, 0.1568627450980392, 1.0),
 }
-PATTERNS = {"DSP": "/", "BRAM": "\\", "LUT": "*", "FF": "O"}
+PATTERNS = {"DSP": "+", "BRAM": "x", "LUT": "o", "FF": "O"}
 
 
-def plot_metrics(sub_df, ax1, spacing=4, scale=5):
+def plot_metrics(sub_df, ax1, spacing=4, scale=10):
     i = 0
     for metric in ["DSP", "BRAM", "LUT", "FF"]:
         if metric not in dict(sub_df.index.values):
@@ -79,7 +79,7 @@ def plot_metrics(sub_df, ax1, spacing=4, scale=5):
         ax1.bar(
             xs + diffs * (-1 + i),
             vals,
-            width=diffs * 0.75,
+            width=diffs,
             log=False,
             ec="k",
             label=metric,
@@ -87,11 +87,6 @@ def plot_metrics(sub_df, ax1, spacing=4, scale=5):
             hatch=PATTERNS[metric],
         )
         i += 1
-
-    ax1.axhline(1.0, linestyle='dashed', zorder=-1, color="grey", alpha=0.5, linewidth=1)
-    ax1.axhline(0.1, linestyle='dashed', zorder=-1, color="grey", alpha=0.5, linewidth=1)
-    if vals[-1] >= 10:
-        ax1.axhline(10, linestyle='dashed', zorder=-1, color="grey", alpha=0.5, linewidth=1)
 
 
 def make_tables():
@@ -137,23 +132,12 @@ def make_tables():
         f.write(piv.to_latex(float_format="%.2E"))
 
 
-def normalize_ax_lims(axes):
-    min_y, max_y = np.inf, -np.inf
-    for ax in axes:
-        mi_y, ma_y = ax.get_ylim()
-        min_y = min(min_y, mi_y)
-        max_y = max(max_y, ma_y)
-
-    for ax in axes:
-        ax.set_ylim(min_y, max_y)
-
-
 def plot_unrolls():
     vitis_df = pd.read_csv("vitis_reports.csv", header=0, index_col=[0, 1, 2])
     bragghls_df = pd.read_csv("bragghls_reports.csv", header=0, index_col=[0, 1, 2])
     for i, mod in enumerate(vitis_df.index.levels[0]):
         fig, (lat_ax_vitis, resource_ax_bragghls) = plt.subplots(
-            1, 2, figsize=(10, 7), gridspec_kw={"width_ratios": [10, 1]},
+            1, 2, figsize=(10, 7), gridspec_kw={"width_ratios": [10, 1]}
         )
         resource_ax_vitis = lat_ax_vitis.twinx()
         for ax in [
@@ -177,9 +161,9 @@ def plot_unrolls():
             plot_metrics(bragghls_sub_df, resource_ax_bragghls)
 
         if mod in {"addmm", "conv", "soft_max", "braggnn"}:
-            lat_ax_vitis.set_ylabel("Latency (μs)", fontdict={"fontsize": 25})
+            lat_ax_vitis.set_ylabel("time (μs)", fontdict={"fontsize": 25})
         if mod in {"batch_norm", "max_pool_2d", "soft_max", "braggnn"}:
-            resource_ax_bragghls.set_ylabel("Resource utilization (%)", fontdict={"fontsize": 25})
+            resource_ax_bragghls.set_ylabel("utilization (%)", fontdict={"fontsize": 25})
         lat_ax_vitis.set_xlabel("unroll factor", fontdict={"fontsize": 25})
 
         clock_vals = sub_df.loc["clock_period_minus_wns"].sort_index()
@@ -211,7 +195,7 @@ def plot_unrolls():
         text = lat_ax_vitis.text(
             last_pos[0],
             times[-1],
-            f"{times[-1]:.3f} μs",
+            f"{times[-1]:02f} μs",
             ha="right",
             va="bottom",
             color="magenta",
@@ -223,7 +207,7 @@ def plot_unrolls():
             last_pos,
             [times[-1]],
             marker="X",
-            markersize=10,
+            markersize=7,
             color="magenta",
             markeredgecolor="k",
         )
@@ -311,13 +295,12 @@ def plot_unrolls():
             text = resource_ax_bragghls.text(
                 2048,
                 min_y,
-                f"{bragghls_lat:.3f} μs",
+                f"{bragghls_lat:02f} μs",
                 ha="center",
                 va="bottom",
                 color="red",
                 weight="bold",
                 fontdict={"fontsize": 20},
-                zorder=20
             )
             text.set_path_effects(
                 [PathEffects.withStroke(linewidth=2, foreground="black")]
@@ -326,10 +309,9 @@ def plot_unrolls():
                 [2048],
                 [min_y],
                 marker="X",
-                markersize=10,
+                markersize=7,
                 color="red",
                 markeredgecolor="k",
-                clip_on=False, zorder=10
             )
 
         # https://stackoverflow.com/a/59395256
@@ -354,14 +336,10 @@ def plot_unrolls():
 
 
 def plot_elapsed_times():
-    markers = ["v", "4", "8", "*", "+", "x"]
     vitis_df = pd.read_csv("vitis_reports.csv", header=0, index_col=[0, 1, 2])
-    bragghls_df = pd.read_csv("bragghls_times.csv", header=0, index_col=[0])
-    fig, (vitis_ax, bragghls_ax) = plt.subplots(
-        1, 2, figsize=(10, 7), gridspec_kw={"width_ratios": [10, 1]}
-    )
-    vitis_ax.grid(which="major", linestyle="--")
-    bragghls_ax.grid(which="major", linestyle="--")
+    fig, ax1 = plt.subplots(figsize=(10, 7))
+    ax1.grid(which="major", linestyle="--")
+    # ax1.minorticks_off()  # turns off minor ticks
     elapsed_time_common = set()
 
     for i, mod in enumerate(vitis_df.index.levels[0]):
@@ -372,40 +350,27 @@ def plot_elapsed_times():
             xs[-1] = xs[-2] + 4
         elapsed_time_common.update(set(xs))
 
-        vitis_ax.plot(
+        # mod = mod.replace("_", r"\_")
+        ax1.plot(
             xs,
             elapsed_time.values,
+            # label=rf"$\mathtt{{{mod}}}$",
             linewidth=2,
-            marker=markers[i],
+            marker="x",
             label=f"{mod}",
         )
 
-    vitis_ax.set_ylabel("time (s)", fontdict={"fontsize": 25})
-    vitis_ax.set_yscale("log")
-    bragghls_ax.set_yscale("log")
-
+    # ax1.set_xscale("log")
+    ax1.set_ylabel("time (s)", fontdict={"fontsize": 25})
+    ax1.set_yscale("log")
     xticks = sorted(elapsed_time_common)
-    vitis_ax.set_xticks(xticks)
-    vitis_ax.xaxis.set_ticklabels(["base"] + xticks[1:-1] + ["1024"])
+    ax1.set_xticks(xticks)
+    ax1.xaxis.set_ticklabels(["base"] + xticks[1:-1] + ["1024"])
+    # ax1.xaxis.set_major_formatter(ticker.FuncFormatter(myticks))
     font = font_manager.FontProperties(family="Courier New", style="normal", size=20)
-    vitis_ax.legend(loc="upper left", framealpha=0.8, fontsize=20, prop=font)
-    vitis_ax.set_xlabel("unroll factor", fontdict={"fontsize": 25})
-    vitis_ax.tick_params(axis="x", rotation=45)
-
-    normalize_ax_lims([bragghls_ax, vitis_ax])
-
-    for i, mod in enumerate(vitis_df.index.levels[0]):
-        bragghls_ax.plot(
-            [1024],
-            bragghls_df.loc[mod].values[0],
-            linewidth=2,
-            marker=markers[i],
-            label=f"{mod}",
-        )
-
-    bragghls_ax.set_xticks([1024])
-    bragghls_ax.set_xticklabels(["BraggHLS"])
-    bragghls_ax.tick_params(axis="x", rotation=45)
+    ax1.legend(loc="upper left", framealpha=0.8, fontsize=20, prop=font)
+    ax1.set_xlabel("unroll factor", fontdict={"fontsize": 25})
+    ax1.tick_params(axis="x", rotation=45)
 
     fig.tight_layout()
     fig.savefig(f"elapsed_time.pdf")
@@ -423,6 +388,9 @@ def plot_conv_unroll_times():
     )
     ax1.ticklabel_format(axis="y", style="sci", scilimits=(0, 0))
     ax1.grid(which="major", linestyle="--")
+    # ax1.minorticks_off()  # turns off minor ticks
+    # ax1.set_xscale("log")
+    # ax1.set_yscale("log")
     ax1.set_ylabel("time (s)", fontdict={"fontsize": 25})
     ax1.set_xticks(sorted(bragghls_df.index.values))
     ax1.xaxis.set_major_formatter(ticker.FuncFormatter(myticks))
@@ -436,5 +404,5 @@ def plot_conv_unroll_times():
 if __name__ == "__main__":
     # make_tables()
     plot_unrolls()
-    # plot_conv_unroll_times()
-    # plot_elapsed_times()
+    plot_conv_unroll_times()
+    plot_elapsed_times()

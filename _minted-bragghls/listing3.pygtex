@@ -4,14 +4,14 @@
     \PYG{n+nv}{\PYGZpc{}weight:} \PYG{n+nType}{memref\PYGZlt{}}\PYG{esc}{$b \times c_{out} \times h \times w$}\PYG{p}{\PYGZgt{}},
     \PYG{n+nv}{\PYGZpc{}output:} \PYG{n+nType}{memref\PYGZlt{}}\PYG{esc}{$c_{out} \times c_{in} \times k \times k$}\PYG{p}{\PYGZgt{}}
 ) \PYG{p}{\PYGZob{}}
-\PYG{p}{  }\PYG{k}{scf.for} \PYG{n+nv}{\PYGZpc{}i1} = \PYG{n+nv}{\PYGZpc{}c0} \PYG{k}{to} \PYG{esc}{$b$} \PYG{k}{step} \PYG{n+nv}{\PYGZpc{}c1} \PYG{p}{\PYGZob{}}
-\PYG{p}{    }\PYG{k}{scf.for} \PYG{n+nv}{\PYGZpc{}i2} = \PYG{n+nv}{\PYGZpc{}c0} \PYG{k}{to} \PYG{esc}{$c_{out}$} \PYG{k}{step} \PYG{n+nv}{\PYGZpc{}c1} \PYG{p}{\PYGZob{}}
-\PYG{p}{      }\PYG{k}{scf.for} \PYG{n+nv}{\PYGZpc{}i3} = \PYG{n+nv}{\PYGZpc{}c0} \PYG{k}{to} \PYG{esc}{$h$} \PYG{k}{step} \PYG{n+nv}{\PYGZpc{}c1} \PYG{p}{\PYGZob{}}
-\PYG{p}{        }\PYG{k}{scf.for} \PYG{n+nv}{\PYGZpc{}i4} = \PYG{n+nv}{\PYGZpc{}c0} \PYG{k}{to} \PYG{esc}{$w$} \PYG{k}{step} \PYG{n+nv}{\PYGZpc{}c1} \PYG{p}{\PYGZob{}}
-\PYG{p}{          }\PYG{k}{scf.for} \PYG{n+nv}{\PYGZpc{}i5} = \PYG{n+nv}{\PYGZpc{}c0} \PYG{k}{to} \PYG{esc}{$c_{in}$} \PYG{k}{step} \PYG{n+nv}{\PYGZpc{}c1} \PYG{p}{\PYGZob{}}
-\PYG{p}{            }\PYG{k}{scf.for} \PYG{n+nv}{\PYGZpc{}i6} = \PYG{n+nv}{\PYGZpc{}c0} \PYG{k}{to} \PYG{esc}{$k$} \PYG{k}{step} \PYG{n+nv}{\PYGZpc{}c1} \PYG{p}{\PYGZob{}}
-\PYG{p}{              }\PYG{k}{scf.for} \PYG{n+nv}{\PYGZpc{}i7} = \PYG{n+nv}{\PYGZpc{}c0} \PYG{k}{to} \PYG{esc}{$k$} \PYG{k}{step} \PYG{n+nv}{\PYGZpc{}c1} \PYG{p}{\PYGZob{}}
-\PYG{p}{                }\PYG{n+nv}{\PYGZpc{}3} = \PYG{k}{arith.addi} \PYG{n+nv}{\PYGZpc{}i3}, \PYG{n+nv}{\PYGZpc{}i6}
+\PYG{p}{  }\PYG{k}{scf.for} \PYG{n+nv}{\PYGZpc{}i1} = \PYG{n+nv}{\PYGZpc{}c0} \PYG{k}{to} \PYG{esc}{$b$} \PYG{k}{step} \PYG{n+nv}{\PYGZpc{}c1}
+    \PYG{k}{scf.for} \PYG{n+nv}{\PYGZpc{}i2} = \PYG{n+nv}{\PYGZpc{}c0} \PYG{k}{to} \PYG{esc}{$c_{out}$} \PYG{k}{step} \PYG{n+nv}{\PYGZpc{}c1}
+      \PYG{k}{scf.for} \PYG{n+nv}{\PYGZpc{}i3} = \PYG{n+nv}{\PYGZpc{}c0} \PYG{k}{to} \PYG{esc}{$h$} \PYG{k}{step} \PYG{n+nv}{\PYGZpc{}c1}
+        \PYG{k}{scf.for} \PYG{n+nv}{\PYGZpc{}i4} = \PYG{n+nv}{\PYGZpc{}c0} \PYG{k}{to} \PYG{esc}{$w$} \PYG{k}{step} \PYG{n+nv}{\PYGZpc{}c1}
+          \PYG{k}{scf.for} \PYG{n+nv}{\PYGZpc{}i5} = \PYG{n+nv}{\PYGZpc{}c0} \PYG{k}{to} \PYG{esc}{$c_{in}$} \PYG{k}{step} \PYG{n+nv}{\PYGZpc{}c1}
+            \PYG{k}{scf.for} \PYG{n+nv}{\PYGZpc{}i6} = \PYG{n+nv}{\PYGZpc{}c0} \PYG{k}{to} \PYG{esc}{$k$} \PYG{k}{step} \PYG{n+nv}{\PYGZpc{}c1}
+              \PYG{k}{scf.for} \PYG{n+nv}{\PYGZpc{}i7} = \PYG{n+nv}{\PYGZpc{}c0} \PYG{k}{to} \PYG{esc}{$k$} \PYG{k}{step} \PYG{n+nv}{\PYGZpc{}c1}
+                \PYG{n+nv}{\PYGZpc{}3} = \PYG{k}{arith.addi} \PYG{n+nv}{\PYGZpc{}i3}, \PYG{n+nv}{\PYGZpc{}i6}
                 \PYG{n+nv}{\PYGZpc{}4} = \PYG{k}{arith.addi} \PYG{n+nv}{\PYGZpc{}i4}, \PYG{n+nv}{\PYGZpc{}i7}
                 \PYG{n+nv}{\PYGZpc{}5} = \PYG{k}{memref.load} \PYG{n+nv}{\PYGZpc{}input}\PYG{p}{[}
                   \PYG{n+nv}{\PYGZpc{}i1}, \PYG{n+nv}{\PYGZpc{}i5}, \PYG{n+nv}{\PYGZpc{}i3}, \PYG{n+nv}{\PYGZpc{}3}, \PYG{n+nv}{\PYGZpc{}4}]
@@ -23,13 +23,6 @@
                 \PYG{n+nv}{\PYGZpc{}9} = \PYG{k}{arith.addf} \PYG{n+nv}{\PYGZpc{}7}, \PYG{n+nv}{\PYGZpc{}8}
                 \PYG{k}{memref.store} \PYG{n+nv}{\PYGZpc{}9}, \PYG{n+nv}{\PYGZpc{}output}\PYG{p}{[}
                   \PYG{n+nv}{\PYGZpc{}i1}, \PYG{n+nv}{\PYGZpc{}i2}, \PYG{n+nv}{\PYGZpc{}i3}, \PYG{n+nv}{\PYGZpc{}i4}]
-              \PYGZcb{}
-            \PYGZcb{}
-          \PYGZcb{}
-        \PYGZcb{}
-      \PYGZcb{}
-    \PYGZcb{}
-  \PYGZcb{}
   \PYG{k}{return} \PYG{n+nv}{\PYGZpc{}2}
 \PYGZcb{}
 \end{Verbatim}
